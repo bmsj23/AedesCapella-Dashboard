@@ -121,8 +121,8 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
     <Card style={{ padding: '12px', marginBottom: '20px' }}>
       <div className="map-heading">
         <div>
-          <strong>REAL COORDINATE MAP</strong>
-          <Mono size="11px" color={C.textDim}>Approved installation locations · {useVectorMap ? 'detailed vector map' : 'configured map tiles'}</Mono>
+          <strong>Device Map</strong>
+          <Mono size="11px" color={C.textDim}> Installation Location </Mono>
         </div>
         <div className="map-legend" aria-label="Device State Legend">
           {Object.entries(STATE_COLORS).map(([state, color]) => (
