@@ -24,6 +24,13 @@ const TILE_ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION || '&copy; Op
 const MAPTILER_STYLE_URL = getMapTilerStyleUrl(import.meta.env);
 const MAPTILER_API_KEY = mapTilerKey(import.meta.env);
 
+const VECTOR_FAILURE_MESSAGES = {
+  authorization: 'MapTiler rejected a map resource. Confirm the protected key allows aedescapella.vercel.app, then redeploy.',
+  resource: 'Detailed map resources kept failing to load. OpenStreetMap fallback is active; see the browser console for the failing resource.',
+  timeout: 'Detailed map did not finish loading. OpenStreetMap fallback is active; device records remain usable.',
+  initialization: 'Detailed map could not start in this browser. OpenStreetMap fallback is active; device records remain usable.',
+};
+
 function FitMappedDevices({ devices }) {
   const map = useMap();
   useEffect(() => {
@@ -126,9 +133,7 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
       {(tilesFailed || vectorFailure) && (
         <div className="tile-warning" role="status">
           {vectorFailure
-            ? vectorFailure === 'authorization'
-              ? 'MapTiler rejected a map resource. Confirm the protected key allows aedescapella.vercel.app, then redeploy.'
-              : 'Detailed map did not finish loading. OpenStreetMap fallback is active; device records remain usable.'
+            ? VECTOR_FAILURE_MESSAGES[vectorFailure] || VECTOR_FAILURE_MESSAGES.timeout
             : 'Map tiles are unavailable. Marker data and the complete device list below remain usable.'}
         </div>
       )}

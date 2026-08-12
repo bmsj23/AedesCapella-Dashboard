@@ -2,10 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   addMapTilerKey,
+  describeMapError,
   getMapTilerStyleUrl,
-  isTerminalMapLoadFailure,
-  MAP_READY_EVENT,
+  isMapVisuallyComplete,
+  MAP_READY_EVENTS,
+  MAP_RESOURCE_ERROR_LIMIT,
   mapTilerKey,
+  redactMapUrl,
+  shouldEscalateMapFailure,
 } from './mapConfig.js';
 
 test('MapTiler configuration builds a vector style endpoint instead of a viewer or raster URL', () => {
@@ -39,9 +43,50 @@ test('the MapTiler key is propagated to dependent style resources without replac
   assert.equal(mapTilerKey({ VITE_MAPTILER_KEY: ' public-key ' }), 'public-key');
 });
 
-test('recoverable MapLibre resource errors do not force the OpenStreetMap fallback', () => {
-  assert.equal(isTerminalMapLoadFailure('resource-error'), false);
-  assert.equal(isTerminalMapLoadFailure('timeout'), true);
-  assert.equal(isTerminalMapLoadFailure('initialization'), true);
-  assert.equal(MAP_READY_EVENT, 'style.load');
+test('a single MapLibre resource error is recoverable but a run of them forces the fallback', () => {
+  assert.equal(shouldEscalateMapFailure({ kind: 'resource-error', resourceErrorCount: 1 }), false);
+  assert.equal(
+    shouldEscalateMapFailure({ kind: 'resource-error', resourceErrorCount: MAP_RESOURCE_ERROR_LIMIT }),
+    true,
+  );
+  assert.equal(shouldEscalateMapFailure({ kind: 'timeout' }), true);
+  assert.equal(shouldEscalateMapFailure({ kind: 'initialization' }), true);
+  assert.equal(shouldEscalateMapFailure({ kind: 'authorization', resourceErrorCount: 1 }), true);
+});
+
+test('readiness waits for a visually complete render instead of style acceptance', () => {
+  assert.ok(!MAP_READY_EVENTS.includes('style.load'));
+  assert.ok(MAP_READY_EVENTS.includes('load'));
+  assert.ok(MAP_READY_EVENTS.includes('idle'));
+
+  assert.equal(isMapVisuallyComplete(null), false);
+  assert.equal(isMapVisuallyComplete({ loaded: () => true, areTilesLoaded: () => false }), false);
+  assert.equal(isMapVisuallyComplete({ loaded: () => false, areTilesLoaded: () => true }), false);
+  assert.equal(isMapVisuallyComplete({ loaded: () => true, areTilesLoaded: () => true }), true);
+  assert.equal(isMapVisuallyComplete({ loaded: () => { throw new Error('not ready'); } }), false);
+});
+
+test('map diagnostics never expose the public key carried in the query string', () => {
+  assert.equal(
+    redactMapUrl('https://api.maptiler.com/maps/abc/style.json?key=public-key'),
+    'https://api.maptiler.com/maps/abc/style.json',
+  );
+  assert.equal(redactMapUrl('not a url'), null);
+
+  const authorization = describeMapError({
+    error: { status: 403, url: 'https://api.maptiler.com/tiles/v3/16/0/0.pbf?key=public-key', message: 'Forbidden' },
+    sourceId: 'maptiler_planet',
+  });
+  assert.deepEqual(authorization, {
+    kind: 'authorization',
+    status: 403,
+    sourceId: 'maptiler_planet',
+    resource: 'https://api.maptiler.com/tiles/v3/16/0/0.pbf',
+    message: 'Forbidden',
+  });
+
+  const workerFailure = describeMapError({ error: { message: 'Failed to fetch worker script (404)' } });
+  assert.equal(workerFailure.kind, 'resource-error');
+  assert.equal(workerFailure.status, null);
+  assert.equal(workerFailure.resource, null);
 });

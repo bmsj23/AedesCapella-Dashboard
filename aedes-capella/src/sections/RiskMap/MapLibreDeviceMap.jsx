@@ -1,8 +1,22 @@
 import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
-import { addMapTilerKey, isTerminalMapLoadFailure, MAP_READY_EVENT } from '../../utils/mapConfig';
+import {
+  addMapTilerKey,
+  describeMapError,
+  isMapVisuallyComplete,
+  MAP_READY_EVENTS,
+  shouldEscalateMapFailure,
+} from '../../utils/mapConfig';
+
+// MapLibre GL JS 6 resolves its worker relative to the bundled chunk, which in a
+// Vite build is `/assets/maplibre-gl-worker.mjs` and does not exist. Without a
+// worker no vector tile is ever parsed, so the style background paints and every
+// road, label, and area stays blank. Vite's `?worker&url` pipeline emits the
+// worker together with its shared dependency as one self-contained asset.
+maplibregl.setWorkerUrl(workerUrl);
 
 const STATE_COLORS = {
   online: '#16a34a',
@@ -62,9 +76,12 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
   useEffect(() => {
     let loaded = false;
     let failureReported = false;
-    let authorizationRejected = false;
+    let resourceErrorCount = 0;
     const reportFailure = (kind, reason = kind) => {
-      if (!isTerminalMapLoadFailure(kind) || failureReported) return;
+      // Once the basemap has rendered completely it has proven itself; a later
+      // failed tile while panning must not throw the operator back to Leaflet.
+      if (failureReported || loaded) return;
+      if (!shouldEscalateMapFailure({ kind, resourceErrorCount })) return;
       failureReported = true;
       onFailure(reason);
     };
@@ -87,19 +104,33 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
 
+    let authorizationRejected = false;
     const timeout = window.setTimeout(() => {
       if (!loaded) reportFailure('timeout', authorizationRejected ? 'authorization' : 'timeout');
     }, 30_000);
+
     map.on('error', event => {
-      const status = Number(event?.error?.status || event?.error?.response?.status || 0);
-      if (status === 401 || status === 403) authorizationRejected = true;
-      reportFailure('resource-error');
+      const diagnostic = describeMapError(event);
+      if (diagnostic.kind === 'authorization') authorizationRejected = true;
+      resourceErrorCount += 1;
+      // MapLibre stops printing errors itself once a listener is attached, so the
+      // only record of a failing tile, glyph, or worker is the one written here.
+      console.warn('[map] MapLibre resource failure', {
+        ...diagnostic,
+        occurrence: resourceErrorCount,
+        mapLoaded: isMapVisuallyComplete(map),
+      });
+      if (diagnostic.kind === 'authorization') reportFailure('authorization');
+      else reportFailure('resource-error', 'resource');
     });
-    map.once(MAP_READY_EVENT, () => {
+
+    const markReadyWhenComplete = () => {
+      if (loaded || failureReported || !isMapVisuallyComplete(map)) return;
       loaded = true;
       window.clearTimeout(timeout);
       onReady();
-    });
+    };
+    MAP_READY_EVENTS.forEach(eventName => map.on(eventName, markReadyWhenComplete));
 
     return () => {
       window.clearTimeout(timeout);
