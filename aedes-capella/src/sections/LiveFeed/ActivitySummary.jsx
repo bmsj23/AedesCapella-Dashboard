@@ -19,8 +19,14 @@ function Metric({ label, value, tone = C.text, note }) {
   );
 }
 
-export default function ActivitySummary({ events }) {
-  const summary = buildRuntimeSummary(events);
+export default function ActivitySummary({ events, summary: databaseSummary }) {
+  const bufferedSummary = buildRuntimeSummary(events);
+  const summary = databaseSummary ? {
+    candidateCount: Number(databaseSummary.candidates_all_time || 0),
+    relayCount: Number(databaseSummary.relay_activations_all_time || 0),
+    unresolvedCount: Number(databaseSummary.unresolved_all_time || 0),
+    latestAt: databaseSummary.latest_activity_at,
+  } : bufferedSummary;
 
   return (
     <Card glow style={{ marginBottom: '20px', background: 'var(--pd-accent-dim)' }}>
@@ -37,8 +43,8 @@ export default function ActivitySummary({ events }) {
       </div>
 
       <div className="info-grid info-grid-three">
-        <Metric label="Detected Aedes aegypti" value={summary.candidateCount} tone={C.amber} note="Number of possible Aedes aegypti detections" />
-        <Metric label="Sprayings" value={summary.relayCount} tone={C.red} note="Number of spray/misting events" />
+        <Metric label="Possible Aedes aegypti matches" value={summary.candidateCount} tone={C.amber} note="All recorded model and timing matches; not confirmed biological detections" />
+        <Metric label="Sprayer activations" value={summary.relayCount} tone={C.red} note="All recorded times the relay switched on" />
         <Metric label="Time Not Confirmed" value={summary.unresolvedCount} tone={summary.unresolvedCount ? C.amber : C.green} note={summary.latestAt ? `Latest ${formatDashboardTimestamp(summary.latestAt)}` : 'Nothing recent'} />
       </div>
     </Card>

@@ -215,6 +215,15 @@ export function formatRelayStatus(status) {
   })[status] || 'Recorded';
 }
 
+export function isDisplayableRelayEpisode(episode) {
+  return Boolean(
+    episode?.requested_at
+    || episode?.started_at
+    || episode?.stopped_at
+    || episode?.rejected_at,
+  );
+}
+
 export function deriveRelayEpisodes(events) {
   const relayKinds = new Set(['RELAY_INTENT', 'RELAY_ON', 'RELAY_OFF', 'RELAY_REJECT', 'COOLDOWN_COMPLETE']);
   const episodes = new Map();
@@ -255,5 +264,5 @@ export function deriveRelayEpisodes(events) {
         ? Math.max(0, (stopped - started) / 1000)
         : null,
     };
-  });
+  }).filter(isDisplayableRelayEpisode);
 }

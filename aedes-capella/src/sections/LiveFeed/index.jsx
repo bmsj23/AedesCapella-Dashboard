@@ -20,7 +20,9 @@ export default function LiveFeed({ dashboardData, deviceStatus }) {
         title="Latest Activity"
         subtitle="What the devices recorded recently. A possible mosquito is a sound that matched, not a confirmed mosquito."
       />
-      {!dashboardData?.loading && !dashboardData?.errors?.activity && <ActivitySummary events={events} />}
+      {!dashboardData?.loading && !dashboardData?.errors?.activity && (
+        <ActivitySummary events={events} summary={dashboardData?.activitySummary} />
+      )}
       <FeedTable
         events={events}
         deviceLabels={deviceLabels}

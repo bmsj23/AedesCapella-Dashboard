@@ -11,12 +11,30 @@ import {
 test('initial authenticated hydration installs every shared dataset', () => {
   const next = liveDashboardReducer(EMPTY_LIVE_DASHBOARD, {
     type: 'reconcile',
-    datasets: { activity: [{ runtime_event_id: 1 }], candidates: [], relays: [], devices: [], mapDevices: [] },
+    datasets: {
+      activity: [{ runtime_event_id: 1 }],
+      activitySummary: { candidates_all_time: 22 },
+      candidates: [], relays: [], devices: [], mapDevices: [],
+    },
     errors: {}, complete: true, at: new Date('2026-08-09T00:00:00Z'),
   });
   assert.equal(next.loading, false);
   assert.equal(next.activity.length, 1);
+  assert.equal(next.activitySummary.candidates_all_time, 22);
   assert.equal(next.reconciledAt.toISOString(), '2026-08-09T00:00:00.000Z');
+});
+
+test('Realtime summary refresh replaces stale aggregate totals', () => {
+  const start = {
+    ...EMPTY_LIVE_DASHBOARD,
+    activitySummary: { candidates_all_time: 21, relay_activations_all_time: 37 },
+  };
+  const next = liveDashboardReducer(start, {
+    type: 'set_activity_summary',
+    row: { candidates_all_time: 22, relay_activations_all_time: 38 },
+  });
+  assert.equal(next.activitySummary.candidates_all_time, 22);
+  assert.equal(next.activitySummary.relay_activations_all_time, 38);
 });
 
 test('Realtime candidate insert is highlighted and duplicate delivery is deduplicated', () => {

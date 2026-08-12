@@ -3,6 +3,7 @@ import {
   supabaseAnonKey,
   supabaseUrl,
 } from './supabaseClient';
+import { isDisplayableRelayEpisode } from '../utils/dashboardData';
 
 export { isSupabaseConfigured } from './supabaseClient';
 
@@ -115,6 +116,16 @@ export async function fetchRuntimeActivity(accessToken, signal) {
   });
 }
 
+export async function fetchActivitySummary(accessToken, signal) {
+  const rows = await request('/rest/v1/rpc/dashboard_activity_summary', {
+    method: 'POST',
+    accessToken,
+    body: { p_window_hours: 24 },
+    signal,
+  });
+  return Array.isArray(rows) ? rows[0] || null : rows;
+}
+
 export async function fetchRuntimeActivityById(accessToken, runtimeEventId, signal) {
   const rows = await request(
     `/rest/v1/dashboard_runtime_activity?select=*&runtime_event_id=eq.${encodeURIComponent(runtimeEventId)}&limit=1`,
@@ -147,10 +158,11 @@ export async function fetchCandidateActivityById(accessToken, runtimeEventId, si
 }
 
 export async function fetchRelayActivity(accessToken, signal) {
-  return request('/rest/v1/dashboard_relay_activity?select=*&order=display_time.desc&limit=500', {
+  const rows = await request('/rest/v1/dashboard_relay_activity?select=*&order=display_time.desc&limit=500', {
     accessToken,
     signal,
   });
+  return rows.filter(isDisplayableRelayEpisode);
 }
 
 export async function fetchRelayActivityForSource(
@@ -169,7 +181,7 @@ export async function fetchRelayActivityForSource(
     accessToken,
     signal,
   });
-  return rows[0] || null;
+  return rows.find(isDisplayableRelayEpisode) || null;
 }
 
 export async function fetchDeviceMap(accessToken, signal) {

@@ -2,6 +2,7 @@ const MAX_ACTIVITY_ROWS = 500;
 
 export const EMPTY_LIVE_DASHBOARD = {
   activity: [],
+  activitySummary: null,
   candidates: [],
   relays: [],
   devices: [],
@@ -87,6 +88,8 @@ export function liveDashboardReducer(state, action) {
           live_arrival_at: action.live ? action.at : action.row.live_arrival_at,
         }, 'runtime_event_id'),
       };
+    case 'set_activity_summary':
+      return { ...state, activitySummary: action.row };
     case 'upsert_candidate':
       return {
         ...state,

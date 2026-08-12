@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { getSupabaseClient } from '../lib/supabaseClient';
 import {
+  fetchActivitySummary,
   fetchCandidateActivity,
   fetchCandidateActivityById,
   fetchDeviceMap,
@@ -75,6 +76,19 @@ export function useLiveDashboard(accessToken) {
         }
       });
 
+      try {
+        datasets.activitySummary = await fetchActivitySummary(accessToken, signal);
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          errors.activitySummary = getFriendlyError(
+            error,
+            'The activity totals are unavailable right now.',
+          );
+        }
+      }
+
+      if (signal?.aborted) return;
+
       dispatch({
         type: 'reconcile',
         datasets,
@@ -101,6 +115,9 @@ export function useLiveDashboard(accessToken) {
     const eventId = event.runtime_event_id;
     const tasks = [
       hydrateDevice(event.device_id, signal),
+      fetchActivitySummary(accessToken, signal).then(row => {
+        if (row) dispatch({ type: 'set_activity_summary', row });
+      }),
     ];
 
     if (isOperatorActivityEvent(event)) {

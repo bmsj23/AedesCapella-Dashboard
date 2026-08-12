@@ -43,12 +43,16 @@ export default function App() {
     Date.parse(liveData.activity[0]?.received_at || '') || 0,
   );
   const since24h = metricsAsOf - (24 * 60 * 60 * 1000);
-  const candidatesToday = countSince(liveData.candidates, 'display_time', since24h);
-  const relaysToday = countSince(
-    liveData.relays.filter(relay => relay.recorded_relay_activation),
-    'started_at',
-    since24h,
-  );
+  const candidatesToday = liveData.activitySummary
+    ? Number(liveData.activitySummary.candidates_in_window || 0)
+    : countSince(liveData.candidates, 'display_time', since24h);
+  const relaysToday = liveData.activitySummary
+    ? Number(liveData.activitySummary.relay_activations_in_window || 0)
+    : countSince(
+      liveData.relays.filter(relay => relay.recorded_relay_activation),
+      'started_at',
+      since24h,
+    );
   const onlineNodes = deviceStatus.devices.filter(device => device.operational_state === 'online').length;
   const attentionNodes = deviceStatus.devices.filter(device => device.needs_attention).length;
   const avgCandidateScore = average(liveData.candidates.map(candidateScorePercent));

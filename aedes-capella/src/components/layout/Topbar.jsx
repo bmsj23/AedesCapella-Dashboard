@@ -4,8 +4,8 @@ import Tag from '../ui/Tag';
 /* Average candidate score was removed: it is a model score, and showing it to
    a health worker invites reading it as a confidence in a species. */
 const METRICS = [
-  { key: 'candidates', label: 'Possible Mosquitoes Today' },
-  { key: 'relays', label: 'Sprayings Today' },
+  { key: 'candidates', label: 'Possible Mosquitoes (24h)' },
+  { key: 'relays', label: 'Sprayings (24h)' },
   { key: 'nodes', label: 'Devices Working' },
 ];
 

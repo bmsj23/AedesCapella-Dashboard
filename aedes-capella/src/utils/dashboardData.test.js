@@ -81,3 +81,18 @@ test('relay pairing uses device and source packet and derives evidence duration'
   assert.equal(episodes[0].duration_seconds, 8);
   assert.equal(episodes[0].recorded_relay_activation, true);
 });
+
+test('cooldown completion without relay-on evidence is not a spraying episode', () => {
+  const episodes = deriveRelayEpisodes([
+    {
+      device_id: 'd1',
+      source_boot: 0,
+      source_sequence: 0,
+      event_kind: 'COOLDOWN_COMPLETE',
+      occurred_at: '2026-08-12T05:12:17Z',
+      reason: 'cleared',
+    },
+  ]);
+
+  assert.deepEqual(episodes, []);
+});
