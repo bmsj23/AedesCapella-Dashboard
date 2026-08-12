@@ -4,6 +4,7 @@ import {
   addMapTilerKey,
   getMapTilerStyleUrl,
   isTerminalMapLoadFailure,
+  MAP_READY_EVENT,
   mapTilerKey,
 } from './mapConfig.js';
 
@@ -42,4 +43,5 @@ test('recoverable MapLibre resource errors do not force the OpenStreetMap fallba
   assert.equal(isTerminalMapLoadFailure('resource-error'), false);
   assert.equal(isTerminalMapLoadFailure('timeout'), true);
   assert.equal(isTerminalMapLoadFailure('initialization'), true);
+  assert.equal(MAP_READY_EVENT, 'style.load');
 });

@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
-import { addMapTilerKey, isTerminalMapLoadFailure } from '../../utils/mapConfig';
+import { addMapTilerKey, isTerminalMapLoadFailure, MAP_READY_EVENT } from '../../utils/mapConfig';
 
 const STATE_COLORS = {
   online: '#16a34a',
@@ -95,7 +95,7 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
       if (status === 401 || status === 403) authorizationRejected = true;
       reportFailure('resource-error');
     });
-    map.once('load', () => {
+    map.once(MAP_READY_EVENT, () => {
       loaded = true;
       window.clearTimeout(timeout);
       onReady();

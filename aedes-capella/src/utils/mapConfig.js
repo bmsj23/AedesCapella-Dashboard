@@ -27,3 +27,5 @@ export function mapTilerKey(env = {}) {
 export function isTerminalMapLoadFailure(kind) {
   return kind === 'timeout' || kind === 'initialization';
 }
+
+export const MAP_READY_EVENT = 'style.load';
