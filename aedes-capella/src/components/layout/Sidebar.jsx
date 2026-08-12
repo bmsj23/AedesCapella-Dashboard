@@ -60,6 +60,8 @@ export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLog
             <button
               key={id}
               onClick={() => onNavigate(id)}
+              aria-keyshortcuts={String(Number(fig))}
+              title={`Open ${label} (${Number(fig)})`}
               style={{
                 width:        '100%',
                 display:      'flex',

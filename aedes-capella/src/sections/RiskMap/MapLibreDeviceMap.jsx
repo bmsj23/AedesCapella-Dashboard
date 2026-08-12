@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
+import { addMapTilerKey, isTerminalMapLoadFailure } from '../../utils/mapConfig';
 
 const STATE_COLORS = {
   online: '#16a34a',
@@ -52,7 +53,7 @@ function buildPopup(device, candidates, relays) {
   return popup;
 }
 
-export default function MapLibreDeviceMap({ devices, candidates, relays, styleUrl, onFailure, onReady }) {
+export default function MapLibreDeviceMap({ devices, candidates, relays, styleUrl, apiKey, onFailure, onReady }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -61,28 +62,38 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
   useEffect(() => {
     let loaded = false;
     let failureReported = false;
-    const reportFailure = () => {
-      if (failureReported) return;
+    let authorizationRejected = false;
+    const reportFailure = (kind, reason = kind) => {
+      if (!isTerminalMapLoadFailure(kind) || failureReported) return;
       failureReported = true;
-      onFailure();
+      onFailure(reason);
     };
 
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      style: styleUrl,
-      center: [121.162, 13.941],
-      zoom: 13,
-      attributionControl: false,
-    });
+    let map;
+    try {
+      map = new maplibregl.Map({
+        container: containerRef.current,
+        style: styleUrl,
+        center: [121.162, 13.941],
+        zoom: 13,
+        attributionControl: false,
+        transformRequest: url => ({ url: addMapTilerKey(url, apiKey) }),
+      });
+    } catch {
+      reportFailure('initialization');
+      return undefined;
+    }
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-left');
     map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
 
     const timeout = window.setTimeout(() => {
-      if (!loaded) reportFailure();
-    }, 12_000);
-    map.on('error', () => {
-      if (!loaded) reportFailure();
+      if (!loaded) reportFailure('timeout', authorizationRejected ? 'authorization' : 'timeout');
+    }, 30_000);
+    map.on('error', event => {
+      const status = Number(event?.error?.status || event?.error?.response?.status || 0);
+      if (status === 401 || status === 403) authorizationRejected = true;
+      reportFailure('resource-error');
     });
     map.once('load', () => {
       loaded = true;
@@ -97,7 +108,7 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
       mapRef.current = null;
       map.remove();
     };
-  }, [onFailure, onReady, styleUrl]);
+  }, [apiKey, onFailure, onReady, styleUrl]);
 
   useEffect(() => {
     const map = mapRef.current;

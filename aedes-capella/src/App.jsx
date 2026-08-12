@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { C } from './constants/colors';
 import { useOperatorSession } from './hooks/useOperatorSession';
 import { ViewerProvider } from './contexts/ViewerProvider';
@@ -6,6 +6,12 @@ import { useLiveDashboard } from './hooks/useLiveDashboard';
 import { average, candidateScorePercent, countSince } from './utils/dashboardData';
 import LoginPage from './components/auth/LoginPage';
 import LogoutConfirmModal from './components/auth/LogoutConfirmModal';
+import {
+  initialDashboardSection,
+  isDashboardSection,
+  persistDashboardSection,
+  sectionFromKeyboardEvent,
+} from './utils/sectionNavigation';
 
 // Layout
 import Sidebar from './components/layout/Sidebar';
@@ -26,10 +32,40 @@ const SECTIONS = {
 };
 
 export default function App() {
-  const [activeSection, setActiveSection] = useState('feed');
+  const [activeSection, setActiveSection] = useState(() => initialDashboardSection());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { session, role, login, logout } = useOperatorSession();
   const liveData = useLiveDashboard(session?.accessToken);
+  const navigateToSection = useCallback(section => {
+    if (!isDashboardSection(section)) return;
+    setActiveSection(section);
+    persistDashboardSection(section);
+  }, []);
+
+  useEffect(() => {
+    if (!session) return undefined;
+
+    const handleHashChange = () => {
+      const section = window.location.hash.replace(/^#/, '');
+      if (isDashboardSection(section)) {
+        setActiveSection(section);
+        persistDashboardSection(section);
+      }
+    };
+    const handleKeyDown = event => {
+      const section = sectionFromKeyboardEvent(event);
+      if (!section) return;
+      event.preventDefault();
+      navigateToSection(section);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [navigateToSection, session]);
   const deviceStatus = {
     devices: liveData.devices,
     error: liveData.errors.devices || '',
@@ -74,7 +110,7 @@ export default function App() {
     }}>
       <Sidebar
         activeSection={activeSection}
-        onNavigate={setActiveSection}
+        onNavigate={navigateToSection}
         deviceStatus={deviceStatus}
         onLogout={() => setShowLogoutModal(true)}
       />

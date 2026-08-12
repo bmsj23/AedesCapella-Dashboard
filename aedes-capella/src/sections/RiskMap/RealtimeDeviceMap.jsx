@@ -7,7 +7,7 @@ import Mono from '../../components/ui/Mono';
 import Tag from '../../components/ui/Tag';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
 import { filterMappedDevices } from '../../utils/liveDashboard';
-import { getMapTilerStyleUrl } from '../../utils/mapConfig';
+import { getMapTilerStyleUrl, mapTilerKey } from '../../utils/mapConfig';
 
 const MapLibreDeviceMap = lazy(() => import('./MapLibreDeviceMap'));
 
@@ -22,6 +22,7 @@ const STATE_COLORS = {
 const TILE_URL = import.meta.env.VITE_MAP_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION || '&copy; OpenStreetMap contributors';
 const MAPTILER_STYLE_URL = getMapTilerStyleUrl(import.meta.env);
+const MAPTILER_API_KEY = mapTilerKey(import.meta.env);
 
 function FitMappedDevices({ devices }) {
   const map = useMap();
@@ -99,11 +100,11 @@ function LeafletDeviceMap({ mapped, candidates, relays, onTileFailure, onTileLoa
 
 export default function RealtimeDeviceMap({ devices = [], candidates = [], relays = [], loading, error }) {
   const [tilesFailed, setTilesFailed] = useState(false);
-  const [vectorFailed, setVectorFailed] = useState(false);
+  const [vectorFailure, setVectorFailure] = useState(null);
   const mapped = filterMappedDevices(devices);
-  const useVectorMap = Boolean(MAPTILER_STYLE_URL) && !vectorFailed;
-  const handleVectorFailure = useCallback(() => setVectorFailed(true), []);
-  const handleVectorReady = useCallback(() => setVectorFailed(false), []);
+  const useVectorMap = Boolean(MAPTILER_STYLE_URL) && !vectorFailure;
+  const handleVectorFailure = useCallback(reason => setVectorFailure(reason), []);
+  const handleVectorReady = useCallback(() => setVectorFailure(null), []);
 
   if (loading) return <EmptyState title="Loading Configured Coordinates" message="Reading the live device map view." variant="startup" />;
   if (error) return <EmptyState title="Map Data Unavailable" message={error} action="The 30-second reconciliation will retry." variant="warning" />;
@@ -122,10 +123,12 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
           ))}
         </div>
       </div>
-      {(tilesFailed || vectorFailed) && (
+      {(tilesFailed || vectorFailure) && (
         <div className="tile-warning" role="status">
-          {vectorFailed
-            ? 'Detailed map unavailable. OpenStreetMap fallback is active; device markers and records remain usable.'
+          {vectorFailure
+            ? vectorFailure === 'authorization'
+              ? 'MapTiler rejected a map resource. Confirm the protected key allows aedescapella.vercel.app, then redeploy.'
+              : 'Detailed map did not finish loading. OpenStreetMap fallback is active; device records remain usable.'
             : 'Map tiles are unavailable. Marker data and the complete device list below remain usable.'}
         </div>
       )}
@@ -136,6 +139,7 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
             candidates={candidates}
             relays={relays}
             styleUrl={MAPTILER_STYLE_URL}
+            apiKey={MAPTILER_API_KEY}
             onFailure={handleVectorFailure}
             onReady={handleVectorReady}
           />
