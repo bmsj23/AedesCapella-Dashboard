@@ -763,6 +763,30 @@ a:focus-visible,
   background: var(--color-surface-3);
 }
 
+.map-loading {
+  display: grid;
+  place-items: center;
+  color: var(--color-text-dim);
+  font: 600 12px 'IBM Plex Mono', monospace;
+}
+
+.maplibre-device-marker {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  background: var(--device-marker-color);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.45);
+  cursor: pointer;
+}
+
+.maplibre-device-marker-stale { border-style: dashed; }
+.maplibre-device-marker-logging_fault { border-width: 5px; }
+.maplibre-device-marker:focus-visible { outline: 3px solid var(--color-blue); outline-offset: 3px; }
+
+.maplibregl-popup-content { border-radius: 8px; }
+
 .tile-warning {
   padding: 9px 12px;
   margin-bottom: 8px;

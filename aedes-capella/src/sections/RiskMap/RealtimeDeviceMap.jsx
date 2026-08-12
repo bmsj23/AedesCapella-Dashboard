@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet';
 import { C } from '../../constants/colors';
 import Card from '../../components/ui/Card';
@@ -7,6 +7,9 @@ import Mono from '../../components/ui/Mono';
 import Tag from '../../components/ui/Tag';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
 import { filterMappedDevices } from '../../utils/liveDashboard';
+import { getMapTilerStyleUrl } from '../../utils/mapConfig';
+
+const MapLibreDeviceMap = lazy(() => import('./MapLibreDeviceMap'));
 
 const STATE_COLORS = {
   online: '#16a34a',
@@ -18,6 +21,7 @@ const STATE_COLORS = {
 
 const TILE_URL = import.meta.env.VITE_MAP_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION || '&copy; OpenStreetMap contributors';
+const MAPTILER_STYLE_URL = getMapTilerStyleUrl(import.meta.env);
 
 function FitMappedDevices({ devices }) {
   const map = useMap();
@@ -47,9 +51,59 @@ function RecentRows({ label, rows, timestampKey }) {
   );
 }
 
+function LeafletDeviceMap({ mapped, candidates, relays, onTileFailure, onTileLoad }) {
+  return (
+    <MapContainer className="device-map" center={[13.941, 121.162]} zoom={13} scrollWheelZoom>
+      <TileLayer
+        attribution={TILE_ATTRIBUTION}
+        url={TILE_URL}
+        eventHandlers={{ tileerror: onTileFailure, load: onTileLoad }}
+      />
+      <FitMappedDevices devices={mapped} />
+      {mapped.map(device => {
+        const recentCandidates = candidates.filter(row => row.device_id === device.device_id);
+        const recentRelays = relays.filter(row => row.device_id === device.device_id);
+        const state = device.operational_state || 'offline';
+        return (
+          <CircleMarker
+            key={device.device_id}
+            center={[Number(device.latitude), Number(device.longitude)]}
+            radius={10}
+            pathOptions={{
+              color: STATE_COLORS[state] || STATE_COLORS.offline,
+              fillColor: STATE_COLORS[state] || STATE_COLORS.offline,
+              fillOpacity: 0.8,
+              weight: state === 'logging_fault' ? 5 : 3,
+              dashArray: state === 'stale' ? '4 3' : undefined,
+            }}
+          >
+            <Popup minWidth={260}>
+              <div className="map-popup">
+                <strong>{device.device_label}</strong>
+                <span>{device.location_name} · {device.barangay_name}</span>
+                <Tag color={state === 'online' ? 'green' : state === 'logging_fault' ? 'red' : 'amber'}>
+                  {state.replace('_', ' ')}
+                </Tag>
+                <span>{device.candidates_last_24h ?? 0} possible matches · {device.relay_activations_last_24h ?? 0} sprayer activations / 24h</span>
+                <span>Latest activity: {formatDashboardTimestamp(device.latest_activity_at)}</span>
+                <RecentRows label="Recent Candidates" rows={recentCandidates} timestampKey="display_time" />
+                <RecentRows label="Recent Relay Episodes" rows={recentRelays} timestampKey="display_time" />
+              </div>
+            </Popup>
+          </CircleMarker>
+        );
+      })}
+    </MapContainer>
+  );
+}
+
 export default function RealtimeDeviceMap({ devices = [], candidates = [], relays = [], loading, error }) {
   const [tilesFailed, setTilesFailed] = useState(false);
+  const [vectorFailed, setVectorFailed] = useState(false);
   const mapped = filterMappedDevices(devices);
+  const useVectorMap = Boolean(MAPTILER_STYLE_URL) && !vectorFailed;
+  const handleVectorFailure = useCallback(() => setVectorFailed(true), []);
+  const handleVectorReady = useCallback(() => setVectorFailed(false), []);
 
   if (loading) return <EmptyState title="Loading Configured Coordinates" message="Reading the live device map view." variant="startup" />;
   if (error) return <EmptyState title="Map Data Unavailable" message={error} action="The 30-second reconciliation will retry." variant="warning" />;
@@ -60,7 +114,7 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
       <div className="map-heading">
         <div>
           <strong>REAL COORDINATE MAP</strong>
-          <Mono size="11px" color={C.textDim}>Approved installation locations · configured map tiles</Mono>
+          <Mono size="11px" color={C.textDim}>Approved installation locations · {useVectorMap ? 'detailed vector map' : 'configured map tiles'}</Mono>
         </div>
         <div className="map-legend" aria-label="Device State Legend">
           {Object.entries(STATE_COLORS).map(([state, color]) => (
@@ -68,51 +122,33 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
           ))}
         </div>
       </div>
-      {tilesFailed && (
+      {(tilesFailed || vectorFailed) && (
         <div className="tile-warning" role="status">
-          Map tiles are unavailable. Marker data and the complete device list below remain usable.
+          {vectorFailed
+            ? 'Detailed map unavailable. OpenStreetMap fallback is active; device markers and records remain usable.'
+            : 'Map tiles are unavailable. Marker data and the complete device list below remain usable.'}
         </div>
       )}
-      <MapContainer className="device-map" center={[13.941, 121.162]} zoom={13} scrollWheelZoom>
-        <TileLayer
-          attribution={TILE_ATTRIBUTION}
-          url={TILE_URL}
-          eventHandlers={{ tileerror: () => setTilesFailed(true), load: () => setTilesFailed(false) }}
+      {useVectorMap ? (
+        <Suspense fallback={<div className="device-map map-loading">Loading detailed map…</div>}>
+          <MapLibreDeviceMap
+            devices={mapped}
+            candidates={candidates}
+            relays={relays}
+            styleUrl={MAPTILER_STYLE_URL}
+            onFailure={handleVectorFailure}
+            onReady={handleVectorReady}
+          />
+        </Suspense>
+      ) : (
+        <LeafletDeviceMap
+          mapped={mapped}
+          candidates={candidates}
+          relays={relays}
+          onTileFailure={() => setTilesFailed(true)}
+          onTileLoad={() => setTilesFailed(false)}
         />
-        <FitMappedDevices devices={mapped} />
-        {mapped.map(device => {
-          const recentCandidates = candidates.filter(row => row.device_id === device.device_id);
-          const recentRelays = relays.filter(row => row.device_id === device.device_id);
-          return (
-            <CircleMarker
-              key={device.device_id}
-              center={[Number(device.latitude), Number(device.longitude)]}
-              radius={10}
-              pathOptions={{
-                color: STATE_COLORS[device.operational_state] || STATE_COLORS.offline,
-                fillColor: STATE_COLORS[device.operational_state] || STATE_COLORS.offline,
-                fillOpacity: 0.8,
-                weight: device.operational_state === 'logging_fault' ? 5 : 3,
-                dashArray: device.operational_state === 'stale' ? '4 3' : undefined,
-              }}
-            >
-              <Popup minWidth={260}>
-                <div className="map-popup">
-                  <strong>{device.device_label}</strong>
-                  <span>{device.location_name} · {device.barangay_name}</span>
-                  <Tag color={device.operational_state === 'online' ? 'green' : device.operational_state === 'logging_fault' ? 'red' : 'amber'}>
-                    {device.operational_state.replace('_', ' ')}
-                  </Tag>
-                  <span>{device.candidates_last_24h ?? 0} possible matches · {device.relay_activations_last_24h ?? 0} sprayer activations / 24h</span>
-                  <span>Latest activity: {formatDashboardTimestamp(device.latest_activity_at)}</span>
-                  <RecentRows label="Recent Candidates" rows={recentCandidates} timestampKey="display_time" />
-                  <RecentRows label="Recent Relay Episodes" rows={recentRelays} timestampKey="display_time" />
-                </div>
-              </Popup>
-            </CircleMarker>
-          );
-        })}
-      </MapContainer>
+      )}
     </Card>
   );
 }
