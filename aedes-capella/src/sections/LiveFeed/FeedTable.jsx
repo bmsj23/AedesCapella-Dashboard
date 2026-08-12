@@ -21,6 +21,20 @@ function deviceLabel(deviceId, deviceLabels, technical) {
   return deviceId ? `Device ${deviceId.slice(0, 4)}` : 'Unknown device';
 }
 
+function uploadDelay(event) {
+  const occurred = Date.parse(event.occurred_at || '');
+  const received = Date.parse(event.received_at || '');
+  if (!Number.isFinite(occurred) || !Number.isFinite(received) || received <= occurred + 5 * 60 * 1000) return null;
+  const minutes = Math.round((received - occurred) / 60000);
+  return minutes >= 60 ? `${Math.round(minutes / 60)}h late` : `${minutes}m late`;
+}
+
+function timeWording(timeQuality) {
+  if (timeQuality === 'ntp') return { label: 'Device time synchronized', color: C.green };
+  if (timeQuality === 'boot_anchor') return { label: 'Time reconstructed from this startup', color: C.textDim };
+  return { label: 'Exact event time unavailable', color: C.amber };
+}
+
 /** Recent sensor activity table with plain-language labels. */
 export default function FeedTable({ events = [], deviceLabels = {}, loading = false, error = '' }) {
   const technical = useIsTechnical();
@@ -76,6 +90,9 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
       renderRow={(event, index) => {
         const presentation = getEventPresentation(event.event_kind);
         const isNewCandidate = event.temporal_candidate && Boolean(event.live_arrival_at);
+        const delay = uploadDelay(event);
+        const time = timeWording(event.time_quality);
+        const showReceivedTime = event.time_quality === 'unresolved' || Boolean(delay);
 
         return (
               <tr
@@ -87,12 +104,12 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
               >
                 <td data-label="When it happened">
                   <Mono size="12px" color={event.occurred_at ? C.textDim : C.amber} style={{ fontWeight: 700 }} title={formatDashboardTimestamp(event.occurred_at)}>
-                    {event.occurred_at ? formatShortDashboardTimestamp(event.occurred_at) : 'Unresolved'}
+                    {event.occurred_at ? formatShortDashboardTimestamp(event.occurred_at) : formatShortDashboardTimestamp(event.received_at)}
                   </Mono>
                 </td>
                 <td data-label="When received">
                   <Mono size="12px" color={C.textDim} title={formatDashboardTimestamp(event.received_at)}>
-                    {formatShortDashboardTimestamp(event.received_at)}
+                    {showReceivedTime ? formatShortDashboardTimestamp(event.received_at) : 'Same upload window'}
                   </Mono>
                 </td>
                 <td data-label="Device">
@@ -104,25 +121,26 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
                 </td>
                 <td data-label="What happened">
                   <Tag color={presentation.color}>{presentation.label}</Tag>
-                  {event.temporal_candidate && (
+                  {/* {event.temporal_candidate && (
                     <Mono size="11px" color={C.textDim} style={{ display: 'block', marginTop: '5px' }}>
                       {isNewCandidate ? 'just came in' : 'please check'}
                     </Mono>
-                  )}
+                  )} */}
                 </td>
                 <td data-label="Time">
-                  <Mono size="12px" color={event.time_quality === 'unresolved' ? C.amber : C.green} style={{ fontWeight: 700 }}>
-                    {event.time_quality === 'unresolved'
-                      ? 'Not confirmed'
-                      : event.time_quality === 'ntp' ? 'Exact' : 'Estimated'}
+                  <Mono size="11px" color={time.color} style={{ fontWeight: 700, lineHeight: 1.35 }}>
+                    {time.label}
                   </Mono>
                 </td>
                 <td data-label="Notes" style={{ maxWidth: '280px' }}>
                   <Mono size="12px" color={C.textDim} style={{ lineHeight: 1.45 }}>
-                    {event.temporal_candidate
-                      ? 'Possible mosquito sound. Needs a person to check.'
-                      : plainReason(event.reason)}
+                    {event.time_quality === 'unresolved'
+                      ? 'Recorded after reconnect; exact event time unavailable.'
+                      : event.temporal_candidate
+                        ? 'Possible mosquito sound. Needs a person to check.'
+                        : plainReason(event.reason)}
                   </Mono>
+                  {delay && <Tag color="amber">Data received {delay}</Tag>}
                 </td>
               </tr>
             );

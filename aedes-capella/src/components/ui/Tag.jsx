@@ -1,31 +1,19 @@
-const COLORS = {
-  amber: { bg: 'var(--tag-amber-bg)', border: 'var(--tag-amber-border)', text: 'var(--tag-amber-text)' },
-  red:   { bg: 'var(--tag-red-bg)', border: 'var(--tag-red-border)', text: 'var(--tag-red-text)' },
-  green: { bg: 'var(--tag-green-bg)', border: 'var(--tag-green-border)', text: 'var(--tag-green-text)' },
-  gray:  { bg: 'var(--tag-gray-bg)', border: 'var(--tag-gray-border)', text: 'var(--tag-gray-text)' },
-  blue:  { bg: 'var(--tag-blue-bg)', border: 'var(--tag-blue-border)', text: 'var(--tag-blue-text)' },
-};
+const TONES = new Set(['amber', 'red', 'green', 'gray', 'blue']);
 
 /**
- * Small colored badge tag.
+ * Status chip.
+ *
+ * Styling lives in `.pd-tag` rather than in inline styles so the chip obeys the
+ * same ring-inset rule as the rest of the system, and so the square marker can
+ * be drawn from a pseudo-element instead of an extra span at every call site.
+ *
  * @param {string} color - 'amber' | 'red' | 'green' | 'gray' | 'blue'
  */
 export default function Tag({ children, color = 'gray' }) {
-  const c = COLORS[color] ?? COLORS.gray;
+  const tone = TONES.has(color) ? color : 'gray';
+
   return (
-    <span style={{
-      background:    c.bg,
-      border:        `1px solid ${c.border}`,
-      color:         c.text,
-      fontSize:      '11px',
-      padding:       '3px 9px',
-      borderRadius:  '8px',
-      fontFamily:    'IBM Plex Mono, monospace',
-      fontWeight:    600,
-      letterSpacing: '0.05em',
-      textTransform: 'uppercase',
-      whiteSpace:    'nowrap',
-    }}>
+    <span className={`pd-tag pd-tag-${tone}`}>
       {children}
     </span>
   );

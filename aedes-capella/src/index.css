@@ -73,21 +73,28 @@
   --risk-none-border: #cbd5e1;
   --risk-none-text: #64748b;
   --risk-none-fill: #94a3b8;
-  --tag-amber-bg: #fef3c7;
-  --tag-amber-border: #fcd34d;
-  --tag-amber-text: #92400e;
-  --tag-red-bg: #fee2e2;
-  --tag-red-border: #fca5a5;
-  --tag-red-text: #991b1b;
-  --tag-green-bg: #dcfce7;
-  --tag-green-border: #86efac;
-  --tag-green-text: #166534;
-  --tag-gray-bg: #f1f5f9;
-  --tag-gray-border: #cbd5e1;
-  --tag-gray-text: #64748b;
-  --tag-blue-bg: #dbeafe;
-  --tag-blue-border: #93c5fd;
-  --tag-blue-text: #1d4ed8;
+  /*
+   * Status chips carry two tones, not three. The old set tinted background,
+   * border and text in the same hue, which is what made them read as generic
+   * pastel pills. Now a near-white tint carries the fill, a single saturated
+   * "fill" drives the marker and the ring, and text sits at an ink tone dark
+   * enough to clear 4.5:1 on that tint.
+   */
+  --tag-amber-bg: #fdf4e6;
+  --tag-amber-fill: #d98518;
+  --tag-amber-ink: #8a4b0a;
+  --tag-red-bg: #fdeceb;
+  --tag-red-fill: #dc2626;
+  --tag-red-ink: #9b1c1c;
+  --tag-green-bg: #eaf6ef;
+  --tag-green-fill: #16a34a;
+  --tag-green-ink: #15612f;
+  --tag-gray-bg: #f2f4f7;
+  --tag-gray-fill: #8a94a6;
+  --tag-gray-ink: #4a5563;
+  --tag-blue-bg: #ebf1fd;
+  --tag-blue-fill: #2563eb;
+  --tag-blue-ink: #1c46ad;
   --banner-blue-bg: #dbeafe;
   --banner-blue-border: #93c5fd66;
   --banner-blue-text: #1d4ed8;
@@ -642,6 +649,46 @@ a:focus-visible,
 .feed-more:hover { background: var(--pd-accent); color: #fff; }
 .feed-more:active { transform: translateY(1px); }
 
+/*
+ * Status chip.
+ *
+ * Reads as a legend key on a technical drawing rather than as a pill: a square
+ * marker in the status colour, monospace tracked caps, and the ring-inset rule
+ * the rest of the system uses. The square is deliberate; it is the one part
+ * that survives being photocopied, printed or read by someone who cannot
+ * separate amber from red, so colour is never the only carrier of state.
+ */
+.pd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px 4px 9px;
+  border-radius: var(--pd-radius-xs);
+  background: var(--tag-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-fill) 32%, transparent);
+  color: var(--tag-ink);
+  font: 600 11px 'IBM Plex Mono', monospace;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.pd-tag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 1.5px;
+  background: var(--tag-fill);
+}
+
+.pd-tag-amber { --tag-bg: var(--tag-amber-bg); --tag-fill: var(--tag-amber-fill); --tag-ink: var(--tag-amber-ink); }
+.pd-tag-red   { --tag-bg: var(--tag-red-bg);   --tag-fill: var(--tag-red-fill);   --tag-ink: var(--tag-red-ink); }
+.pd-tag-green { --tag-bg: var(--tag-green-bg); --tag-fill: var(--tag-green-fill); --tag-ink: var(--tag-green-ink); }
+.pd-tag-blue  { --tag-bg: var(--tag-blue-bg);  --tag-fill: var(--tag-blue-fill);  --tag-ink: var(--tag-blue-ink); }
+.pd-tag-gray  { --tag-bg: var(--tag-gray-bg);  --tag-fill: var(--tag-gray-fill);  --tag-ink: var(--tag-gray-ink); }
+
 /* Nav buttons carry no edge of any kind; only the fill marks the active item. */
 .dashboard-nav button {
   border: 0 !important;
@@ -903,6 +950,7 @@ a:focus-visible,
   /* Readable at arm's length. */
   .topbar-value { font-size: 18px; }
   .metric-card-value { font-size: 20px; }
+  .pd-tag { font-size: 12px; padding: 5px 11px 5px 10px; }
 }
 
 @media (max-width: 480px) {

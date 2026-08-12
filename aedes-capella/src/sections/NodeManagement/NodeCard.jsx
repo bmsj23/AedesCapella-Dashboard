@@ -65,7 +65,7 @@ export default function NodeCard({ device }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <Metric label="Last Update">
+        <Metric label="Last Seen">
           <Mono size="12px" color={C.text}>{formatTimestamp(device.last_seen_at)}</Mono>
         </Metric>
 
@@ -107,14 +107,14 @@ export default function NodeCard({ device }) {
 
         <div style={{ height: 1, background: C.border }} />
 
-        <Metric label="Latest Update">
+        <Metric label="Latest Uploaded Activity">
           <Mono size="12px" color={C.text}>{formatTimestamp(device.latest_upload_or_event_at)}</Mono>
         </Metric>
 
         <Metric label="Latest Activity">
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
             <Mono size="12px" color={C.text}>{device.latest_event_kind ? latestEvent.label : 'No activity yet'}</Mono>
-            {device.latest_event_time_quality && <Tag color="blue">{device.latest_event_time_quality === 'unresolved' ? 'Time not confirmed' : 'Time confirmed'}</Tag>}
+            {device.latest_event_time_quality && <Tag color="blue">{device.latest_event_time_quality === 'unresolved' ? 'Exact event time unavailable' : device.latest_event_time_quality === 'boot_anchor' ? 'Time reconstructed from startup' : 'Device time synchronized'}</Tag>}
           </div>
         </Metric>
 

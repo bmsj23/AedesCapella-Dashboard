@@ -116,7 +116,6 @@ export default function TablePlate({
       <div className="pd-metafoot feed-foot">
         <span>
           showing <b>{shown}</b> of <b>{rows.length}</b>
-          {remaining > 0 ? ` · ${remaining} not rendered` : ' · all rendered'}
         </span>
         {remaining > 0 && (
           <button

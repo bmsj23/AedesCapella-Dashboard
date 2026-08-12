@@ -37,6 +37,7 @@ const SOURCES = [
   ['relays', fetchRelayActivity],
   ['devices', fetchDeviceStatus],
   ['mapDevices', fetchDeviceMap],
+  ['activitySummary', fetchActivitySummary],
 ];
 
 export function useLiveDashboard(accessToken) {
@@ -67,7 +68,7 @@ export function useLiveDashboard(accessToken) {
       results.forEach((result, index) => {
         const [key] = SOURCES[index];
         if (result.status === 'fulfilled') {
-          datasets[key] = Array.isArray(result.value) ? result.value : [];
+          datasets[key] = result.value;
         } else if (result.reason?.name !== 'AbortError') {
           errors[key] = getFriendlyError(
             result.reason,
@@ -75,17 +76,6 @@ export function useLiveDashboard(accessToken) {
           );
         }
       });
-
-      try {
-        datasets.activitySummary = await fetchActivitySummary(accessToken, signal);
-      } catch (error) {
-        if (error?.name !== 'AbortError') {
-          errors.activitySummary = getFriendlyError(
-            error,
-            'The activity totals are unavailable right now.',
-          );
-        }
-      }
 
       if (signal?.aborted) return;
 

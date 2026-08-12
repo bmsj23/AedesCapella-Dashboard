@@ -16,6 +16,9 @@ const STATE_COLORS = {
   logging_fault: '#dc2626',
 };
 
+const TILE_URL = import.meta.env.VITE_MAP_TILE_URL || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const TILE_ATTRIBUTION = import.meta.env.VITE_MAP_TILE_ATTRIBUTION || '&copy; OpenStreetMap contributors';
+
 function FitMappedDevices({ devices }) {
   const map = useMap();
   useEffect(() => {
@@ -57,7 +60,7 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
       <div className="map-heading">
         <div>
           <strong>REAL COORDINATE MAP</strong>
-          <Mono size="11px" color={C.textDim}>OpenStreetMap tiles · markers from dashboard_device_map</Mono>
+          <Mono size="11px" color={C.textDim}>Approved installation locations · configured map tiles</Mono>
         </div>
         <div className="map-legend" aria-label="Device State Legend">
           {Object.entries(STATE_COLORS).map(([state, color]) => (
@@ -72,8 +75,8 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
       )}
       <MapContainer className="device-map" center={[13.941, 121.162]} zoom={13} scrollWheelZoom>
         <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={TILE_ATTRIBUTION}
+          url={TILE_URL}
           eventHandlers={{ tileerror: () => setTilesFailed(true), load: () => setTilesFailed(false) }}
         />
         <FitMappedDevices devices={mapped} />
@@ -89,7 +92,8 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
                 color: STATE_COLORS[device.operational_state] || STATE_COLORS.offline,
                 fillColor: STATE_COLORS[device.operational_state] || STATE_COLORS.offline,
                 fillOpacity: 0.8,
-                weight: 3,
+                weight: device.operational_state === 'logging_fault' ? 5 : 3,
+                dashArray: device.operational_state === 'stale' ? '4 3' : undefined,
               }}
             >
               <Popup minWidth={260}>
@@ -99,7 +103,7 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
                   <Tag color={device.operational_state === 'online' ? 'green' : device.operational_state === 'logging_fault' ? 'red' : 'amber'}>
                     {device.operational_state.replace('_', ' ')}
                   </Tag>
-                  <span>{device.candidates_last_24h ?? 0} candidates · {device.relay_activations_last_24h ?? 0} spraying activations / 24h</span>
+                  <span>{device.candidates_last_24h ?? 0} possible matches · {device.relay_activations_last_24h ?? 0} sprayer activations / 24h</span>
                   <span>Latest activity: {formatDashboardTimestamp(device.latest_activity_at)}</span>
                   <RecentRows label="Recent Candidates" rows={recentCandidates} timestampKey="display_time" />
                   <RecentRows label="Recent Relay Episodes" rows={recentRelays} timestampKey="display_time" />
