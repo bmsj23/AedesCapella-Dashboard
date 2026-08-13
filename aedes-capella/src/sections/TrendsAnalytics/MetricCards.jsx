@@ -29,7 +29,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
       value: String(candidates.length),
       sub: candidates.length ? 'sounds that matched, still need checking' : 'nothing recorded yet',
       color: C.text,
-      status: candidates.length ? 'Available' : 'No candidates',
+      status: candidates.length ? 'Available' : 'None recorded',
       statusColor: candidates.length ? 'blue' : 'gray',
     },
     {

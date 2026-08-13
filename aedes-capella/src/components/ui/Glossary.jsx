@@ -5,7 +5,7 @@ import Mono from './Mono';
 
 const TERMS = [
   ['Match score', 'How closely a sound matched. It is not proof of the species.'],
-  ['Possible mosquito match', 'A validated model and timing candidate that still needs human review.'],
+  ['Possible mosquito match', 'A sound the sensor matched, confirmed by its timing checks, that still needs a person to review it.'],
   ['Cooldown', 'A recorded pause that prevents spraying activations too close together.'],
   ['Works offline', 'The sensor can check sound even without an internet connection.'],
   ['Relay event', 'A saved command or state change. It does not prove physical fluid delivery.'],

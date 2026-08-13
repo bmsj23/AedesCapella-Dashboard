@@ -6,6 +6,7 @@ import Mono from '../../components/ui/Mono';
 import Tag from '../../components/ui/Tag';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
 import { filterMappedDevices, filterUnmappedDevices } from '../../utils/liveDashboard';
+import { formatDeviceName } from '../../utils/viewer';
 
 function DeviceTable({ devices, title }) {
   return (
@@ -13,15 +14,15 @@ function DeviceTable({ devices, title }) {
       <div className="table-section-title">{title}</div>
       <div className="table-scroll">
         <table className="data-table">
-          <thead><tr><th>SENSOR / LOCATION</th><th>STATE</th><th>COORDINATES</th><th>CANDIDATES / 24H</th><th>RELAYS / 24H</th><th>LATEST ACTIVITY</th></tr></thead>
+          <thead><tr><th>SENSOR / LOCATION</th><th>STATE</th><th>COORDINATES</th><th>POSSIBLE MOSQUITOES / 24H</th><th>SPRAYINGS / 24H</th><th>LATEST ACTIVITY</th></tr></thead>
           <tbody>
             {devices.map(device => (
               <tr key={device.device_id}>
-                <td data-label="Sensor / Location"><Mono size="12px" style={{ fontWeight: 700 }}>{device.device_label}</Mono><Mono size="11px" color={C.textDim} style={{ display: 'block' }}>{device.location_name} · {device.barangay_name}</Mono></td>
+                <td data-label="Sensor / Location"><Mono size="12px" style={{ fontWeight: 700 }}>{formatDeviceName(device.device_label)}</Mono><Mono size="11px" color={C.textDim} style={{ display: 'block' }}>{device.location_name} · {device.barangay_name}</Mono></td>
                 <td data-label="State"><Tag color={device.operational_state === 'online' ? 'green' : device.operational_state === 'logging_fault' ? 'red' : 'amber'}>{device.operational_state.replace('_', ' ')}</Tag></td>
                 <td data-label="Coordinates"><Mono size="11px" color={C.textDim}>{device.latitude === null || device.longitude === null ? 'Not mapped' : `${device.latitude}, ${device.longitude}`}</Mono></td>
-                <td data-label="Candidates / 24h">{device.candidates_last_24h ?? 0}</td>
-                <td data-label="Relays / 24h">{device.relay_activations_last_24h ?? 0}</td>
+                <td data-label="Possible mosquitoes / 24h">{device.candidates_last_24h ?? 0}</td>
+                <td data-label="Sprayings / 24h">{device.relay_activations_last_24h ?? 0}</td>
                 <td data-label="Latest Activity"><Mono size="11px" color={C.textDim}>{formatDashboardTimestamp(device.latest_activity_at)}</Mono></td>
               </tr>
             ))}

@@ -21,11 +21,6 @@ export default function TrendsAnalytics({ dashboardData, deviceStatus }) {
         title="Activity Summary"
         subtitle="Totals over time, in Philippine time."
       />
-      <Banner
-        icon={Database}
-        text="These charts summarize sensor information. A possible mosquito match still needs a person to review it and is not proof of mosquitoes."
-        color="blue"
-      />
       {(dashboardData?.errors?.activity || dashboardData?.errors?.candidates) && (
         <Banner
           icon={Database}

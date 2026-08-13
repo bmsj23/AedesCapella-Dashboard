@@ -3,6 +3,7 @@ import * as maplibregl from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
+import { formatDeviceName } from '../../utils/viewer';
 import {
   addMapTilerKey,
   describeMapError,
@@ -53,7 +54,7 @@ function buildPopup(device, candidates, relays) {
   const state = device.operational_state || 'offline';
   const tone = state === 'online' ? 'green' : state === 'logging_fault' ? 'red' : 'amber';
 
-  appendText(popup, 'strong', device.device_label || 'Unnamed device');
+  appendText(popup, 'strong', formatDeviceName(device.device_label));
   appendText(popup, 'span', `${device.location_name || 'Location not named'} · ${device.barangay_name || 'Barangay not named'}`);
   appendText(popup, 'span', state.replace('_', ' '), `pd-tag pd-tag-${tone}`);
   appendText(
@@ -62,8 +63,8 @@ function buildPopup(device, candidates, relays) {
     `${device.candidates_last_24h ?? 0} possible matches · ${device.relay_activations_last_24h ?? 0} sprayer activations / 24h`,
   );
   appendText(popup, 'span', `Latest activity: ${formatDashboardTimestamp(device.latest_activity_at)}`);
-  appendRecentRows(popup, 'Recent Candidates', candidates, 'display_time');
-  appendRecentRows(popup, 'Recent Relay Episodes', relays, 'display_time');
+  appendRecentRows(popup, 'Recent Possible Mosquitoes', candidates, 'display_time');
+  appendRecentRows(popup, 'Recent Sprayings', relays, 'display_time');
   return popup;
 }
 
@@ -152,7 +153,7 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
       element.type = 'button';
       element.className = `maplibre-device-marker maplibre-device-marker-${state}`;
       element.style.setProperty('--device-marker-color', STATE_COLORS[state] || STATE_COLORS.offline);
-      element.setAttribute('aria-label', `${device.device_label || 'Device'}: ${state.replace('_', ' ')}`);
+      element.setAttribute('aria-label', `${formatDeviceName(device.device_label)}: ${state.replace('_', ' ')}`);
 
       const recentCandidates = candidates.filter(row => row.device_id === device.device_id);
       const recentRelays = relays.filter(row => row.device_id === device.device_id);

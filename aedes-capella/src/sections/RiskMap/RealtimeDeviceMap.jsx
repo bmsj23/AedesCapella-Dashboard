@@ -8,6 +8,7 @@ import Tag from '../../components/ui/Tag';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
 import { filterMappedDevices } from '../../utils/liveDashboard';
 import { getMapTilerStyleUrl, mapTilerKey } from '../../utils/mapConfig';
+import { formatDeviceName } from '../../utils/viewer';
 
 const MapLibreDeviceMap = lazy(() => import('./MapLibreDeviceMap'));
 
@@ -87,15 +88,15 @@ function LeafletDeviceMap({ mapped, candidates, relays, onTileFailure, onTileLoa
           >
             <Popup minWidth={260}>
               <div className="map-popup">
-                <strong>{device.device_label}</strong>
+                <strong>{formatDeviceName(device.device_label)}</strong>
                 <span>{device.location_name} · {device.barangay_name}</span>
                 <Tag color={state === 'online' ? 'green' : state === 'logging_fault' ? 'red' : 'amber'}>
                   {state.replace('_', ' ')}
                 </Tag>
                 <span>{device.candidates_last_24h ?? 0} possible matches · {device.relay_activations_last_24h ?? 0} sprayer activations / 24h</span>
                 <span>Latest activity: {formatDashboardTimestamp(device.latest_activity_at)}</span>
-                <RecentRows label="Recent Candidates" rows={recentCandidates} timestampKey="display_time" />
-                <RecentRows label="Recent Relay Episodes" rows={recentRelays} timestampKey="display_time" />
+                <RecentRows label="Recent Possible Mosquitoes" rows={recentCandidates} timestampKey="display_time" />
+                <RecentRows label="Recent Sprayings" rows={recentRelays} timestampKey="display_time" />
               </div>
             </Popup>
           </CircleMarker>

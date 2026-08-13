@@ -2,7 +2,6 @@ import { LogOut, Settings } from 'lucide-react';
 import { C } from '../../constants/colors';
 import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
-import { useIsTechnical } from '../../contexts/viewerRole';
 import Mono from '../ui/Mono';
 
 /* Figure numbers, not glyphs. They match the SEC.0x on each section header so
@@ -16,8 +15,6 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLogout }) {
-  const technical = useIsTechnical();
-
   /*
    * Layout lives in the stylesheet rather than inline: below 900px this
    * element dissolves so its three blocks can be ordered against the summary
@@ -138,7 +135,7 @@ export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLog
                 animation:    isHealthy ? 'pulse 2s infinite' : 'none',
               }} />
               <Mono size="12px" color={isHealthy ? C.text : C.textDim} style={{ flex: 1, fontWeight: 700 }}>
-                {formatDeviceName(device.device_label, { technical })}
+                {formatDeviceName(device.device_label)}
               </Mono>
               <Mono size="12px" color={presentation.color === 'red' ? C.red : C.textDim}>
                 {presentation.label}

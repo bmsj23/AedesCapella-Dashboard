@@ -1,4 +1,4 @@
-import { Cpu, AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import SectionHeader from '../../components/ui/SectionHeader';
 import Banner from '../../components/ui/Banner';
 import EmptyState from '../../components/ui/EmptyState';
@@ -17,12 +17,6 @@ export default function NodeManagement({ deviceStatus }) {
         title="Device Status"
         subtitle="Which devices are working and which ones need checking."
       />
-      <Banner
-        icon={Cpu}
-        text="This page shows the latest information from each sensor. A possible mosquito match still needs a person to check it."
-        color="blue"
-      />
-
       {loggingFaults.length > 0 && (
         <Banner
           icon={AlertTriangle}

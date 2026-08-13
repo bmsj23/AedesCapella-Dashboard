@@ -49,7 +49,7 @@ export default function FogTable({ relays = [], loading = false, error = '' }) {
         return (
           <tr key={relay.relay_episode_key}>
             <td data-label="When"><Mono size="12px" color={C.textDim}>{formatDashboardTimestamp(relay.display_time)}</Mono></td>
-            <td data-label="Device"><Mono size="12px" color={C.text} style={{ fontWeight: 700 }}>{formatDeviceName(relay.device_label, { technical })}</Mono></td>
+            <td data-label="Device"><Mono size="12px" color={C.text} style={{ fontWeight: 700 }}>{formatDeviceName(relay.device_label)}</Mono></td>
             <td data-label="What happened"><Tag color={relay.relay_status === 'rejected' ? 'red' : relay.relay_status === 'stopped' ? 'green' : 'amber'}>{formatRelayStatus(relay.relay_status)}</Tag></td>
             <td data-label="How long"><Mono size="12px">{relay.duration_seconds === null ? 'Not known' : `${Number(relay.duration_seconds).toFixed(1)} sec`}</Mono></td>
             {technical && <td data-label="Match score"><Mono size="12px">{score === null ? 'Not available' : `${score.toFixed(1)}%`}</Mono></td>}

@@ -15,9 +15,9 @@ import { useIsTechnical } from '../../contexts/viewerRole';
 const HEADERS = ['WHEN IT HAPPENED', 'WHEN RECEIVED', 'DEVICE', 'WHAT HAPPENED', 'TIME', 'NOTES'];
 const COLUMNS = ['14%', '14%', '16%', '20%', '14%', '22%'];
 
-function deviceLabel(deviceId, deviceLabels, technical) {
+function deviceLabel(deviceId, deviceLabels) {
   const stored = deviceLabels[deviceId];
-  if (stored) return formatDeviceName(stored, { technical });
+  if (stored) return formatDeviceName(stored);
   return deviceId ? `Device ${deviceId.slice(0, 4)}` : 'Unknown device';
 }
 
@@ -115,8 +115,8 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
                 <td data-label="Device">
                   <Mono size="12px" color={C.text} style={{ fontWeight: 700 }}>
                     {event.device_label
-                      ? formatDeviceName(event.device_label, { technical })
-                      : deviceLabel(event.device_id, deviceLabels, technical)}
+                      ? formatDeviceName(event.device_label)
+                      : deviceLabel(event.device_id, deviceLabels)}
                   </Mono>
                 </td>
                 <td data-label="What happened">

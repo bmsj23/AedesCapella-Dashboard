@@ -20,13 +20,17 @@ export function isTechnicalRole(role) {
 /**
  * Display name for a device.
  *
- * Stored labels look like "aedescapella-unit-1", which tells a health worker
- * nothing. Show the unit number instead and keep the stored label for the
- * people who maintain the hardware.
+ * Stored labels look like "aedescapella-unit-1", which tells nobody anything
+ * useful: the prefix repeats the product name on every row and the reader has
+ * to parse a slug to learn it is device 1. Every viewer gets "Device 1".
+ *
+ * This is deliberately not gated on the technical role. Maintainers identify
+ * hardware by the device id, which the device cards already print beside the
+ * name, so showing the slug bought nothing and cost consistency: the same
+ * sensor was called two different things depending on who was signed in.
  */
-export function formatDeviceName(label, { technical = false } = {}) {
+export function formatDeviceName(label) {
   if (!label) return 'Unknown device';
-  if (technical) return label;
 
   const match = String(label).match(/(\d+)\s*$/);
   return match ? `Device ${Number(match[1])}` : label;

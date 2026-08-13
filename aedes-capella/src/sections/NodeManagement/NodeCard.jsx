@@ -41,7 +41,7 @@ export default function NodeCard({ device }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '16px' }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: '18px', fontWeight: 800, color: C.text }}>
-            {formatDeviceName(device.device_label, { technical }) || 'Unnamed device'}
+            {formatDeviceName(device.device_label) || 'Unnamed device'}
           </div>
           <Mono size="11px" color={C.textDim} style={{ display: 'block', marginTop: '5px', wordBreak: 'break-all' }}>
             {device.device_id}
