@@ -16,6 +16,9 @@ import {
 // Layout
 import Sidebar from './components/layout/Sidebar';
 import Topbar  from './components/layout/Topbar';
+import MobileBar from './components/layout/MobileBar';
+import NavDrawer from './components/layout/NavDrawer';
+import { useIsMobile } from './hooks/useIsMobile';
 
 const LiveFeed = lazy(() => import('./sections/LiveFeed'));
 const RiskMap = lazy(() => import('./sections/RiskMap'));
@@ -34,13 +37,31 @@ const SECTIONS = {
 export default function App() {
   const [activeSection, setActiveSection] = useState(() => initialDashboardSection());
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
+  const isMobile = useIsMobile();
   const { session, role, login, logout } = useOperatorSession();
   const liveData = useLiveDashboard(session?.accessToken);
+  const closeNav = useCallback(() => setNavOpen(false), []);
   const navigateToSection = useCallback(section => {
     if (!isDashboardSection(section)) return;
     setActiveSection(section);
     persistDashboardSection(section);
+    // Choosing a section is the drawer's whole purpose; leaving it open would
+    // hide the thing the reader just asked for.
+    setNavOpen(false);
   }, []);
+
+  /*
+   * Widening the window past the breakpoint unmounts the drawer but would
+   * leave navOpen set, so it would spring open again on the way back down.
+   * Reset during render rather than in an effect: this is the state-adjustment
+   * case React documents, and an effect here costs an extra render.
+   */
+  const [wasMobile, setWasMobile] = useState(isMobile);
+  if (wasMobile !== isMobile) {
+    setWasMobile(isMobile);
+    setNavOpen(false);
+  }
 
   useEffect(() => {
     if (!session) return undefined;
@@ -96,6 +117,39 @@ export default function App() {
   // Render the active section component
   const ActiveSection = SECTIONS[activeSection];
 
+  const topbarMetrics = {
+    candidates: candidatesToday,
+    relays: relaysToday,
+    onlineNodes,
+    totalNodes: deviceStatus.devices.length,
+    avgCandidateScore,
+    attentionNodes,
+    loading: liveData.loading,
+    candidateUnavailable: Boolean(liveData.errors.candidates),
+    relayUnavailable: Boolean(liveData.errors.relays),
+    deviceUnavailable: Boolean(liveData.errors.devices),
+  };
+
+  const summary = (
+    <Topbar
+      metrics={topbarMetrics}
+      connectionState={liveData.connectionState}
+      reconciledAt={liveData.reconciledAt}
+    />
+  );
+
+  const navigation = (
+    <Sidebar
+      activeSection={activeSection}
+      onNavigate={navigateToSection}
+      deviceStatus={deviceStatus}
+      onLogout={() => {
+        setNavOpen(false);
+        setShowLogoutModal(true);
+      }}
+    />
+  );
+
   if (!session) {
     return (
       <LoginPage onLogin={login} />
@@ -108,30 +162,16 @@ export default function App() {
       background: C.bg,
       fontFamily: 'Outfit, sans-serif',
     }}>
-      <Sidebar
-        activeSection={activeSection}
-        onNavigate={navigateToSection}
-        deviceStatus={deviceStatus}
-        onLogout={() => setShowLogoutModal(true)}
-      />
+      {!isMobile && navigation}
 
       <div className="app-main">
-        <Topbar
-          metrics={{
-            candidates: candidatesToday,
-            relays: relaysToday,
-            onlineNodes,
-            totalNodes: deviceStatus.devices.length,
-            avgCandidateScore,
-            attentionNodes,
-            loading: liveData.loading,
-            candidateUnavailable: Boolean(liveData.errors.candidates),
-            relayUnavailable: Boolean(liveData.errors.relays),
-            deviceUnavailable: Boolean(liveData.errors.devices),
-          }}
-          connectionState={liveData.connectionState}
-          reconciledAt={liveData.reconciledAt}
-        />
+        {isMobile ? (
+          <MobileBar
+            onOpenNav={() => setNavOpen(true)}
+            navOpen={navOpen}
+            attention={attentionNodes > 0}
+          />
+        ) : summary}
 
         <main className="section-scroll">
           <Suspense fallback={<div style={{ color: C.textDim }}>Loading dashboard section…</div>}>
@@ -142,6 +182,15 @@ export default function App() {
           </Suspense>
         </main>
       </div>
+
+      {isMobile && (
+        <NavDrawer open={navOpen} onClose={closeNav}>
+          {/* Navigation first: choosing a section is why the drawer gets
+              opened. The live summary reads as a footer under it. */}
+          {navigation}
+          {summary}
+        </NavDrawer>
+      )}
 
       {showLogoutModal && (
         <LogoutConfirmModal
