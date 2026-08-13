@@ -924,7 +924,13 @@ a:focus-visible,
   background: var(--color-red);
 }
 
-.mobile-bar-brand { min-width: 0; }
+/* Pushed to the far edge, opposite the menu button, so the bar reads as two
+   anchored ends rather than one left-hand clump. */
+.mobile-bar-brand {
+  min-width: 0;
+  margin-left: auto;
+  text-align: right;
+}
 
 .mobile-bar-name {
   font: 800 17px 'Outfit', sans-serif;
