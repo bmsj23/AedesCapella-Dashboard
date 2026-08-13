@@ -16,6 +16,9 @@ import { C } from '../../constants/colors';
  * @param {node}    meta      - dot-separated monospace footer
  * @param {string|number} padding - body padding; pass 0 for flush content
  *                                  such as a table that should meet the edge
+ * @param {string}  className - extra classes on the plate, for call sites whose
+ *                              layout has to change at a breakpoint and so
+ *                              cannot live in an inline style object
  */
 export default function Card({
   children,
@@ -27,6 +30,7 @@ export default function Card({
   fig = null,
   meta = null,
   padding = '20px',
+  className = '',
 }) {
   const hasFigure = figure !== null || label !== null || fig !== null;
 
@@ -40,7 +44,7 @@ export default function Card({
 
   return (
     <div
-      className={`pd-plate${glow ? ' pd-plate-accent' : ''}`}
+      className={`pd-plate${glow ? ' pd-plate-accent' : ''}${className ? ` ${className}` : ''}`}
       style={{
         boxShadow: C.shadow,
         ...restStyle,

@@ -1,9 +1,15 @@
 import { useState } from 'react';
-import { C } from '../../constants/colors';
 import Card from '../ui/Card';
 import Tag from '../ui/Tag';
 import { isSupabaseConfigured } from '../../lib/supabaseApi';
 import { getFriendlyError } from '../../utils/userMessages';
+
+const FEATURES = [
+  ['Latest sensor updates', 'See recent sensor activity and possible mosquito matches.'],
+  ['Barangay map', 'Check recent reports by area and decide where to look first.'],
+  ['Sensor status', 'See which sensors are working and which need checking.'],
+  ['Private account', 'Only approved barangay workers can open the dashboard.'],
+];
 
 export default function LoginPage({ onLogin }) {
   const [form, setForm] = useState({ username: '', password: '' });
@@ -28,235 +34,76 @@ export default function LoginPage({ onLogin }) {
     }
   };
 
+  const inputClass = `login-input${error ? ' login-input-error' : ''}`;
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'grid',
-      placeItems: 'center',
-      padding: '32px',
-      background: `radial-gradient(circle at top left, ${C.amberDim}, transparent 34%), radial-gradient(circle at bottom right, ${C.blue}22, transparent 28%), ${C.bg}`,
-      fontFamily: 'Outfit, sans-serif',
-    }}>
-      <div style={{
-        width: 'min(1040px, 100%)',
-        display: 'grid',
-        gridTemplateColumns: '1.05fr 0.95fr',
-        gap: '24px',
-        alignItems: 'stretch',
-      }}>
-        <Card style={{
-          padding: '32px',
-          background: `linear-gradient(160deg, ${C.surface}, ${C.surface2})`,
-          position: 'relative',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            position: 'absolute',
-            inset: '-80px auto auto -80px',
-            width: '220px',
-            height: '220px',
-            borderRadius: '50%',
-            background: 'transparent',
-          }} />
+    <div className="login-shell">
+      <div className="login-layout">
+        <Card className="login-hero">
+          <div className="login-brand-block">
+            <div className="login-brand">AedesCapella</div>
+            <div className="login-brand-sub">BARANGAY MOSQUITO WATCH</div>
+          </div>
 
-          <div style={{ position: 'relative' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-              <div>
-                <div style={{
-                  fontSize: '28px',
-                  fontWeight: 800,
-                  lineHeight: 1,
-                  color: C.text,
-                }}>
-                  AedesCapella
-                </div>
-                <div style={{
-                  marginTop: '6px',
-                  fontFamily: 'IBM Plex Mono, monospace',
-                  fontSize: '13px',
-                  letterSpacing: '0.12em',
-                  color: C.amber,
-                }}>
-                  BARANGAY MOSQUITO WATCH
-                </div>
+          <Tag color="amber">Barangay Worker Sign-in</Tag>
+
+          <h1 className="login-headline">Keep an eye on mosquito activity in one place.</h1>
+
+          <p className="login-lede">
+            Sign in to check sensor updates, see areas needing attention, and review recorded
+            spraying activity around the barangay.
+          </p>
+
+          <div className="login-features">
+            {FEATURES.map(([title, text]) => (
+              <div key={title} className="login-feature">
+                <div className="login-feature-title">{title}</div>
+                <div className="login-feature-text">{text}</div>
               </div>
-            </div>
-
-            <Tag color="amber">Barangay Worker Sign-in</Tag>
-
-            <div style={{
-              marginTop: '22px',
-              fontSize: '38px',
-              fontWeight: 700,
-              lineHeight: 1.05,
-              color: C.text,
-              maxWidth: '12ch',
-            }}>
-              Keep an eye on mosquito activity in one place.
-            </div>
-
-            <div style={{
-              marginTop: '16px',
-              maxWidth: '58ch',
-              color: C.textDim,
-              fontSize: '15px',
-              lineHeight: 1.6,
-            }}>
-              Sign in to check sensor updates, see areas needing attention, and review recorded spraying activity around the barangay.
-            </div>
-
-            <div style={{
-              marginTop: '28px',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-              gap: '14px',
-            }}>
-              {[
-                ['Latest sensor updates', 'See recent sensor activity and possible mosquito matches.'],
-                ['Barangay map', 'Check recent reports by area and decide where to look first.'],
-                ['Sensor status', 'See which sensors are working and which need checking.'],
-                ['Private account', 'Only approved barangay workers can open the dashboard.'],
-              ].map(([title, text]) => (
-                <div
-                  key={title}
-                  style={{
-                    border: `1px solid ${C.border}`,
-                    background: `${C.surface2}`,
-                    borderRadius: '14px',
-                    padding: '16px',
-                  }}
-                >
-                  <div style={{ fontSize: '16px', fontWeight: 700, color: C.text }}>{title}</div>
-                  <div style={{ marginTop: '6px', fontSize: '13px', lineHeight: 1.5, color: C.textDim }}>{text}</div>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         </Card>
 
-        <Card style={{
-          padding: '32px',
-          alignSelf: 'center',
-          background: C.surface,
-        }}>
-          <div style={{ marginBottom: '20px' }}>
-            <div>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: C.text }}>Login</div>
-              <div style={{ marginTop: '8px', color: C.textDim, fontSize: '14px', lineHeight: 1.5 }}>
-                Enter your email and password to open the dashboard.
-              </div>
-            </div>
+        <Card className="login-form-card">
+          <div className="login-form-head">
+            <div className="login-form-title">Login</div>
+            <div className="login-form-sub">Enter your email and password to open the dashboard.</div>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <label style={{ display: 'block', marginBottom: '14px' }}>
-              <div style={{ marginBottom: '8px', fontSize: '13px', fontWeight: 700, color: C.textDim, letterSpacing: '0.04em' }}>
-                EMAIL ADDRESS
-              </div>
-              <div style={{ position: 'relative' }}>
-                <input
-                  value={form.username}
-                  onChange={handleChange('username')}
-                  type="email"
-                  placeholder="operator@example.org"
-                  autoComplete="username"
-                  style={{
-                    width: '100%',
-                    height: '46px',
-                    padding: '0 14px',
-                    borderRadius: '12px',
-                    border: `1px solid ${error ? C.red : C.border}`,
-                    background: C.surface2,
-                    color: C.text,
-                    fontFamily: 'IBM Plex Mono, monospace',
-                    fontSize: '14px',
-                    outline: 'none',
-                  }}
-                />
-              </div>
+            <label className="login-field">
+              <div className="login-field-label">EMAIL ADDRESS</div>
+              <input
+                value={form.username}
+                onChange={handleChange('username')}
+                type="email"
+                placeholder="operator@example.org"
+                autoComplete="username"
+                className={inputClass}
+              />
             </label>
 
-            <label style={{ display: 'block', marginBottom: '16px' }}>
-              <div style={{ marginBottom: '8px', fontSize: '13px', fontWeight: 700, color: C.textDim, letterSpacing: '0.04em' }}>
-                PASSWORD
-              </div>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={handleChange('password')}
-                  placeholder="Enter password"
-                  autoComplete="current-password"
-                  style={{
-                    width: '100%',
-                    height: '46px',
-                    padding: '0 14px',
-                    borderRadius: '12px',
-                    border: `1px solid ${error ? C.red : C.border}`,
-                    background: C.surface2,
-                    color: C.text,
-                    fontFamily: 'IBM Plex Mono, monospace',
-                    fontSize: '14px',
-                    outline: 'none',
-                  }}
-                />
-              </div>
+            <label className="login-field login-field-last">
+              <div className="login-field-label">PASSWORD</div>
+              <input
+                type="password"
+                value={form.password}
+                onChange={handleChange('password')}
+                placeholder="Enter password"
+                autoComplete="current-password"
+                className={inputClass}
+              />
             </label>
 
-            {error && (
-              <div style={{
-                marginBottom: '16px',
-                border: `1px solid ${C.red}55`,
-                background: `${C.red}12`,
-                color: C.red,
-                borderRadius: '10px',
-                padding: '10px 12px',
-                fontFamily: 'IBM Plex Mono, monospace',
-                fontSize: '13px',
-              }}>
-                {error}
-              </div>
-            )}
+            {error && <div className="login-note login-note-error">{error}</div>}
 
             {!isSupabaseConfigured && (
-              <div style={{
-                marginBottom: '16px',
-                border: `1px solid ${C.amber}55`,
-                background: `${C.amber}12`,
-                color: C.amber,
-                borderRadius: '10px',
-                padding: '10px 12px',
-                fontFamily: 'IBM Plex Mono, monospace',
-                fontSize: '13px',
-              }}>
+              <div className="login-note login-note-warn">
                 This dashboard is not set up yet. Please ask the system administrator for help.
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={submitting || !isSupabaseConfigured}
-              style={{
-                width: '100%',
-                height: '48px',
-                borderRadius: '12px',
-                border: `1px solid ${C.amber}44`,
-                background: `linear-gradient(135deg, ${C.amber}, #d97706)`,
-                color: '#fffaf2',
-                cursor: submitting || !isSupabaseConfigured ? 'not-allowed' : 'pointer',
-                opacity: submitting || !isSupabaseConfigured ? 0.6 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '10px',
-                fontFamily: 'IBM Plex Mono, monospace',
-                fontSize: '13px',
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                boxShadow: `0 18px 30px ${C.amber}22`,
-              }}
-            >
+            <button type="submit" disabled={submitting || !isSupabaseConfigured} className="login-submit">
               {submitting ? 'Signing In…' : 'Sign In'}
             </button>
           </form>

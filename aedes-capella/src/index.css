@@ -984,6 +984,215 @@ a:focus-visible,
   .topbar-connection { border-right: 0; border-bottom: 1px dashed var(--pd-dash); }
 }
 
+/* ---------------------------------------------------------------------------
+   Sign-in
+   ---------------------------------------------------------------------------
+   This page lived entirely in inline style objects, which cannot carry a media
+   query. The two-column split therefore held at every width: on a phone each
+   column collapsed to roughly 170px, the brand clipped mid-word against the
+   plate's overflow, and the body copy wrapped one word per line. Layout lives
+   here instead so the breakpoints below can reach it.
+   --------------------------------------------------------------------------- */
+
+.login-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, var(--color-amber-dim), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.13), transparent 28%),
+    var(--color-bg);
+  font-family: 'Outfit', sans-serif;
+}
+
+.login-layout {
+  width: min(1040px, 100%);
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.login-hero {
+  padding: 32px;
+  overflow: hidden;
+  background-image: linear-gradient(160deg, var(--color-surface), var(--color-surface-2));
+}
+
+.login-brand {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-text);
+}
+
+.login-brand-sub {
+  margin-top: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--pd-accent-ink);
+}
+
+.login-brand-block { margin-bottom: 20px; }
+
+.login-headline {
+  margin-top: 22px;
+  max-width: 12ch;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--color-text);
+}
+
+.login-lede {
+  margin-top: 16px;
+  max-width: 58ch;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text-dim);
+}
+
+.login-features {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.login-feature {
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface-2);
+}
+
+.login-feature-title { font-size: 16px; font-weight: 700; color: var(--color-text); }
+.login-feature-text { margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--color-text-dim); }
+
+.login-form-card {
+  padding: 32px;
+  align-self: center;
+  background-color: var(--color-surface);
+}
+
+.login-form-title { font-size: 28px; font-weight: 700; color: var(--color-text); }
+.login-form-sub { margin-top: 8px; font-size: 14px; line-height: 1.5; color: var(--color-text-dim); }
+.login-form-head { margin-bottom: 20px; }
+
+.login-field { display: block; margin-bottom: 14px; }
+.login-field-last { margin-bottom: 16px; }
+
+.login-field-label {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text-dim);
+}
+
+.login-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  outline: none;
+}
+
+.login-input:focus-visible {
+  border-color: var(--pd-accent-border);
+  box-shadow: 0 0 0 3px var(--pd-accent-dim);
+}
+
+.login-input-error { border-color: var(--color-red); }
+
+.login-note {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.login-note-error {
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  background: rgba(220, 38, 38, 0.07);
+  color: var(--color-red);
+}
+
+.login-note-warn {
+  border: 1px solid var(--pd-accent-border);
+  background: var(--pd-accent-dim);
+  color: var(--pd-accent-ink);
+}
+
+.login-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--pd-accent-border);
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-amber), #d97706);
+  color: #fffaf2;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 18px 30px rgba(224, 123, 19, 0.13);
+  cursor: pointer;
+}
+
+.login-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 900px) {
+  .login-shell {
+    padding: 18px 14px;
+    /* Stacked, the page is taller than the viewport, so centring would crop
+       the top. Start at the top and let the page scroll. */
+    place-items: start center;
+  }
+
+  .login-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Someone opening this on a phone came to sign in, not to read the pitch.
+     The form goes first; the hero becomes supporting copy below it. */
+  .login-form-card {
+    order: -1;
+    align-self: stretch;
+  }
+
+  .login-hero,
+  .login-form-card { padding: 12px; }
+
+  .login-headline { font-size: 30px; max-width: 18ch; }
+
+  /* Under 16px, iOS Safari zooms the page in when the field takes focus and
+     never zooms back out. */
+  .login-input { font-size: 16px; }
+}
+
+@media (max-width: 560px) {
+  .login-features { grid-template-columns: 1fr; }
+  .login-brand { font-size: 24px; }
+  .login-headline { font-size: 26px; max-width: none; }
+  .login-form-title { font-size: 24px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
