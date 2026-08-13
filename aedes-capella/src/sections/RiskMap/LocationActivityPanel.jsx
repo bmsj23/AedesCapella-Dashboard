@@ -17,12 +17,12 @@ function DeviceTable({ devices, title }) {
           <tbody>
             {devices.map(device => (
               <tr key={device.device_id}>
-                <td><Mono size="12px" style={{ fontWeight: 700 }}>{device.device_label}</Mono><Mono size="11px" color={C.textDim} style={{ display: 'block' }}>{device.location_name} · {device.barangay_name}</Mono></td>
-                <td><Tag color={device.operational_state === 'online' ? 'green' : device.operational_state === 'logging_fault' ? 'red' : 'amber'}>{device.operational_state.replace('_', ' ')}</Tag></td>
-                <td><Mono size="11px" color={C.textDim}>{device.latitude === null || device.longitude === null ? 'Not mapped' : `${device.latitude}, ${device.longitude}`}</Mono></td>
-                <td>{device.candidates_last_24h ?? 0}</td>
-                <td>{device.relay_activations_last_24h ?? 0}</td>
-                <td><Mono size="11px" color={C.textDim}>{formatDashboardTimestamp(device.latest_activity_at)}</Mono></td>
+                <td data-label="Sensor / Location"><Mono size="12px" style={{ fontWeight: 700 }}>{device.device_label}</Mono><Mono size="11px" color={C.textDim} style={{ display: 'block' }}>{device.location_name} · {device.barangay_name}</Mono></td>
+                <td data-label="State"><Tag color={device.operational_state === 'online' ? 'green' : device.operational_state === 'logging_fault' ? 'red' : 'amber'}>{device.operational_state.replace('_', ' ')}</Tag></td>
+                <td data-label="Coordinates"><Mono size="11px" color={C.textDim}>{device.latitude === null || device.longitude === null ? 'Not mapped' : `${device.latitude}, ${device.longitude}`}</Mono></td>
+                <td data-label="Candidates / 24h">{device.candidates_last_24h ?? 0}</td>
+                <td data-label="Relays / 24h">{device.relay_activations_last_24h ?? 0}</td>
+                <td data-label="Latest Activity"><Mono size="11px" color={C.textDim}>{formatDashboardTimestamp(device.latest_activity_at)}</Mono></td>
               </tr>
             ))}
           </tbody>

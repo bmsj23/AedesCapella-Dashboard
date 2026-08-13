@@ -924,8 +924,6 @@ a:focus-visible,
   background: var(--color-red);
 }
 
-/* Pushed to the far edge, opposite the menu button, so the bar reads as two
-   anchored ends rather than one left-hand clump. */
 .mobile-bar-brand {
   min-width: 0;
   margin-left: auto;
@@ -1100,6 +1098,14 @@ a:focus-visible,
    * data-label. Nothing scrolls horizontally and nothing is hidden.
    */
   .feed-head { display: none; }
+
+  /*
+   * A thead stays a table-header-group even when the rest of the table is set
+   * to block, so it lays its cells out as one wide row and the plate overflows
+   * the screen. The tables that carry their header inline rather than in a
+   * .feed-head need it hidden here too; data-label supplies the names.
+   */
+  .data-table thead { display: none; }
 
   .table-scroll { overflow-x: visible; }
 
