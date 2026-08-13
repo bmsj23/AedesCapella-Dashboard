@@ -987,11 +987,13 @@ a:focus-visible,
 /* ---------------------------------------------------------------------------
    Sign-in
    ---------------------------------------------------------------------------
-   This page lived entirely in inline style objects, which cannot carry a media
-   query. The two-column split therefore held at every width: on a phone each
-   column collapsed to roughly 170px, the brand clipped mid-word against the
-   plate's overflow, and the body copy wrapped one word per line. Layout lives
-   here instead so the breakpoints below can reach it.
+   One plate, centred, at every width. This began as a two-column split with a
+   feature-box grid beside the form, which on a phone stacked into roughly two
+   screens of scrolling before the password field came into view. The pitch is
+   now three lines above the form rather than four boxes below it.
+
+   Layout lives here rather than in inline style objects, which cannot carry a
+   media query; that was the original reason the page did not respond at all.
    --------------------------------------------------------------------------- */
 
 .login-shell {
@@ -1007,15 +1009,8 @@ a:focus-visible,
   font-family: 'Outfit', sans-serif;
 }
 
-.login-layout {
-  width: min(1040px, 100%);
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  gap: 24px;
-  align-items: stretch;
-}
-
-.login-hero {
+.login-card {
+  width: min(520px, 100%);
   padding: 32px;
   overflow: hidden;
   background-image: linear-gradient(160deg, var(--color-surface), var(--color-surface-2));
@@ -1039,46 +1034,29 @@ a:focus-visible,
 .login-brand-block { margin-bottom: 20px; }
 
 .login-headline {
-  margin-top: 22px;
-  max-width: 12ch;
-  font-size: 38px;
+  margin-top: 18px;
+  font-size: 30px;
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.1;
   color: var(--color-text);
 }
 
 .login-lede {
-  margin-top: 16px;
-  max-width: 58ch;
+  margin-top: 12px;
   font-size: 15px;
   line-height: 1.6;
   color: var(--color-text-dim);
 }
 
-.login-features {
-  margin-top: 28px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+/* Separates the pitch above from the form below, so the fields do not read as
+   a continuation of the paragraph. */
+.login-rule {
+  margin: 24px 0;
+  border: 0;
+  border-top: 1px dashed var(--pd-dash);
 }
 
-.login-feature {
-  padding: 16px;
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  background: var(--color-surface-2);
-}
-
-.login-feature-title { font-size: 16px; font-weight: 700; color: var(--color-text); }
-.login-feature-text { margin-top: 6px; font-size: 13px; line-height: 1.5; color: var(--color-text-dim); }
-
-.login-form-card {
-  padding: 32px;
-  align-self: center;
-  background-color: var(--color-surface);
-}
-
-.login-form-title { font-size: 28px; font-weight: 700; color: var(--color-text); }
+.login-form-title { font-size: 24px; font-weight: 700; color: var(--color-text); }
 .login-form-sub { margin-top: 8px; font-size: 14px; line-height: 1.5; color: var(--color-text-dim); }
 .login-form-head { margin-bottom: 20px; }
 
@@ -1159,27 +1137,12 @@ a:focus-visible,
 @media (max-width: 900px) {
   .login-shell {
     padding: 18px 14px;
-    /* Stacked, the page is taller than the viewport, so centring would crop
+    /* Taller than the viewport once the keyboard is up, so centring would crop
        the top. Start at the top and let the page scroll. */
     place-items: start center;
   }
 
-  .login-layout {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  /* Someone opening this on a phone came to sign in, not to read the pitch.
-     The form goes first; the hero becomes supporting copy below it. */
-  .login-form-card {
-    order: -1;
-    align-self: stretch;
-  }
-
-  .login-hero,
-  .login-form-card { padding: 12px; }
-
-  .login-headline { font-size: 30px; max-width: 18ch; }
+  .login-card { padding: 14px; }
 
   /* Under 16px, iOS Safari zooms the page in when the field takes focus and
      never zooms back out. */
@@ -1187,10 +1150,9 @@ a:focus-visible,
 }
 
 @media (max-width: 560px) {
-  .login-features { grid-template-columns: 1fr; }
   .login-brand { font-size: 24px; }
-  .login-headline { font-size: 26px; max-width: none; }
-  .login-form-title { font-size: 24px; }
+  .login-headline { font-size: 26px; }
+  .login-rule { margin: 20px 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
