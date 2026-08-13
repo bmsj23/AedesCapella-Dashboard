@@ -142,10 +142,12 @@ export default function App() {
       activeSection={activeSection}
       onNavigate={navigateToSection}
       deviceStatus={deviceStatus}
-      onLogout={() => {
-        setNavOpen(false);
-        setShowLogoutModal(true);
-      }}
+      /*
+       * The menu deliberately stays open behind the confirmation. Closing it
+       * here meant cancelling dropped the reader back on the dashboard,
+       * undoing a navigation they never asked for.
+       */
+      onLogout={() => setShowLogoutModal(true)}
     />
   );
 

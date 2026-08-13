@@ -380,6 +380,11 @@ a:focus-visible,
 .dashboard-sidebar {
   width: 280px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-surface);
+  border-right: 1px dashed var(--pd-dash);
 }
 
 /*
@@ -833,18 +838,20 @@ a:focus-visible,
   .app-main { overflow: visible; }
   .section-scroll { overflow: visible; padding: 22px; }
 
-  /* Inside the drawer the sidebar is the full panel, not a fixed-width rail. */
-  .dashboard-sidebar {
-    width: 100%;
-    border-right: 0 !important;
-    overflow: visible !important;
-  }
+  /*
+   * Dissolve the rail. Its three blocks become direct children of the menu
+   * panel, which is what lets the summary strip be ordered between the
+   * navigation and the device list rather than after all of them.
+   */
+  .dashboard-sidebar { display: contents; }
 
-  /* The drawer has its own heading, so the rail's wordmark would repeat both
-     it and the one already in the bar behind the scrim. */
+  /* The bar above the panel already carries the wordmark. */
   .sidebar-brand { display: none; }
 
-  .dashboard-nav { flex: none !important; }
+  .dashboard-nav {
+    flex: none !important;
+    overflow-y: visible !important;
+  }
 }
 
 @media (max-width: 720px) {
@@ -952,8 +959,13 @@ a:focus-visible,
   text-overflow: ellipsis;
 }
 
-/* Covers the section below the bar, not the bar itself, so the close control
-   stays reachable while the menu is open. */
+/*
+ * Both surfaces stay mounted and are hidden with visibility, so opening and
+ * closing are the same transition run in opposite directions. Keyframes could
+ * only animate the entrance; the exit would still be an instant unmount.
+ * visibility is transitioned with a delay so it flips only once the fade has
+ * finished, which also keeps the hidden panel out of the tab order.
+ */
 .mobile-menu-scrim {
   position: fixed;
   inset: 0;
@@ -964,6 +976,9 @@ a:focus-visible,
   border: 0;
   background: rgba(14, 23, 38, 0.44);
   cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0s linear 0.22s;
 }
 
 .mobile-menu-panel {
@@ -972,6 +987,8 @@ a:focus-visible,
   left: 0;
   right: 0;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
   /* Taller than the phone once the summary and the device list are both in it,
      so the panel scrolls rather than clipping the logout button. */
   max-height: calc(100dvh - 100%);
@@ -980,22 +997,39 @@ a:focus-visible,
   background: var(--color-surface);
   border-bottom: 1px dashed var(--pd-dash);
   box-shadow: 0 24px 40px rgba(14, 23, 38, 0.18);
-  animation: mobile-menu-in 0.18s ease-out;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
   transform-origin: top center;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.22s;
 }
 
-@keyframes mobile-menu-in {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+.mobile-chrome-open .mobile-menu-scrim,
+.mobile-chrome-open .mobile-menu-panel {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
 }
 
-.mobile-menu-panel .dashboard-sidebar {
-  background: transparent !important;
-  border-bottom: 1px dashed var(--pd-dash);
-}
+.mobile-chrome-open .mobile-menu-panel { transform: translateY(0); }
+
+/*
+ * Reading order inside the panel: navigate, then the live numbers, then the
+ * device list and logout at the foot. The rail's own source order puts its
+ * device list and settings directly after its nav, which would strand the
+ * summary below the logout button.
+ */
+.mobile-menu-panel .dashboard-nav { order: 1; }
+.mobile-menu-panel .dashboard-topbar { order: 2; }
+.mobile-menu-panel .sidebar-device-status { order: 3; }
+.mobile-menu-panel .sidebar-settings { order: 4; }
 
 @media (prefers-reduced-motion: reduce) {
-  .mobile-menu-panel { animation: none; }
+  .mobile-menu-scrim,
+  .mobile-menu-panel { transition: none; }
 }
 
 /* ---------------------------------------------------------------------------
@@ -1146,11 +1180,16 @@ a:focus-visible,
    media query; that was the original reason the page did not respond at all.
    --------------------------------------------------------------------------- */
 
+/*
+ * Flex with an auto-margined child rather than grid centring. Both centre, but
+ * when the card is taller than the viewport an auto margin collapses to zero
+ * and the card aligns to the top, where grid centring would push its head off
+ * the screen with no way to scroll back up to it.
+ */
 .login-shell {
   min-height: 100vh;
   min-height: 100dvh;
-  display: grid;
-  place-items: center;
+  display: flex;
   padding: 32px;
   background:
     radial-gradient(circle at top left, var(--color-amber-dim), transparent 34%),
@@ -1160,6 +1199,7 @@ a:focus-visible,
 }
 
 .login-card {
+  margin: auto;
   width: min(520px, 100%);
   padding: 32px;
   overflow: hidden;
@@ -1285,13 +1325,7 @@ a:focus-visible,
 .login-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 @media (max-width: 900px) {
-  .login-shell {
-    padding: 18px 14px;
-    /* Taller than the viewport once the keyboard is up, so centring would crop
-       the top. Start at the top and let the page scroll. */
-    place-items: start center;
-  }
-
+  .login-shell { padding: 18px 14px; }
   .login-card { padding: 14px; }
 
   /* Under 16px, iOS Safari zooms the page in when the field takes focus and

@@ -35,7 +35,7 @@ export default function MobileChrome({ open, onToggle, onClose, attention, child
   }, [onClose, open]);
 
   return (
-    <div className="mobile-chrome">
+    <div className={`mobile-chrome${open ? ' mobile-chrome-open' : ''}`}>
       <header className="mobile-bar">
         <div className="mobile-bar-brand">
           <div className="mobile-bar-name">AedesCapella</div>
@@ -57,27 +57,24 @@ export default function MobileChrome({ open, onToggle, onClose, attention, child
         </button>
       </header>
 
-      {open && (
-        <>
-          <button
-            type="button"
-            className="mobile-menu-scrim"
-            onClick={onClose}
-            aria-label="Close menu"
-            tabIndex={-1}
-          />
-          <div
-            id={MENU_ID}
-            ref={panelRef}
-            className="mobile-menu-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Dashboard menu"
-          >
-            {children}
-          </div>
-        </>
-      )}
+      <button
+        type="button"
+        className="mobile-menu-scrim"
+        onClick={onClose}
+        aria-label="Close menu"
+        tabIndex={-1}
+        aria-hidden={!open}
+      />
+      <div
+        id={MENU_ID}
+        ref={panelRef}
+        className="mobile-menu-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Dashboard menu"
+      >
+        {children}
+      </div>
     </div>
   );
 }

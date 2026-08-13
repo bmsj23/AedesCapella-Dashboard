@@ -18,14 +18,13 @@ const NAV_ITEMS = [
 export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLogout }) {
   const technical = useIsTechnical();
 
+  /*
+   * Layout lives in the stylesheet rather than inline: below 900px this
+   * element dissolves so its three blocks can be ordered against the summary
+   * strip, and an inline display would outrank the rule that does it.
+   */
   return (
-    <aside className="dashboard-sidebar" style={{
-      background:    C.surface,
-      borderRight:   '1px dashed var(--pd-dash)',
-      display:       'flex',
-      flexDirection: 'column',
-      overflow:      'hidden',
-    }}>
+    <aside className="dashboard-sidebar">
 
       {/* Wordmark. No glyph: the type carries the mark. Height is pinned to the
           topbar so the two chrome edges form one continuous line. */}
