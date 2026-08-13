@@ -16,8 +16,7 @@ import {
 // Layout
 import Sidebar from './components/layout/Sidebar';
 import Topbar  from './components/layout/Topbar';
-import MobileBar from './components/layout/MobileBar';
-import NavDrawer from './components/layout/NavDrawer';
+import MobileChrome from './components/layout/MobileChrome';
 import { useIsMobile } from './hooks/useIsMobile';
 
 const LiveFeed = lazy(() => import('./sections/LiveFeed'));
@@ -166,11 +165,17 @@ export default function App() {
 
       <div className="app-main">
         {isMobile ? (
-          <MobileBar
-            onOpenNav={() => setNavOpen(true)}
-            navOpen={navOpen}
+          <MobileChrome
+            open={navOpen}
+            onToggle={() => setNavOpen(open => !open)}
+            onClose={closeNav}
             attention={attentionNodes > 0}
-          />
+          >
+            {/* Navigation first: choosing a section is why the menu gets
+                opened. The live summary reads as a footer under it. */}
+            {navigation}
+            {summary}
+          </MobileChrome>
         ) : summary}
 
         <main className="section-scroll">
@@ -182,15 +187,6 @@ export default function App() {
           </Suspense>
         </main>
       </div>
-
-      {isMobile && (
-        <NavDrawer open={navOpen} onClose={closeNav}>
-          {/* Navigation first: choosing a section is why the drawer gets
-              opened. The live summary reads as a footer under it. */}
-          {navigation}
-          {summary}
-        </NavDrawer>
-      )}
 
       {showLogoutModal && (
         <LogoutConfirmModal

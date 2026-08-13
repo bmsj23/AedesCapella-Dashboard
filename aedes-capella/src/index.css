@@ -872,16 +872,24 @@ a:focus-visible,
 }
 
 /* ---------------------------------------------------------------------------
-   Phone chrome: compact bar and menu drawer
+   Phone chrome: compact bar and drop-down menu
    ---------------------------------------------------------------------------
    Rendered only below 900px; App swaps the tree rather than restyling it,
    because the sidebar and summary strip change parent, not just appearance.
+
+   The panel hangs off this wrapper rather than off the bar, so the bar keeps
+   its own border and the menu can overlay the section beneath it.
    --------------------------------------------------------------------------- */
 
-.mobile-bar {
+.mobile-chrome {
   position: sticky;
   top: 0;
   z-index: 500;
+}
+
+.mobile-bar {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -899,6 +907,7 @@ a:focus-visible,
   width: 44px;
   height: 44px;
   flex-shrink: 0;
+  margin-left: auto;
   border: 1px solid var(--color-border);
   border-radius: var(--pd-radius-xs);
   background: var(--color-surface-2);
@@ -924,11 +933,7 @@ a:focus-visible,
   background: var(--color-red);
 }
 
-.mobile-bar-brand {
-  min-width: 0;
-  margin-left: auto;
-  text-align: right;
-}
+.mobile-bar-brand { min-width: 0; }
 
 .mobile-bar-name {
   font: 800 17px 'Outfit', sans-serif;
@@ -947,15 +952,12 @@ a:focus-visible,
   text-overflow: ellipsis;
 }
 
-.nav-drawer-root {
+/* Covers the section below the bar, not the bar itself, so the close control
+   stays reachable while the menu is open. */
+.mobile-menu-scrim {
   position: fixed;
   inset: 0;
-  z-index: 900;
-}
-
-.nav-drawer-scrim {
-  position: absolute;
-  inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   padding: 0;
@@ -964,75 +966,36 @@ a:focus-visible,
   cursor: pointer;
 }
 
-.nav-drawer-panel {
+.mobile-menu-panel {
   position: absolute;
-  inset: 0 auto 0 0;
-  display: flex;
-  flex-direction: column;
-  width: min(330px, 88vw);
-  background: var(--color-surface);
-  border-right: 1px dashed var(--pd-dash);
-  box-shadow: 0 0 40px rgba(14, 23, 38, 0.18);
-  animation: nav-drawer-in 0.18s ease-out;
-}
-
-@keyframes nav-drawer-in {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-.nav-drawer-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 56px;
-  padding: 8px 8px 8px 16px;
-  border-bottom: 1px dashed var(--pd-dash);
-}
-
-.nav-drawer-title {
-  font: 600 11px 'IBM Plex Mono', monospace;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-text-dim);
-}
-
-.nav-drawer-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border: 1px solid var(--color-border);
-  border-radius: var(--pd-radius-xs);
-  background: var(--color-surface-2);
-  color: var(--color-text);
-  cursor: pointer;
-}
-
-.nav-drawer-close:focus-visible {
-  outline: 3px solid var(--color-blue);
-  outline-offset: 2px;
-}
-
-/* The panel is taller than the phone once the summary and the device list are
-   both in it, so the drawer scrolls rather than clipping the logout button. */
-.nav-drawer-body {
-  flex: 1;
-  min-height: 0;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  /* Taller than the phone once the summary and the device list are both in it,
+     so the panel scrolls rather than clipping the logout button. */
+  max-height: calc(100dvh - 100%);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  background: var(--color-surface);
+  border-bottom: 1px dashed var(--pd-dash);
+  box-shadow: 0 24px 40px rgba(14, 23, 38, 0.18);
+  animation: mobile-menu-in 0.18s ease-out;
+  transform-origin: top center;
 }
 
-.nav-drawer-body .dashboard-sidebar {
+@keyframes mobile-menu-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mobile-menu-panel .dashboard-sidebar {
   background: transparent !important;
   border-bottom: 1px dashed var(--pd-dash);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nav-drawer-panel { animation: none; }
+  .mobile-menu-panel { animation: none; }
 }
 
 /* ---------------------------------------------------------------------------
