@@ -48,8 +48,6 @@ export default function NodeManagement({ deviceStatus }) {
         </button>
       </div>
 
-      <DeviceStateGuide />
-
       {error ? (
         <EmptyState
           title="Sensor Information Unavailable"
@@ -71,6 +69,10 @@ export default function NodeManagement({ deviceStatus }) {
           action="Ask the system administrator to add a sensor. Missing information is not the same as working normally."
         />
       )}
+
+      {/* The legend reads as a footnote to the devices above it, not as a
+          preamble a reader has to scroll past to reach their own sensors. */}
+      <DeviceStateGuide />
     </div>
   );
 }

@@ -34,7 +34,7 @@ const STATES = [
 
 export default function DeviceStateGuide() {
   return (
-    <div className="info-grid info-grid-four" style={{ marginBottom: '20px' }}>
+    <div className="info-grid info-grid-four" style={{ marginTop: '20px' }}>
       {STATES.map(state => (
         <EmptyState
           key={state.title}
