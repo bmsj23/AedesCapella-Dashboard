@@ -49,6 +49,53 @@ export default function NodeCard({ device }) {
    */
   const showSnapshot = !staleReadings || showLastOnline;
 
+  /*
+   * The heartbeat snapshot: everything the sensor measured about itself at one
+   * moment. Held in a variable because it is rendered in two different places
+   * depending on whether the card has a toggle, and duplicating the block is
+   * how the two would drift apart.
+   */
+  const snapshotMetrics = (
+    <>
+      <Metric label="Saving Records">
+        <Tag color={device.log_healthy ? 'green' : device.has_ever_reported ? 'red' : 'gray'}>
+          {device.has_ever_reported ? device.log_healthy ? 'Okay' : 'Problem' : 'No update yet'}
+        </Tag>
+      </Metric>
+
+      <Metric label="Waiting To Send">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <Tag color={backlog.color}>{backlog.label}</Tag>
+          {backlog.detail && <Mono size="11px" color={C.textDim}>{backlog.detail}</Mono>}
+        </div>
+      </Metric>
+
+      <Metric label="Sprayer Safe">
+        <Tag color={device.relay_safe_high ? 'green' : 'red'}>
+          {device.relay_safe_high ? 'Safe-high reported' : 'Unsafe — check device'}
+        </Tag>
+      </Metric>
+
+      <Metric label="Signal">
+        {device.wifi_rssi_dbm === null ? <Mono size="12px" color={C.textDim}>Not available</Mono> : <WifiSignal dbm={device.wifi_rssi_dbm} />}
+      </Metric>
+
+      <Metric label="Running For">
+        <Mono size="12px" color={C.text}>{formatDuration(device.uptime_ms)}</Mono>
+      </Metric>
+
+      {technical && <Metric label="C3 boot / ordinal">
+        <Mono size="12px" color={C.text}>{device.c3_boot ?? '—'} / {device.last_ordinal ?? '—'}</Mono>
+      </Metric>}
+
+      {technical && <Metric label="Free Heap">
+        <Mono size="12px" color={C.text}>
+          {device.free_heap_bytes === null ? 'Not available' : `${Math.round(device.free_heap_bytes / 1024)} KiB`}
+        </Mono>
+      </Metric>}
+    </>
+  );
+
   return (
     <Card
       className={isFault ? 'pd-tone-critical' : device.needs_attention ? 'pd-tone-warning' : ''}
@@ -73,7 +120,7 @@ export default function NodeCard({ device }) {
         border: `1px solid ${isFault ? C.red : C.border}`,
         background: isFault ? C.redDim : C.surface2,
         color: isFault ? C.red : C.textDim,
-        fontFamily: 'IBM Plex Mono, monospace',
+        fontFamily: 'var(--font-data)',
         fontSize: '12px',
         lineHeight: 1.5,
         marginBottom: '16px',
@@ -129,66 +176,44 @@ export default function NodeCard({ device }) {
           </Mono>
         </Metric>
 
-        {showLastOnline && (
-          <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.5 }}>
-            Below is what the sensor reported when it last checked in. It is not
-            what the sensor is doing now.
-          </Mono>
-        )}
-
-        {showSnapshot && (
-          <>
-            <Metric label="Saving Records">
-              <Tag color={device.log_healthy ? 'green' : device.has_ever_reported ? 'red' : 'gray'}>
-                {device.has_ever_reported ? device.log_healthy ? 'Okay' : 'Problem' : 'No update yet'}
-              </Tag>
-            </Metric>
-
-            <Metric label="Waiting To Send">
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <Tag color={backlog.color}>{backlog.label}</Tag>
-                {backlog.detail && <Mono size="11px" color={C.textDim}>{backlog.detail}</Mono>}
-              </div>
-            </Metric>
-
-            <Metric label="Sprayer Safe">
-              <Tag color={device.relay_safe_high ? 'green' : 'red'}>
-                {device.relay_safe_high ? 'Safe-high reported' : 'Unsafe — check device'}
-              </Tag>
-            </Metric>
-
-            <Metric label="Signal">
-              {device.wifi_rssi_dbm === null ? <Mono size="12px" color={C.textDim}>Not available</Mono> : <WifiSignal dbm={device.wifi_rssi_dbm} />}
-            </Metric>
-
-            <Metric label="Running For">
-              <Mono size="12px" color={C.text}>{formatDuration(device.uptime_ms)}</Mono>
-            </Metric>
-
-            {technical && <Metric label="C3 boot / ordinal">
-              <Mono size="12px" color={C.text}>{device.c3_boot ?? '—'} / {device.last_ordinal ?? '—'}</Mono>
-            </Metric>}
-
-            {technical && <Metric label="Free Heap">
-              <Mono size="12px" color={C.text}>
-                {device.free_heap_bytes === null ? 'Not available' : `${Math.round(device.free_heap_bytes / 1024)} KiB`}
+        {/*
+          * The two views share one grid cell, so the cell is always as tall as
+          * the taller of them and the card does not resize when the toggle is
+          * pressed. The hidden view keeps its space but is taken out of the
+          * accessibility tree by visibility:hidden rather than being unmounted.
+          *
+          * A sensor with no toggle renders the snapshot directly: there is only
+          * one view, so there is nothing to reserve space against.
+          */}
+        {staleReadings ? (
+          <div className="node-card-views">
+            <div className={showLastOnline ? undefined : 'is-hidden'}>
+              <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.5 }}>
+                Below is what the sensor reported when it last checked in. It is
+                not what the sensor is doing now.
               </Mono>
-            </Metric>}
-          </>
-        )}
+              {snapshotMetrics}
+            </div>
+            <div className={showLastOnline ? 'is-hidden' : undefined}>
+              <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.5 }}>
+                Signal, storage and sprayer readings come from the sensor, so
+                there are none while it is silent. Everything below arrived
+                before it went quiet and is still correct.
+              </Mono>
+            </div>
+          </div>
+        ) : snapshotMetrics}
+      </div>
 
-        {!showSnapshot && (
-          <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.5 }}>
-            Signal, storage and sprayer readings come from the sensor, so there
-            are none while it is silent. Everything below arrived before it went
-            quiet and is still correct.
-          </Mono>
-        )}
+      {/* Pinned to the bottom of the plate by .node-card-close, so this block
+          lands on the same baseline on every card in the row however many rows
+          the view above it is showing.
 
+          Server-side, so these hold whatever the sensor is doing: they say what
+          reached the dashboard, not what the sensor is up to. */}
+      <div className="node-card-close">
         <div style={{ height: 1, background: C.border }} />
 
-        {/* Server-side, so these hold whatever the sensor is doing: they say
-            what reached the dashboard, not what the sensor is up to. */}
         <Metric label="Latest Uploaded Activity">
           <Mono size="12px" color={C.text}>{formatTimestamp(device.latest_upload_or_event_at)}</Mono>
         </Metric>
@@ -210,23 +235,29 @@ export default function NodeCard({ device }) {
             <Mono size="10px" color={C.textDim}>SPRAYINGS · 7 DAYS</Mono>
           </div>
         </div>
-      </div>
 
-      {isFault ? (
-        <div style={{ marginTop: '16px', display: 'flex', gap: '8px', alignItems: 'flex-start', color: C.red }}>
-          <Mono size="11px" color={C.red} style={{ lineHeight: 1.5 }}>
-            A later healthy update is needed. The earlier problem remains in the records.
-          </Mono>
-        </div>
-      ) : device.log_healthy && showSnapshot ? (
-        // Reads off log_healthy, which is part of the heartbeat snapshot, so it
-        // belongs with the snapshot rather than under Current status. A silent
-        // sensor reassuring the operator that records are being saved is the
-        // same stale claim in a friendlier voice.
-        <div style={{ marginTop: '16px', display: 'flex', gap: '8px', alignItems: 'center', color: C.green }}>
-          <Mono size="11px" color={C.green}>The latest update says records are being saved.</Mono>
-        </div>
-      ) : null}
+        {isFault ? (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', color: C.red }}>
+            <Mono size="11px" color={C.red} style={{ lineHeight: 1.5 }}>
+              A later healthy update is needed. The earlier problem remains in the records.
+            </Mono>
+          </div>
+        ) : device.log_healthy ? (
+          /*
+           * Reads off log_healthy, part of the heartbeat snapshot, so it hides
+           * with the snapshot: a silent sensor reassuring the operator that
+           * records are being saved is the same stale claim in a friendlier
+           * voice. It keeps its space rather than unmounting, so hiding it
+           * cannot change the card's height either.
+           */
+          <div
+            className={showSnapshot ? undefined : 'is-hidden'}
+            style={{ display: 'flex', gap: '8px', alignItems: 'center', color: C.green }}
+          >
+            <Mono size="11px" color={C.green}>The latest update says records are being saved.</Mono>
+          </div>
+        ) : null}
+      </div>
     </Card>
   );
 }

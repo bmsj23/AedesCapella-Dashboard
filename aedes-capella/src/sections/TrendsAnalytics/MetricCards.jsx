@@ -81,7 +81,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
             {index === 0 && candidates.length === 0 && <AlertTriangle size={16} color={C.amber} />}
           </div>
           <div style={{
-            fontFamily:    'IBM Plex Mono, monospace',
+            fontFamily:    'var(--font-data)',
             fontSize:      '12px',
             color:         C.textDim,
             marginBottom:  '10px',
@@ -90,7 +90,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
             {label}
           </div>
           <div style={{
-            fontFamily:   'IBM Plex Mono, monospace',
+            fontFamily:   'var(--font-data)',
             fontSize:     index === 0 ? '24px' : '18px',
             color,
             fontWeight:   700,
@@ -99,7 +99,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
           }}>
             {value}
           </div>
-          <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '12px', lineHeight: 1.45, color: C.textDim }}>
+          <div style={{ fontFamily: 'var(--font-data)', fontSize: '12px', lineHeight: 1.45, color: C.textDim }}>
             {sub}
           </div>
         </Card>

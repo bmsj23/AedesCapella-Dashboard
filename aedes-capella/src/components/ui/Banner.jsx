@@ -25,7 +25,7 @@ export default function Banner({ icon: Icon, text, color = 'blue' }) {
     }}>
       {Icon && <Icon size={16} color={c.text} style={{ flexShrink: 0 }} />}
       <span style={{
-        fontFamily: 'IBM Plex Mono, monospace',
+        fontFamily: 'var(--font-data)',
         fontSize:   '13px',
         color:      c.text ?? C.text,
         lineHeight:  1.45,

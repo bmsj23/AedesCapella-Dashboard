@@ -17,8 +17,8 @@ const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '10px 14px' }}>
-      <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '12px', color: C.textDim }}>{label}</div>
-      <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '14px', color: C.amber, marginTop: '4px' }}>
+      <div style={{ fontFamily: 'var(--font-data)', fontSize: '12px', color: C.textDim }}>{label}</div>
+      <div style={{ fontFamily: 'var(--font-data)', fontSize: '14px', color: C.amber, marginTop: '4px' }}>
         {payload[0].value} candidates
       </div>
     </div>
@@ -47,7 +47,7 @@ export default function DetectionTrendChart({ candidates = [] }) {
                 border:        `1px solid ${view === key ? C.amber : C.border}`,
                 background:    view === key ? `${C.amber}22` : 'transparent',
                 color:         view === key ? C.amber : C.textDim,
-                fontFamily:    'IBM Plex Mono, monospace',
+                fontFamily:    'var(--font-data)',
                 fontSize:      '12px',
                 cursor:        'pointer',
                 fontWeight:    600,
@@ -75,7 +75,7 @@ export default function DetectionTrendChart({ candidates = [] }) {
               interval="preserveStartEnd"
               minTickGap={36}
               tickMargin={8}
-              tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, fill: C.textDim }}
+              tick={{ fontFamily: 'var(--font-data)', fontSize: 11, fill: C.textDim }}
               axisLine={false}
               tickLine={false}
             />
@@ -83,7 +83,7 @@ export default function DetectionTrendChart({ candidates = [] }) {
               allowDecimals={false}
               width={34}
               tickMargin={6}
-              tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fill: C.textDim }}
+              tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }}
               axisLine={false}
               tickLine={false}
             />

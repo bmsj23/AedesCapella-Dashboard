@@ -62,7 +62,12 @@ export default function Card({
         </div>
       )}
 
-      <div className={grid && !hasFigure ? 'pd-grid' : undefined} style={{ padding }}>
+      {/* Named so a call site can make the body a layout container. The plate
+          itself cannot be one: children sit inside this padded wrapper. */}
+      <div
+        className={`pd-plate-body${grid && !hasFigure ? ' pd-grid' : ''}`}
+        style={{ padding }}
+      >
         {children}
       </div>
 

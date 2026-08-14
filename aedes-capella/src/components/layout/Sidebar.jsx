@@ -32,7 +32,7 @@ export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLog
           AedesCapella
         </div>
         <div style={{
-          fontFamily:    'IBM Plex Mono, monospace',
+          fontFamily:    'var(--font-data)',
           fontSize:      '10px',
           color:         'var(--pd-accent-ink)',
           letterSpacing: '0.14em',
@@ -77,7 +77,7 @@ export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLog
                 {label}
               </span>
               <span style={{
-                fontFamily:    'IBM Plex Mono, monospace',
+                fontFamily:    'var(--font-data)',
                 fontSize:      '10px',
                 letterSpacing: '0.08em',
                 color:         active ? 'rgba(255,255,255,0.72)' : C.gray,
@@ -92,7 +92,7 @@ export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLog
       {/* Node mini status */}
       <div className="sidebar-device-status" style={{ padding: '14px', borderTop: '1px dashed var(--pd-dash)' }}>
         <div style={{
-          fontFamily:    'IBM Plex Mono, monospace',
+          fontFamily:    'var(--font-data)',
           fontSize:      '12px',
           color:         C.textDim,
           letterSpacing: '0.1em',
@@ -144,7 +144,7 @@ export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLog
           display: 'flex',
           alignItems: 'center',
           gap: '7px',
-          fontFamily: 'IBM Plex Mono, monospace',
+          fontFamily: 'var(--font-data)',
           fontSize: '12px',
           color: C.textDim,
           letterSpacing: '0.1em',

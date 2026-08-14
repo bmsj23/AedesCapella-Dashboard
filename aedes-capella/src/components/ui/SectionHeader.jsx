@@ -60,7 +60,7 @@ export default function SectionHeader({ title, subtitle, overline, fig, action }
           {fig && (
             <span style={{
               color:         C.gray,
-              font:          '500 11px "IBM Plex Mono", monospace',
+              font:          '500 11px var(--font-plate)',
               letterSpacing: '0.08em',
             }}>
               {fig}

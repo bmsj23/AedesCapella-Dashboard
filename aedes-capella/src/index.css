@@ -52,6 +52,24 @@
   --pd-radius-s: 16px;
   --pd-corner: 18px;              /* bracket arm length; must exceed radius-s */
   --pd-scrollbar: 6px;            /* shared by ::-webkit-scrollbar and .feed-head */
+  /*
+   * Two type roles, one token each.
+   *
+   * --font-data covers everything a reader reads for meaning: descriptions,
+   * table headers and cells, metric labels and values, chips, captions. It was
+   * IBM Plex Mono, which set the whole interface in a typewriter face and made
+   * long plain-language sentences harder to read than the headings above them.
+   * It now matches the headings, so body copy and headings share one voice.
+   *
+   * --font-plate is what stays monospace: the SEC.0x corner labels. Those are
+   * identity rather than content, named in the note at the top of this file as
+   * one of the four things carrying the technical-drawing language, and they
+   * are labels on a drawing rather than prose anyone reads a sentence of.
+   *
+   * Changing the interface's type is one line here, not 48 call sites.
+   */
+  --font-data: 'Outfit', system-ui, sans-serif;
+  --font-plate: 'IBM Plex Mono', monospace;
   /* Gutter for section content, and for the phone bar above it. One token so
      the wordmark and menu button cannot drift out of line with the headings
      they sit over; it narrows with the section at each breakpoint. */
@@ -254,7 +272,7 @@ html, body, #root {
 .pd-figlabel {
   position: absolute;
   bottom: 8px;
-  font: 500 10.5px 'IBM Plex Mono', monospace;
+  font: 500 10.5px var(--font-plate);
   letter-spacing: 0.08em;
 }
 
@@ -266,7 +284,7 @@ html, body, #root {
   border-top: 1px dashed var(--pd-dash);
   padding: 11px 18px;
   color: var(--color-gray);
-  font: 500 11px 'IBM Plex Mono', monospace;
+  font: 500 11px var(--font-data);
 }
 
 .pd-metafoot b { color: var(--pd-accent-ink); font-weight: 500; }
@@ -457,7 +475,7 @@ a:focus-visible,
 
 .topbar-label,
 .topbar-reconciled {
-  font: 500 10px 'IBM Plex Mono', monospace;
+  font: 500 10px var(--font-data);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -475,7 +493,7 @@ a:focus-visible,
 
 .topbar-value {
   color: var(--color-text);
-  font: 700 20px 'IBM Plex Mono', monospace;
+  font: 700 20px var(--font-data);
   letter-spacing: -0.02em;
 }
 
@@ -491,7 +509,7 @@ a:focus-visible,
   padding: 12px 22px;
   text-align: right;
   color: var(--color-text);
-  font: 700 20px 'IBM Plex Mono', monospace;
+  font: 700 20px var(--font-data);
   letter-spacing: -0.02em;
   white-space: nowrap;
 }
@@ -544,6 +562,63 @@ a:focus-visible,
   gap: 20px;
 }
 
+/*
+ * Device cards in a row share one height, and their closing block sits on the
+ * bottom edge of that height rather than wherever the rows above happen to end.
+ *
+ * Grid already stretches the plates to the tallest in the row, but the content
+ * inside stopped where it stopped, so a card with fewer rows -- an offline one
+ * showing Current status, say -- left its totals floating in the middle with
+ * dead space beneath. Making the plate body a column and letting the closing
+ * block take the free space puts every card's divider, activity lines and
+ * seven-day totals on the same baseline.
+ *
+ * Scoped to this grid: plate bodies elsewhere hold tables and charts that must
+ * not become flex containers.
+ */
+.node-status-grid > .pd-plate {
+  display: flex;
+  flex-direction: column;
+}
+
+.node-status-grid > .pd-plate > .pd-plate-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/*
+ * Current status and Last online status occupy the same grid cell, so the cell
+ * is always as tall as the taller of the two and pressing the toggle cannot
+ * resize the card or the row it sits in. The inactive view keeps its space and
+ * leaves the accessibility tree, which visibility:hidden does and display:none
+ * would not, since display:none also gives up the space that is the point.
+ */
+.node-card-views {
+  display: grid;
+}
+
+.node-card-views > * {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.node-card-views > .is-hidden,
+.node-card-close > .is-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.node-card-close {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+
 .status-refresh-button {
   display: inline-flex;
   align-items: center;
@@ -554,7 +629,7 @@ a:focus-visible,
   border-radius: 7px;
   padding: 8px 11px;
   cursor: pointer;
-  font: 700 12px 'IBM Plex Mono', monospace;
+  font: 700 12px var(--font-data);
   text-transform: uppercase;
 }
 
@@ -588,7 +663,7 @@ a:focus-visible,
   background: transparent;
   color: var(--color-text-dim);
   cursor: pointer;
-  font: 600 11px 'IBM Plex Mono', monospace;
+  font: 600 11px var(--font-data);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   transition: background-color 0.15s ease, color 0.15s ease;
@@ -596,10 +671,12 @@ a:focus-visible,
 
 .card-view-toggle button:hover { color: var(--color-text); }
 
+/* Solid accent, matching the selected sidebar item. White on --pd-accent is
+   the one place the vivid orange carries text, and it clears contrast because
+   the text is bold and the fill is solid rather than a tint. */
 .card-view-toggle button.is-active {
-  background: var(--color-surface);
-  box-shadow: inset 0 0 0 1px var(--pd-accent-border);
-  color: var(--pd-accent-ink);
+  background: var(--pd-accent);
+  color: #ffffff;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -634,7 +711,7 @@ a:focus-visible,
 .chart-title,
 .table-section-title,
 .unmapped-heading {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-data);
 }
 
 .metric-card-label { margin: 10px 0 6px; color: var(--color-text); font-size: 12px; font-weight: 600; }
@@ -672,7 +749,7 @@ a:focus-visible,
   color: var(--color-text);
   background: var(--color-surface-2);
   border-bottom: 1px solid var(--color-border);
-  font: 700 13px 'IBM Plex Mono', monospace;
+  font: 700 13px var(--font-data);
   letter-spacing: .06em;
 }
 
@@ -681,7 +758,7 @@ a:focus-visible,
   border-bottom: 1px solid color-mix(in srgb, var(--color-border) 35%, transparent);
   color: var(--color-text);
   vertical-align: top;
-  font: 500 12px 'IBM Plex Mono', monospace;
+  font: 500 12px var(--font-data);
 }
 
 .data-table tr:last-child td { border-bottom: 0; }
@@ -732,7 +809,7 @@ a:focus-visible,
   color: var(--pd-accent-ink);
   padding: 6px 12px;
   cursor: pointer;
-  font: 600 11px 'IBM Plex Mono', monospace;
+  font: 600 11px var(--font-data);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   transition: background-color 0.15s ease;
@@ -759,7 +836,7 @@ a:focus-visible,
   background: var(--tag-bg);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tag-fill) 32%, transparent);
   color: var(--tag-ink);
-  font: 600 11px 'IBM Plex Mono', monospace;
+  font: 600 11px var(--font-data);
   letter-spacing: 0.07em;
   text-transform: uppercase;
   white-space: nowrap;
@@ -830,7 +907,7 @@ a:focus-visible,
   align-items: flex-start;
   margin-bottom: 10px;
   color: var(--color-text);
-  font: 700 13px 'IBM Plex Mono', monospace;
+  font: 700 13px var(--font-data);
 }
 
 .map-heading strong,
@@ -847,7 +924,7 @@ a:focus-visible,
   display: grid;
   place-items: center;
   color: var(--color-text-dim);
-  font: 600 12px 'IBM Plex Mono', monospace;
+  font: 600 12px var(--font-data);
 }
 
 .maplibre-device-marker {
@@ -874,10 +951,10 @@ a:focus-visible,
   border-radius: 7px;
   background: var(--color-amber-dim);
   color: var(--banner-amber-text);
-  font: 600 12px 'IBM Plex Mono', monospace;
+  font: 600 12px var(--font-data);
 }
 
-.map-popup { display: grid; gap: 6px; color: #1c1917; font: 12px 'IBM Plex Mono', monospace; }
+.map-popup { display: grid; gap: 6px; color: #1c1917; font: 12px var(--font-data); }
 .map-popup > strong { font-size: 14px; }
 .map-popup-list { display: grid; gap: 3px; padding-top: 4px; border-top: 1px solid #e7dfd3; }
 .map-popup-list span { font-size: 10px; }
@@ -1026,7 +1103,7 @@ a:focus-visible,
 
 .mobile-bar-sub {
   margin-top: 4px;
-  font: 500 9px 'IBM Plex Mono', monospace;
+  font: 500 9px var(--font-data);
   letter-spacing: 0.14em;
   color: var(--pd-accent-ink);
   white-space: nowrap;
@@ -1221,7 +1298,7 @@ a:focus-visible,
     flex-shrink: 0;
     text-align: left;
     color: var(--color-text);
-    font: 700 12px 'IBM Plex Mono', monospace;
+    font: 700 12px var(--font-data);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -1428,7 +1505,7 @@ a:focus-visible,
   border-radius: 12px;
   background: var(--color-surface-2);
   color: var(--color-text);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-data);
   font-size: 14px;
   outline: none;
 }
@@ -1444,7 +1521,7 @@ a:focus-visible,
   margin-bottom: 16px;
   padding: 10px 12px;
   border-radius: 10px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-data);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -1472,7 +1549,7 @@ a:focus-visible,
   border-radius: 12px;
   background: linear-gradient(135deg, var(--color-amber), #d97706);
   color: #fffaf2;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: var(--font-data);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.08em;

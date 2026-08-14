@@ -10,7 +10,7 @@ const tooltipStyle = {
   background:   C.surface,
   border:       `1px solid ${C.border}`,
   borderRadius: '8px',
-  fontFamily:   'IBM Plex Mono, monospace',
+  fontFamily:   'var(--font-data)',
   fontSize:     '13px',
   color:        C.text,
 };
@@ -35,8 +35,8 @@ export default function DistributionCharts({ events = [], candidates = [], devic
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={nodeActivity} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={`${C.border}cc`} vertical={false} />
-              <XAxis dataKey="node" tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="node" tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                 {nodeActivity.map((entry, index) => <Cell key={entry.node} fill={NODE_COLORS[index % NODE_COLORS.length]} />)}
@@ -56,8 +56,8 @@ export default function DistributionCharts({ events = [], candidates = [], devic
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={confidence} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={`${C.border}cc`} vertical={false} />
-              <XAxis dataKey="range" tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="range" tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                 {confidence.map((entry, index) => <Cell key={entry.range} fill={CONF_COLORS[index]} />)}

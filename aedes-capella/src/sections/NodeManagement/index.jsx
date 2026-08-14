@@ -15,7 +15,7 @@ export default function NodeManagement({ deviceStatus }) {
       <SectionHeader
         fig="SEC.04"
         title="Device Status"
-        subtitle="Which devices are working and which ones need checking."
+        subtitle="See which devices are working and which ones need checking."
       />
       {loggingFaults.length > 0 && (
         <Banner
@@ -31,7 +31,7 @@ export default function NodeManagement({ deviceStatus }) {
         alignItems: 'center',
         gap: '12px',
         marginBottom: '20px',
-        fontFamily: 'IBM Plex Mono, monospace',
+        fontFamily: 'var(--font-data)',
         fontSize: '12px',
       }}>
         <span style={{ color: 'var(--color-text-dim)' }}>
