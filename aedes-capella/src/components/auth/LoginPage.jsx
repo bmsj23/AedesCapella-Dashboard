@@ -38,7 +38,7 @@ export default function LoginPage({ onLogin }) {
         figure={(
           <>
             <div className="login-brand">AedesCapella</div>
-            <h1 className="login-headline">Keep an eye on mosquito activity in one place.</h1>
+            <h1 className="login-headline">Keep an eye on mosquito activity.</h1>
             <p className="login-lede">
               Sign in to check sensor updates, see areas needing attention, and review recorded
               spraying activity around the barangay.
