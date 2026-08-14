@@ -17,7 +17,7 @@ import { getEventPresentation } from '../../utils/dashboardData';
 
 function Metric({ label, children }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+    <div className="node-metric" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
         <Mono size="12px" color={C.textDim}>{label}</Mono>
       </div>
@@ -48,6 +48,25 @@ export default function NodeCard({ device }) {
    * only when it is still current, or when it is explicitly asked for.
    */
   const showSnapshot = !staleReadings || showLastOnline;
+
+  /*
+   * The line that closes the card. Every card renders one so that every card's
+   * closing block is the same height; the empty case is a blank that holds its
+   * line and hides.
+   */
+  const closingNote = isFault
+    ? {
+      text: 'A later healthy update is needed. The earlier problem remains in the records.',
+      color: C.red,
+      visible: true,
+    }
+    : device.log_healthy
+      ? {
+        text: 'The latest update says records are being saved.',
+        color: C.green,
+        visible: showSnapshot,
+      }
+      : { text: ' ', color: C.textDim, visible: false };
 
   /*
    * The heartbeat snapshot: everything the sensor measured about itself at one
@@ -236,27 +255,26 @@ export default function NodeCard({ device }) {
           </div>
         </div>
 
-        {isFault ? (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', color: C.red }}>
-            <Mono size="11px" color={C.red} style={{ lineHeight: 1.5 }}>
-              A later healthy update is needed. The earlier problem remains in the records.
-            </Mono>
-          </div>
-        ) : device.log_healthy ? (
-          /*
-           * Reads off log_healthy, part of the heartbeat snapshot, so it hides
-           * with the snapshot: a silent sensor reassuring the operator that
-           * records are being saved is the same stale claim in a friendlier
-           * voice. It keeps its space rather than unmounting, so hiding it
-           * cannot change the card's height either.
-           */
-          <div
-            className={showSnapshot ? undefined : 'is-hidden'}
-            style={{ display: 'flex', gap: '8px', alignItems: 'center', color: C.green }}
-          >
-            <Mono size="11px" color={C.green}>The latest update says records are being saved.</Mono>
-          </div>
-        ) : null}
+        {/*
+          * Always rendered, even when there is nothing to say. A card that
+          * simply omits this line has a shorter closing block, which lifts its
+          * divider and totals off the baseline its neighbour sits on; that is
+          * what left Device 1 and Device 2 unaligned. The empty case holds one
+          * line of space and hides.
+          *
+          * The healthy line reads off log_healthy, part of the heartbeat
+          * snapshot, so it hides with the snapshot too: a silent sensor
+          * reassuring the operator that records are being saved is the same
+          * stale claim in a friendlier voice.
+          */}
+        <div
+          className={closingNote.visible ? undefined : 'is-hidden'}
+          style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}
+        >
+          <Mono size="11px" color={closingNote.color} style={{ lineHeight: 1.5 }}>
+            {closingNote.text}
+          </Mono>
+        </div>
       </div>
     </Card>
   );

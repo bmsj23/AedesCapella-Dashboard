@@ -619,6 +619,21 @@ a:focus-visible,
   padding-top: 12px;
 }
 
+/*
+ * Rows in the closing block hold one line height whatever they contain. A row
+ * whose value is a chip is taller than one whose value is plain text, so
+ * "Latest Activity" measured 22px on a card carrying a time-quality chip and
+ * 15px on one reading "No activity yet". Seven pixels there, plus the closing
+ * line, is what pushed one card's totals off its neighbour's baseline.
+ *
+ * Only the closing block is pinned this way. Rows above it sit under a toggle
+ * that already changes how many there are, so equalising them would buy
+ * nothing and would stretch the plain ones for no reason.
+ */
+.node-card-close .node-metric {
+  min-height: 22px;
+}
+
 .status-refresh-button {
   display: inline-flex;
   align-items: center;
