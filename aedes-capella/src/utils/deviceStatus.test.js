@@ -11,7 +11,7 @@ import {
 test('maps every declared sensor state to a plain-language label', () => {
   assert.equal(getStatusPresentation('online').label, 'Working');
   assert.equal(getStatusPresentation('stale').label, 'Check soon');
-  assert.equal(getStatusPresentation('offline').label, 'Not reporting');
+  assert.equal(getStatusPresentation('offline').label, 'Offline');
   assert.equal(getStatusPresentation('never_seen').label, 'Not connected yet');
   assert.equal(getStatusPresentation('logging_fault').label, 'Records may be missing');
 });
@@ -87,4 +87,26 @@ test('a stalled backlog contradicts the "sending normally" reading, so it replac
     describeDeviceState({ ...online, unsent_backlog_state: 'stalled', unsent_records: 40 }),
     /40 of its saved records have not reached the dashboard/i,
   );
+});
+
+test('a sensor that stopped reporting disclaims the readings it still shows', () => {
+  const offline = describeDeviceState({
+    operational_state: 'offline', offline_after_minutes: 10,
+  });
+  assert.match(offline, /10-minute offline period/);
+  assert.match(offline, /from the last update/i);
+
+  const stale = describeDeviceState({
+    operational_state: 'stale', stale_after_minutes: 6,
+  });
+  assert.match(stale, /6-minute check period/);
+  assert.match(stale, /not from now/i);
+});
+
+test('a working sensor makes no such disclaimer', () => {
+  const online = describeDeviceState({
+    operational_state: 'online', expected_heartbeat_cadence_minutes: 2,
+  });
+  assert.match(online, /about every 2 minutes/);
+  assert.doesNotMatch(online, /last update/i);
 });

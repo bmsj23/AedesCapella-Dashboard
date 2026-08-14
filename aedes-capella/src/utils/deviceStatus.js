@@ -1,7 +1,12 @@
 export const STATUS_PRESENTATION = {
   online: { label: 'Working', color: 'green', tone: 'healthy' },
   stale: { label: 'Check soon', color: 'amber', tone: 'warning' },
-  offline: { label: 'Not reporting', color: 'gray', tone: 'offline' },
+  // "Not reporting" read as a sensor that was powered and merely quiet, which
+  // is the one thing this state does not claim. "Offline" is the plainer word
+  // for the same evidence. It still does not assert a cause: the plan is
+  // explicit that offline means no update arrived, not that the unit is off or
+  // broken, which is why the description under it keeps saying so.
+  offline: { label: 'Offline', color: 'gray', tone: 'offline' },
   never_seen: { label: 'Not connected yet', color: 'blue', tone: 'startup' },
   logging_fault: { label: 'Records may be missing', color: 'red', tone: 'critical' },
 };
@@ -86,11 +91,17 @@ export function describeDeviceState(device) {
   if (device.operational_state === 'never_seen') {
     return 'This sensor is listed but has never sent an update.';
   }
+  /*
+   * Both of these end by disclaiming the readings underneath. The card keeps
+   * rendering signal, uptime and storage from the last update, and without
+   * this the section reads as a live description of a sensor that may have
+   * lost power a quarter of an hour ago.
+   */
   if (device.operational_state === 'stale') {
-    return `No update received within the ${device.stale_after_minutes}-minute check period.`;
+    return `No update received within the ${device.stale_after_minutes}-minute check period. The readings below are from the last update, not from now.`;
   }
   if (device.operational_state === 'offline') {
-    return `No update received within the ${device.offline_after_minutes}-minute offline period.`;
+    return `No update received within the ${device.offline_after_minutes}-minute offline period. The readings below are from the last update and may no longer be true.`;
   }
   // Reachable only while the sensor is still checking in: the database raises
   // 'stalled' for a live heartbeat with a backlog that is not draining. Without

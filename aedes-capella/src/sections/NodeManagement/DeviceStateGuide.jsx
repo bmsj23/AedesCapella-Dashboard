@@ -24,7 +24,7 @@ const staticStates = (staleMinutes, offlineMinutes) => [
     variant: 'warning',
   },
   {
-    title: 'Not reporting',
+    title: 'Offline',
     message: `The last sensor update was more than ${offlineMinutes} minutes ago.`,
     action: 'Ask the field or system team to check it safely.',
     icon: WifiOff,

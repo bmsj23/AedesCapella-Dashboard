@@ -32,6 +32,12 @@ export default function NodeCard({ device }) {
   const isOffline = ['offline', 'never_seen'].includes(device.operational_state);
   const latestEvent = getEventPresentation(device.latest_event_kind);
   const backlog = describeUploadBacklog(device);
+  /*
+   * True once the sensor has stopped checking in but has reported at some
+   * point, which is exactly when the stored readings below stop describing it.
+   * A sensor that never reported has nothing frozen to disclaim.
+   */
+  const staleReadings = device.has_ever_reported && !device.is_online;
 
   return (
     <Card
@@ -66,9 +72,38 @@ export default function NodeCard({ device }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {/* The two readings that describe now rather than then: one is a
+            timestamp, the other counts forward from it. Everything below the
+            marker was measured at that moment and has not moved since, so
+            these two are lifted out to sit together above it. */}
         <Metric label="Last Seen">
           <Mono size="12px" color={C.text}>{formatTimestamp(device.last_seen_at)}</Mono>
         </Metric>
+
+        <Metric label="Last Check-In">
+          <Mono size="12px" color={device.needs_attention ? C.amber : C.text}>
+            {device.heartbeat_age_seconds === null ? 'Never checked in' : formatDuration(Number(device.heartbeat_age_seconds) * 1000)}
+          </Mono>
+        </Metric>
+
+        {/*
+          * A sensor that has stopped reporting keeps rendering the readings from
+          * its last update: "Signal: Strong" and "Running For" for a unit that
+          * lost power a quarter of an hour ago. Those are measurements of a
+          * past moment printed in the present tense, which is the same claim
+          * the status label itself was making before the thresholds were fixed.
+          * Naming them costs one line and no layout change.
+          */}
+        {staleReadings && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '8px',
+            marginTop: '4px', paddingTop: '10px', borderTop: `1px dashed ${C.border}`,
+          }}>
+            <Mono size="10px" color={C.amber} style={{ letterSpacing: '0.08em' }}>
+              MEASURED AT THAT CHECK-IN, NOT NOW
+            </Mono>
+          </div>
+        )}
 
         <Metric label="Saving Records">
           <Tag color={device.log_healthy ? 'green' : device.has_ever_reported ? 'red' : 'gray'}>
@@ -93,14 +128,10 @@ export default function NodeCard({ device }) {
           {device.wifi_rssi_dbm === null ? <Mono size="12px" color={C.textDim}>Not available</Mono> : <WifiSignal dbm={device.wifi_rssi_dbm} />}
         </Metric>
 
-        <Metric label="Running For">
+        {/* "Running For" is the one label that asserts the present rather than
+            reporting a number, so it is the only one whose wording changes. */}
+        <Metric label={staleReadings ? 'Had Been Running For' : 'Running For'}>
           <Mono size="12px" color={C.text}>{formatDuration(device.uptime_ms)}</Mono>
-        </Metric>
-
-        <Metric label="Last Check-In">
-          <Mono size="12px" color={device.needs_attention ? C.amber : C.text}>
-            {device.heartbeat_age_seconds === null ? 'Never checked in' : formatDuration(Number(device.heartbeat_age_seconds) * 1000)}
-          </Mono>
         </Metric>
 
         {technical && <Metric label="C3 boot / ordinal">
