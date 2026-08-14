@@ -1,12 +1,46 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  ACTIVITY_TABLE_HEADERS,
   buildActivitySeries,
   buildConfidenceDistribution,
   buildRuntimeSummary,
   deriveRelayEpisodes,
+  getActivityTimePresentation,
   getEventPresentation,
 } from './dashboardData.js';
+
+test('unresolved activity never presents receipt time as when it happened', () => {
+  const receivedAt = '2026-08-14T12:34:56Z';
+  const presentation = getActivityTimePresentation({
+    occurred_at: null,
+    received_at: receivedAt,
+    time_quality: 'unresolved',
+  });
+
+  assert.equal(presentation.happenedAt, null);
+  assert.equal(presentation.happenedLabel, 'Unavailable');
+  assert.equal(presentation.receivedAt, receivedAt);
+  assert.equal(presentation.qualityLabel, 'Time unavailable');
+  assert.equal(presentation.qualityTone, 'amber');
+  assert.equal(ACTIVITY_TABLE_HEADERS.includes('TIME'), false);
+  assert.deepEqual(ACTIVITY_TABLE_HEADERS.slice(0, 2), [
+    'WHEN IT HAPPENED',
+    'WHEN RECEIVED',
+  ]);
+});
+
+test('activity time wording stays plain and always shows when data arrived', () => {
+  const presentation = getActivityTimePresentation({
+    occurred_at: '2026-08-14T12:34:00Z',
+    received_at: '2026-08-14T12:34:30Z',
+    time_quality: 'ntp',
+  });
+
+  assert.equal(presentation.qualityLabel, 'Confirmed time');
+  assert.notEqual(presentation.receivedLabel, 'Same upload window');
+  assert.equal(presentation.receivedLabel, 'Aug 14, 20:34:30');
+});
 
 test('runtime summary separates candidates, relay activations, and unresolved time', () => {
   const now = Date.parse('2026-08-08T12:00:00Z');
@@ -66,7 +100,7 @@ test('candidate score distribution preserves empty buckets and cautious labels',
     { range: '80–89%', count: 1 },
     { range: '90–100%', count: 1 },
   ]);
-  assert.equal(getEventPresentation('LIVE_ACCEPT').label, 'Possible mosquito');
+  assert.equal(getEventPresentation('LIVE_ACCEPT').label, 'Likely Aedes Mosquito');
   assert.equal(getEventPresentation('UNKNOWN').color, 'gray');
 });
 

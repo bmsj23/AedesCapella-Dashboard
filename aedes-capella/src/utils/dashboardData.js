@@ -2,6 +2,22 @@ const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const MANILA_OFFSET_MS = 8 * HOUR_MS;
 
+export const ACTIVITY_TABLE_HEADERS = Object.freeze([
+  'WHEN IT HAPPENED',
+  'WHEN RECEIVED',
+  'DEVICE',
+  'WHAT HAPPENED',
+  'NOTES',
+]);
+
+const ACTIVITY_TIME_QUALITY = Object.freeze({
+  ntp: Object.freeze({ label: 'Confirmed time', tone: 'green' }),
+  boot_anchor: Object.freeze({ label: 'Estimated time', tone: 'gray' }),
+  unresolved: Object.freeze({ label: 'Time unavailable', tone: 'amber' }),
+});
+
+const UNRESOLVED_ACTIVITY_TIME = ACTIVITY_TIME_QUALITY.unresolved;
+
 export const OPERATOR_ACTIVITY_KINDS = Object.freeze([
   'BOOT',
   'LIVE_ACCEPT',
@@ -23,11 +39,11 @@ const OPERATOR_ACTIVITY_KIND_SET = new Set(OPERATOR_ACTIVITY_KINDS);
 const EVENT_PRESENTATION = {
   BOOT: { label: 'Device turned on', color: 'blue' },
   TEST_ACCEPT: { label: 'Test check', color: 'gray' },
-  LIVE_ACCEPT: { label: 'Possible mosquito', color: 'amber' },
+  LIVE_ACCEPT: { label: 'Likely Aedes Mosquito', color: 'amber' },
   RELAY_INTENT: { label: 'Spray requested', color: 'amber' },
   RELAY_ON: { label: 'Sprayer turned on', color: 'red' },
   RELAY_OFF: { label: 'Sprayer turned off', color: 'green' },
-  RELAY_REJECT: { label: 'Spray refused, too soon', color: 'red' },
+  RELAY_REJECT: { label: 'Sprayer on cooldown', color: 'red' },
   COOLDOWN_COMPLETE: { label: 'Ready again', color: 'green' },
 };
 
@@ -88,6 +104,39 @@ export function formatShortDashboardTimestamp(value) {
     hour12: false,
     timeZone: 'Asia/Manila',
   }).format(date);
+}
+
+function activityUploadDelay(occurredAt, receivedAt) {
+  const occurred = Date.parse(occurredAt || '');
+  const received = Date.parse(receivedAt || '');
+  if (!Number.isFinite(occurred) || !Number.isFinite(received)
+      || received <= occurred + 5 * 60 * 1000) return null;
+  const minutes = Math.round((received - occurred) / 60000);
+  return minutes >= 60 ? `${Math.round(minutes / 60)}h late` : `${minutes}m late`;
+}
+
+export function getActivityTimePresentation(event = {}) {
+  const happenedAt = event.occurred_at || null;
+  const receivedAt = event.received_at || null;
+  const delay = activityUploadDelay(happenedAt, receivedAt);
+  const quality = ACTIVITY_TIME_QUALITY[event.time_quality]
+    || UNRESOLVED_ACTIVITY_TIME;
+
+  return {
+    happenedAt,
+    happenedLabel: happenedAt
+      ? formatShortDashboardTimestamp(happenedAt)
+      : 'Unavailable',
+    happenedTitle: happenedAt
+      ? formatDashboardTimestamp(happenedAt)
+      : 'Recorded time unavailable',
+    receivedAt,
+    receivedLabel: formatShortDashboardTimestamp(receivedAt),
+    receivedTitle: formatDashboardTimestamp(receivedAt),
+    qualityLabel: quality.label,
+    qualityTone: quality.tone,
+    delay,
+  };
 }
 
 export function average(values) {

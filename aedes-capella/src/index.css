@@ -637,6 +637,8 @@ a:focus-visible,
 
 .data-table tr:last-child td { border-bottom: 0; }
 
+.activity-time-quality { margin-top: 5px; }
+
 /*
  * Split header/body feed table.
  *
@@ -1169,6 +1171,70 @@ a:focus-visible,
     text-transform: uppercase;
   }
 
+  /*
+   * Activity rows are read in the field, often one-handed. Give this table a
+   * record-card rhythm instead of forcing every value into the generic
+   * label/value line used by denser administrative tables.
+   */
+  .activity-feed-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "kind kind"
+      "happened received"
+      "device device"
+      "notes notes";
+    gap: 0 16px;
+    margin: 12px;
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--pd-radius-xs);
+    background: var(--color-surface-2);
+  }
+
+  .activity-feed-row:last-child { border-bottom: 1px solid var(--color-border); }
+  .activity-happened { grid-area: happened; }
+  .activity-received { grid-area: received; }
+  .activity-device { grid-area: device; }
+  .activity-kind { grid-area: kind; }
+  .activity-notes { grid-area: notes; }
+
+  .activity-feed-row td {
+    display: block;
+    min-width: 0;
+    padding: 11px 0;
+    text-align: left;
+  }
+
+  .activity-feed-row td + td { border-top: 1px dashed var(--pd-dash); }
+  .activity-feed-row .activity-received { border-top: 0; }
+
+  .activity-feed-row td::before {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--color-text-dim);
+    font-size: 9px;
+  }
+
+  .activity-feed-row td > span,
+  .activity-feed-row .pd-tag {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .activity-feed-row .activity-kind {
+    padding-top: 0;
+    padding-bottom: 14px;
+  }
+
+  .activity-feed-row .activity-kind .pd-tag {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .activity-time-quality { margin-top: 8px; }
+
   /* The body div caps its height inline for the desktop scroll pane; on a
      phone the page itself should scroll instead of a box inside a box. */
   .feed-body {
@@ -1190,6 +1256,20 @@ a:focus-visible,
   .topbar-clock { grid-column: span 1; }
   .topbar-metric,
   .topbar-connection { border-right: 0; border-bottom: 1px dashed var(--pd-dash); }
+
+  .activity-feed-row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "kind"
+      "happened"
+      "received"
+      "device"
+      "notes";
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .activity-feed-row .activity-received { border-top: 1px dashed var(--pd-dash); }
 }
 
 /* ---------------------------------------------------------------------------
