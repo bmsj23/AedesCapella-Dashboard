@@ -90,6 +90,11 @@ export async function fetchDeviceStatus(accessToken, signal) {
     'latest_upload_or_event_at', 'latest_event_time_quality', 'latest_event_kind',
     'latest_activity_at', 'needs_attention', 'mist_events_last_7d',
     'candidates_last_7d', 'free_heap_bytes', 'c3_boot', 'last_ordinal',
+    // Added by migration 202608140001. This selects named columns, so these
+    // must not be requested before that migration is applied: an unknown column
+    // fails the whole request and blanks Device Status rather than degrading.
+    'unsent_records', 'oldest_unsent_at', 'unsent_backlog_state',
+    'backlog_stalled_after_minutes',
   ].join(',');
 
   return request(`/rest/v1/dashboard_device_status?select=${columns}&order=device_label.asc`, {

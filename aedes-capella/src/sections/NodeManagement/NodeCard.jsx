@@ -7,6 +7,7 @@ import Tag from '../../components/ui/Tag';
 import WifiSignal from '../../components/charts/WifiSignal';
 import {
   describeDeviceState,
+  describeUploadBacklog,
   formatDuration,
   formatTimestamp,
   getStatusPresentation,
@@ -30,6 +31,7 @@ export default function NodeCard({ device }) {
   const isFault = device.operational_state === 'logging_fault';
   const isOffline = ['offline', 'never_seen'].includes(device.operational_state);
   const latestEvent = getEventPresentation(device.latest_event_kind);
+  const backlog = describeUploadBacklog(device);
 
   return (
     <Card
@@ -72,6 +74,13 @@ export default function NodeCard({ device }) {
           <Tag color={device.log_healthy ? 'green' : device.has_ever_reported ? 'red' : 'gray'}>
             {device.has_ever_reported ? device.log_healthy ? 'Okay' : 'Problem' : 'No update yet'}
           </Tag>
+        </Metric>
+
+        <Metric label="Waiting To Send">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            <Tag color={backlog.color}>{backlog.label}</Tag>
+            {backlog.detail && <Mono size="11px" color={C.textDim}>{backlog.detail}</Mono>}
+          </div>
         </Metric>
 
         <Metric label="Sprayer Safe">
