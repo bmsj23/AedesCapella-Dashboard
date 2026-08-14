@@ -30,21 +30,22 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className="login-shell">
-      <Card className="login-card">
-        <div className="login-brand-block">
-          <div className="login-brand">AedesCapella</div>
-          <div className="login-brand-sub">BARANGAY MOSQUITO WATCH</div>
-        </div>
-
-        <h1 className="login-headline">Keep an eye on mosquito activity in one place.</h1>
-
-        <p className="login-lede">
-          Sign in to check sensor updates, see areas needing attention, and review recorded
-          spraying activity around the barangay.
-        </p>
-
-        <hr className="login-rule" />
-
+      <Card
+        className="login-card"
+        padding="var(--login-pad)"
+        label="Barangay Mosquito Watch"
+        fig="SEC.00"
+        figure={(
+          <>
+            <div className="login-brand">AedesCapella</div>
+            <h1 className="login-headline">Keep an eye on mosquito activity in one place.</h1>
+            <p className="login-lede">
+              Sign in to check sensor updates, see areas needing attention, and review recorded
+              spraying activity around the barangay.
+            </p>
+          </>
+        )}
+      >
         <div className="login-form-head">
           <div className="login-form-title">Sign In</div>
           <div className="login-form-sub">Enter your email and password to open the dashboard.</div>

@@ -1203,13 +1203,26 @@ a:focus-visible,
   font-family: 'Outfit', sans-serif;
 }
 
+/*
+ * A plate like every other surface in the dashboard: dashed edges, solid
+ * corner brackets, and the pitch sitting in a gridded figure zone above the
+ * rule, with the form on plain ground below it.
+ *
+ * No background-image here. The plate draws its four dashed edges as
+ * background gradients, so setting one on the same element erases all of
+ * them; an earlier tint did exactly that and left the card borderless.
+ *
+ * Body padding is a token rather than a fixed prop value because the prop is
+ * applied inline, where a media query cannot reach it.
+ */
 .login-card {
+  --login-pad: 24px;
   margin: auto;
   width: min(520px, 100%);
-  padding: 32px;
   overflow: hidden;
-  background-image: linear-gradient(160deg, var(--color-surface), var(--color-surface-2));
 }
+
+.login-card .pd-figure { padding: 24px 24px 32px; }
 
 .login-brand {
   font-size: 28px;
@@ -1218,19 +1231,9 @@ a:focus-visible,
   color: var(--color-text);
 }
 
-.login-brand-sub {
-  margin-top: 6px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  color: var(--pd-accent-ink);
-}
-
-.login-brand-block { margin-bottom: 20px; }
-
 .login-headline {
-  margin-top: 18px;
-  font-size: 30px;
+  margin-top: 14px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1.1;
   color: var(--color-text);
@@ -1243,15 +1246,7 @@ a:focus-visible,
   color: var(--color-text-dim);
 }
 
-/* Separates the pitch above from the form below, so the fields do not read as
-   a continuation of the paragraph. */
-.login-rule {
-  margin: 24px 0;
-  border: 0;
-  border-top: 1px dashed var(--pd-dash);
-}
-
-.login-form-title { font-size: 24px; font-weight: 700; color: var(--color-text); }
+.login-form-title { font-size: 22px; font-weight: 700; color: var(--color-text); }
 .login-form-sub { margin-top: 8px; font-size: 14px; line-height: 1.5; color: var(--color-text-dim); }
 .login-form-head { margin-bottom: 20px; }
 
@@ -1331,7 +1326,6 @@ a:focus-visible,
 
 @media (max-width: 900px) {
   .login-shell { padding: 18px 14px; }
-  .login-card { padding: 14px; }
 
   /* Under 16px, iOS Safari zooms the page in when the field takes focus and
      never zooms back out. */
@@ -1339,9 +1333,10 @@ a:focus-visible,
 }
 
 @media (max-width: 560px) {
+  .login-card { --login-pad: 18px; }
+  .login-card .pd-figure { padding: 18px 18px 30px; }
   .login-brand { font-size: 24px; }
-  .login-headline { font-size: 26px; }
-  .login-rule { margin: 20px 0; }
+  .login-headline { font-size: 25px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
