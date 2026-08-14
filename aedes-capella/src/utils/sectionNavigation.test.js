@@ -1,9 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  DASHBOARD_SECTIONS,
+  SECTION_IDS,
   initialDashboardSection,
   persistDashboardSection,
   sectionFromKeyboardEvent,
+  sectionLabel,
 } from './sectionNavigation.js';
 
 function fakeWindow({ hash = '', stored = null } = {}) {
@@ -38,4 +41,21 @@ test('number shortcuts map 1–5 to sidebar sections but never fire while typing
   assert.equal(sectionFromKeyboardEvent({ key: '6', target: { tagName: 'BODY' } }), null);
   assert.equal(sectionFromKeyboardEvent({ key: '2', target: { tagName: 'INPUT' } }), null);
   assert.equal(sectionFromKeyboardEvent({ key: '3', ctrlKey: true, target: { tagName: 'BODY' } }), null);
+});
+
+test('every sidebar section is named the same way the loading text names it', () => {
+  assert.equal(sectionLabel('nodes'), 'Device Status');
+  assert.equal(sectionLabel('feed'), 'Latest Activity');
+  // The number shortcuts index into this list, so its order is what makes
+  // pressing 4 open the fourth sidebar item.
+  assert.deepEqual(
+    DASHBOARD_SECTIONS.map(s => s.id),
+    SECTION_IDS,
+  );
+  assert.equal(DASHBOARD_SECTIONS[3].id, 'nodes');
+});
+
+test('an unknown section never puts an internal id in front of a reader', () => {
+  assert.equal(sectionLabel('not-a-section'), 'section');
+  assert.equal(sectionLabel(undefined), 'section');
 });

@@ -11,6 +11,7 @@ import {
   isDashboardSection,
   persistDashboardSection,
   sectionFromKeyboardEvent,
+  sectionLabel,
 } from './utils/sectionNavigation';
 
 // Layout
@@ -182,7 +183,12 @@ export default function App() {
         ) : summary}
 
         <main className="section-scroll">
-          <Suspense fallback={<div style={{ color: C.textDim }}>Loading dashboard section…</div>}>
+          {/* Named after the sidebar item the reader just clicked. "Loading
+              dashboard section" described the machinery rather than the thing
+              being opened, and read as a different, unrelated screen. */}
+          <Suspense
+            fallback={<div style={{ color: C.textDim }}>Loading {sectionLabel(activeSection)}…</div>}
+          >
             <ActiveSection
               deviceStatus={deviceStatus}
               dashboardData={liveData}
