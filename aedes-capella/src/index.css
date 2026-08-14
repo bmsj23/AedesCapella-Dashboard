@@ -52,6 +52,10 @@
   --pd-radius-s: 16px;
   --pd-corner: 18px;              /* bracket arm length; must exceed radius-s */
   --pd-scrollbar: 6px;            /* shared by ::-webkit-scrollbar and .feed-head */
+  /* Gutter for section content, and for the phone bar above it. One token so
+     the wordmark and menu button cannot drift out of line with the headings
+     they sit over; it narrows with the section at each breakpoint. */
+  --pd-gutter: 28px;
   --pd-chrome-h: 88px;            /* topbar and sidebar brand share this height */
   --risk-critical-bg: #fee2e2;
   --risk-critical-border: #fca5a5;
@@ -374,7 +378,7 @@ a:focus-visible,
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  padding: 28px;
+  padding: var(--pd-gutter);
 }
 
 .dashboard-sidebar {
@@ -836,7 +840,8 @@ a:focus-visible,
   }
 
   .app-main { overflow: visible; }
-  .section-scroll { overflow: visible; padding: 22px; }
+  :root { --pd-gutter: 22px; }
+  .section-scroll { overflow: visible; }
 
   /*
    * Dissolve the rail. Its three blocks become direct children of the menu
@@ -870,7 +875,7 @@ a:focus-visible,
     grid-template-columns: 1fr;
   }
 
-  .section-scroll { padding: 16px; }
+  :root { --pd-gutter: 16px; }
   /* The summary strip is drawer content below 900px, so it no longer needs the
      page padding it carried when it was the top of the screen. */
   .map-heading { flex-direction: column; }
@@ -901,7 +906,7 @@ a:focus-visible,
   align-items: center;
   gap: 12px;
   min-height: 56px;
-  padding: 8px 12px;
+  padding: 10px var(--pd-gutter);
   background: var(--color-surface);
   border-bottom: 1px dashed var(--pd-dash);
 }
