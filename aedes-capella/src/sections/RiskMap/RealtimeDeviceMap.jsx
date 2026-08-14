@@ -125,11 +125,6 @@ export default function RealtimeDeviceMap({ devices = [], candidates = [], relay
           <strong>Device Map</strong>
           <Mono size="11px" color={C.textDim}> Installation Location </Mono>
         </div>
-        <div className="map-legend" aria-label="Device State Legend">
-          {Object.entries(STATE_COLORS).map(([state, color]) => (
-            <span key={state}><i style={{ background: color }} />{state.replace('_', ' ')}</span>
-          ))}
-        </div>
       </div>
       {(tilesFailed || vectorFailure) && (
         <div className="tile-warning" role="status">

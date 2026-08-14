@@ -225,6 +225,23 @@ html, body, #root {
   border-color: var(--pd-accent);
 }
 
+/*
+ * Tinting a plate.
+ *
+ * The dashed edge is four background gradients and the brackets are four
+ * pseudo-elements; both read their colour from a custom property. Recolour the
+ * properties and the whole plate follows, with the bracket still meeting the
+ * dash exactly where --pd-corner says it should.
+ *
+ * Call sites used to add a real `border` instead. That draws a second line
+ * inside the dashes rather than replacing them, which is where the doubled
+ * edge came from, and it offsets every bracket by the border width because the
+ * gradients are positioned against the padding box while the brackets are not.
+ */
+.pd-tone-warning  { --pd-dash: rgba(224, 123, 19, 0.45); --pd-bracket: var(--color-amber); }
+.pd-tone-critical { --pd-dash: rgba(220, 38, 38, 0.45);  --pd-bracket: var(--color-red); }
+.pd-tone-info     { --pd-dash: rgba(37, 99, 235, 0.40);  --pd-bracket: var(--color-blue); }
+
 /* The figure zone: gridded, holds a diagram or a headline figure. */
 .pd-figure {
   position: relative;
@@ -753,18 +770,6 @@ a:focus-visible,
 .map-heading strong,
 .map-heading > div > span { display: block; }
 
-.map-legend {
-  display: flex;
-  gap: 9px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  color: var(--color-text-dim);
-  font-size: 10px;
-}
-
-.map-legend span { display: flex; align-items: center; gap: 4px; }
-.map-legend i { width: 8px; height: 8px; border-radius: 50%; }
-
 .device-map {
   width: 100%;
   height: clamp(340px, 55vh, 620px);
@@ -879,7 +884,6 @@ a:focus-visible,
   /* The summary strip is drawer content below 900px, so it no longer needs the
      page padding it carried when it was the top of the screen. */
   .map-heading { flex-direction: column; }
-  .map-legend { justify-content: flex-start; }
   .device-map { height: 360px; }
 }
 

@@ -32,20 +32,19 @@ export default function NodeCard({ device }) {
   const latestEvent = getEventPresentation(device.latest_event_kind);
 
   return (
-    <Card style={{
-      opacity: isOffline ? 0.82 : 1,
-      border: `1px solid ${isFault ? C.red : device.needs_attention ? C.amber : C.border}`,
-      background: C.surface,
-      boxShadow: isFault ? `0 16px 34px ${C.red}18` : undefined,
-    }}>
+    <Card
+      className={isFault ? 'pd-tone-critical' : device.needs_attention ? 'pd-tone-warning' : ''}
+      style={{
+        opacity: isOffline ? 0.82 : 1,
+        background: C.surface,
+        boxShadow: isFault ? `0 16px 34px ${C.red}18` : undefined,
+      }}
+    >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', marginBottom: '16px' }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: '18px', fontWeight: 800, color: C.text }}>
             {formatDeviceName(device.device_label) || 'Unnamed device'}
           </div>
-          <Mono size="11px" color={C.textDim} style={{ display: 'block', marginTop: '5px', wordBreak: 'break-all' }}>
-            {device.device_id}
-          </Mono>
         </div>
         <Tag color={status.color}>{status.label}</Tag>
       </div>

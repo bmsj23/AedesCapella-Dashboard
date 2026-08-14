@@ -62,11 +62,31 @@ export default function DetectionTrendChart({ candidates = [] }) {
 
       {candidates.length === 0 && <EmptyState title="No Possible Mosquitoes In This Period" message="Time slots with none recorded are shown as zero." compact />}
       <div aria-label="Possible mosquitoes recorded over time, including time slots with none">
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={activeData} margin={{ top: 5, right: 20, bottom: 0, left: -20 }}>
+        <ResponsiveContainer width="100%" height={220}>
+          {/* A negative left margin used to pull the value axis off the plot,
+              clipping its labels against the plate edge. */}
+          <LineChart data={activeData} margin={{ top: 5, right: 16, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke={`${C.border}cc`} vertical={false} />
-            <XAxis dataKey="t" tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
-            <YAxis allowDecimals={false} tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
+            {/* Every bucket carries a label, so at a day's worth of slots they
+                overprinted each other. Drop as many as collide and keep the
+                first and last, which are the ones that fix the period. */}
+            <XAxis
+              dataKey="t"
+              interval="preserveStartEnd"
+              minTickGap={36}
+              tickMargin={8}
+              tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 11, fill: C.textDim }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              allowDecimals={false}
+              width={34}
+              tickMargin={6}
+              tick={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: 12, fill: C.textDim }}
+              axisLine={false}
+              tickLine={false}
+            />
             <Tooltip content={<CustomTooltip />} />
             <Line type="monotone" dataKey="v" stroke={C.amber} strokeWidth={2} dot={{ fill: C.amber, r: 3 }} activeDot={{ r: 5, fill: C.amber }} />
           </LineChart>

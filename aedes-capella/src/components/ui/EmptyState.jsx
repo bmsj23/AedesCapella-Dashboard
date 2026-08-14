@@ -12,6 +12,14 @@ const VARIANT_COLORS = {
   startup: C.blue,
 };
 
+/* Recolours the plate's own dashed edge and brackets. The grey variants keep
+   the default edge, so they need no tone. */
+const VARIANT_TONES = {
+  warning: 'pd-tone-warning',
+  critical: 'pd-tone-critical',
+  startup: 'pd-tone-info',
+};
+
 export default function EmptyState({
   title,
   message,
@@ -23,12 +31,14 @@ export default function EmptyState({
   const accent = VARIANT_COLORS[variant] ?? C.gray;
 
   return (
-    <Card style={{
-      background: C.surface2,
-      border: `1px dashed ${variant === 'default' ? C.borderBright : accent}`,
-      padding: compact ? '14px' : '22px',
-      textAlign: 'center',
-    }}>
+    <Card
+      className={VARIANT_TONES[variant] || ''}
+      style={{
+        background: C.surface2,
+        padding: compact ? '14px' : '22px',
+        textAlign: 'center',
+      }}
+    >
       {createElement(Icon, { size: compact ? 18 : 22, color: accent })}
       <div style={{
         marginTop: compact ? '8px' : '10px',

@@ -12,7 +12,7 @@ import Mono from './Mono';
  * limits in lib/supabaseApi.js and the client buffer in utils/liveDashboard.js,
  * so raising the real ceiling means a cursor query, not a bigger page size.
  */
-const DEFAULT_PAGE_SIZE = 25;
+const DEFAULT_PAGE_SIZE = 10;
 
 function Columns({ columns }) {
   return (

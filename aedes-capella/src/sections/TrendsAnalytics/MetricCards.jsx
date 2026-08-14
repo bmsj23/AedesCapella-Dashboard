@@ -3,6 +3,7 @@ import { C } from '../../constants/colors';
 import Card from '../../components/ui/Card';
 import Tag from '../../components/ui/Tag';
 import { average, buildRuntimeSummary, candidateScorePercent, formatDashboardTimestamp } from '../../utils/dashboardData';
+import { useIsTechnical } from '../../contexts/viewerRole';
 
 function peakEventHour(events) {
   const counts = new Map();
@@ -21,6 +22,7 @@ function peakEventHour(events) {
 
 /** Simple activity summary for barangay workers. */
 export default function MetricCards({ events = [], candidates = [] }) {
+  const technical = useIsTechnical();
   const runtimeSummary = buildRuntimeSummary(events);
   const meanScore = average(candidates.map(candidateScorePercent));
   const metrics = [
@@ -48,14 +50,20 @@ export default function MetricCards({ events = [], candidates = [] }) {
       status: events.length ? 'Review soon' : 'No activity',
       statusColor: events.length ? 'amber' : 'gray',
     },
-    {
+    /*
+     * Match strength is a model score. It reads as a confidence in the
+     * species to anyone not maintaining the model, which is the misreading
+     * this dashboard works hardest to avoid, so it stays with the roles that
+     * can act on it.
+     */
+    ...(technical ? [{
       label: 'Average match strength',
       value: meanScore === null ? '—' : `${meanScore.toFixed(1)}%`,
       sub: candidates.length ? 'how closely sounds matched, not proof of species' : 'nothing to score yet',
       color: C.text,
       status: meanScore === null ? 'No reports' : 'Available',
       statusColor: meanScore === null ? 'gray' : 'blue',
-    },
+    }] : []),
   ];
 
   return (

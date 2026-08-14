@@ -4,14 +4,16 @@ import Banner from '../../components/ui/Banner';
 import MetricCards from './MetricCards';
 import DetectionTrendChart from './DetectionTrendChart';
 import DistributionCharts from './DistributionCharts';
+import { formatDeviceName } from '../../utils/viewer';
 
 /** Section 5 — Trends & Analytics */
 export default function TrendsAnalytics({ dashboardData, deviceStatus }) {
   const events = dashboardData?.activity || [];
   const candidates = dashboardData?.candidates || [];
+  // Formatted here so the chart axes read "Device 1" rather than the slug.
   const deviceLabels = (deviceStatus?.devices || []).reduce((lookup, device) => ({
     ...lookup,
-    [device.device_id]: device.device_label,
+    [device.device_id]: formatDeviceName(device.device_label),
   }), {});
 
   return (

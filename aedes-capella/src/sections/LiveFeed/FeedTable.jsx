@@ -10,7 +10,6 @@ import {
   plainReason,
 } from '../../utils/dashboardData';
 import { formatDeviceName } from '../../utils/viewer';
-import { useIsTechnical } from '../../contexts/viewerRole';
 
 const HEADERS = ['WHEN IT HAPPENED', 'WHEN RECEIVED', 'DEVICE', 'WHAT HAPPENED', 'TIME', 'NOTES'];
 const COLUMNS = ['14%', '14%', '16%', '20%', '14%', '22%'];
@@ -37,7 +36,6 @@ function timeWording(timeQuality) {
 
 /** Recent sensor activity table with plain-language labels. */
 export default function FeedTable({ events = [], deviceLabels = {}, loading = false, error = '' }) {
-  const technical = useIsTechnical();
 
   if (loading) {
     return (
@@ -70,17 +68,10 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
     );
   }
 
-  const ordinals = events.map(event => event.ordinal).filter(Number.isFinite);
-  const ordinalRange = ordinals.length
-    ? `records ${Math.min(...ordinals)}–${Math.max(...ordinals)}`
-    : null;
-
   return (
     <TablePlate
       title="What The Devices Recorded"
-      note={technical
-        ? `${ordinalRange ? `${ordinalRange} · ` : ''}${events.length} rows held`
-        : `Showing the ${events.length} most recent`}
+      note={`Showing the ${events.length} most recent`}
       label="Activity"
       fig="SEC.01"
       headers={HEADERS}

@@ -11,8 +11,10 @@ import { C } from '../../constants/colors';
  *
  * @param {string} overline - tracked uppercase kicker above the title
  * @param {string} fig      - figure number, e.g. "SEC.01"
+ * @param {node}   action   - control for the right of the title row, e.g. a
+ *                            refresh button; sits above the rule beside fig
  */
-export default function SectionHeader({ title, subtitle, overline, fig }) {
+export default function SectionHeader({ title, subtitle, overline, fig, action }) {
   return (
     <header style={{
       display:       'flex',
@@ -31,26 +33,40 @@ export default function SectionHeader({ title, subtitle, overline, fig }) {
         {subtitle && (
           <p style={{
             marginTop:  '10px',
-            maxWidth:   '65ch',
+            /* A measure, not a wrap point: wide enough that a one-line
+               subtitle stays on one line, capped so it never runs the full
+               width of a desktop. `pretty` keeps the last line from breaking
+               to a single orphaned word. */
+            maxWidth:   '80ch',
             color:      C.textDim,
             font:       '400 13.5px Outfit, sans-serif',
             lineHeight: 1.55,
+            textWrap:   'pretty',
           }}>
             {subtitle}
           </p>
         )}
       </div>
 
-      {fig && (
-        <span style={{
-          flexShrink:    0,
-          marginTop:     '10px',
-          color:         C.gray,
-          font:          '500 11px "IBM Plex Mono", monospace',
-          letterSpacing: '0.08em',
+      {(action || fig) && (
+        <div style={{
+          flexShrink:  0,
+          marginTop:   '6px',
+          display:     'flex',
+          alignItems:  'center',
+          gap:         '14px',
         }}>
-          {fig}
-        </span>
+          {action}
+          {fig && (
+            <span style={{
+              color:         C.gray,
+              font:          '500 11px "IBM Plex Mono", monospace',
+              letterSpacing: '0.08em',
+            }}>
+              {fig}
+            </span>
+          )}
+        </div>
       )}
     </header>
   );
