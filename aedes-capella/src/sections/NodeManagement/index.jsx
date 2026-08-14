@@ -84,7 +84,7 @@ export default function NodeManagement({ deviceStatus }) {
 
       {/* The legend reads as a footnote to the devices above it, not as a
           preamble a reader has to scroll past to reach their own sensors. */}
-      <DeviceStateGuide />
+      <DeviceStateGuide devices={devices} />
     </div>
   );
 }
