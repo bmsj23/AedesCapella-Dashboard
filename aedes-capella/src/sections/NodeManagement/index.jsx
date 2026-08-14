@@ -7,7 +7,7 @@ import NodeCard from './NodeCard';
 
 /** Section 4 - Node Management */
 export default function NodeManagement({ deviceStatus }) {
-  const { devices, error, loading, refresh, refreshedAt } = deviceStatus;
+  const { devices, error, loading, refreshing, refresh, refreshedAt } = deviceStatus;
   const loggingFaults = devices.filter(device => device.operational_state === 'logging_fault');
 
   return (
@@ -37,12 +37,30 @@ export default function NodeManagement({ deviceStatus }) {
         <span style={{ color: 'var(--color-text-dim)' }}>
           {refreshedAt ? `Last checked ${refreshedAt.toLocaleTimeString('en-PH')}` : 'Waiting for sensor information'}
         </span>
-        <button className="status-refresh-button" onClick={refresh} disabled={loading}>
-          <RefreshCw size={13} /> {loading ? 'Refreshing…' : 'Refresh'}
+        <button
+          className="status-refresh-button"
+          onClick={() => refresh()}
+          disabled={loading || refreshing}
+        >
+          <RefreshCw size={13} className={refreshing ? 'is-spinning' : undefined} />
+          {' '}{loading || refreshing ? 'Refreshing…' : 'Refresh'}
         </button>
       </div>
 
-      {error ? (
+      {/* A failed refresh must not discard sensor cards that are already on
+          screen. The reducer keeps the previous rows, so the failure is
+          reported above them and the reader keeps the last known state, dated
+          by "Last checked" above. Only a failure with nothing to fall back on
+          takes over the section. */}
+      {error && devices.length > 0 && (
+        <Banner
+          icon={AlertTriangle}
+          text={`${error} Showing the last information received.`}
+          color="amber"
+        />
+      )}
+
+      {error && devices.length === 0 ? (
         <EmptyState
           title="Sensor Information Unavailable"
           message={error}

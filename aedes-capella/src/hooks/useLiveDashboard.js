@@ -54,8 +54,24 @@ export function useLiveDashboard(accessToken) {
     }
   }, []);
 
-  const reconcile = useCallback(async suppliedSignal => {
+  const reconcile = useCallback(async suppliedArgument => {
     if (!accessToken) return;
+
+    /*
+     * This is returned as `refresh`, so a caller writing onClick={refresh}
+     * hands us a React click event. Passing that on as `signal` makes fetch
+     * throw "Failed to execute 'fetch' on 'Window'..." before any request
+     * leaves the browser. Every source then fails at once, and because the
+     * message contains the word "fetch", getFriendlyError reports it as a lost
+     * internet connection -- so a working dashboard claimed to be offline and
+     * only recovered on the next 30-second reconcile.
+     *
+     * The call sites are fixed, but anything that is not an AbortSignal is
+     * ignored here too: the next onClick={refresh} must not resurrect this.
+     */
+    const suppliedSignal = suppliedArgument instanceof AbortSignal
+      ? suppliedArgument
+      : undefined;
 
     const run = async signal => {
       const results = await Promise.allSettled(
@@ -235,5 +251,20 @@ export function useLiveDashboard(accessToken) {
     controllersRef.current.clear();
   }, []);
 
-  return { ...state, refresh: reconcile };
+  /*
+   * Manual refresh, as opposed to the 30-second reconcile. It reports itself so
+   * the button can say "Refreshing…" over data that stays on screen throughout.
+   * refresh_end is in a finally: reconcile returns early when there is no
+   * access token, and a flag that never cleared would disable the button.
+   */
+  const refresh = useCallback(async () => {
+    dispatch({ type: 'refresh_start' });
+    try {
+      await reconcile();
+    } finally {
+      dispatch({ type: 'refresh_end' });
+    }
+  }, [reconcile]);
+
+  return { ...state, refresh };
 }

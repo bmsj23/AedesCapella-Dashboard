@@ -90,6 +90,7 @@ export default function App() {
     devices: liveData.devices,
     error: liveData.errors.devices || '',
     loading: liveData.loading,
+    refreshing: liveData.refreshing,
     refreshedAt: liveData.reconciledAt,
     refresh: liveData.refresh,
   };

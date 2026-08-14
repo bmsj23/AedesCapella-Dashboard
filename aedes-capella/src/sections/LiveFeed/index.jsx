@@ -25,7 +25,7 @@ export default function LiveFeed({ dashboardData, deviceStatus }) {
           <button
             type="button"
             className="status-refresh-button"
-            onClick={dashboardData.refresh}
+            onClick={() => dashboardData.refresh()}
             disabled={dashboardData.loading}
           >
             <RefreshCw size={13} /> {dashboardData.loading ? 'Refreshing…' : 'Refresh'}

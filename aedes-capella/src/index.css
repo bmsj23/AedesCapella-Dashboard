@@ -563,6 +563,21 @@ a:focus-visible,
   opacity: 0.6;
 }
 
+/* Turns while a refresh is in flight, so a re-fetch is visible without the
+   section blanking out the rows the reader is already looking at. */
+.status-refresh-button .is-spinning {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-refresh-button .is-spinning { animation: none; }
+}
+
 .metric-card-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

@@ -101,3 +101,46 @@ test('invalid and null coordinates remain explicitly unmapped', () => {
   assert.deepEqual(filterMappedDevices(devices).map(row => row.device_id), ['mapped']);
   assert.deepEqual(filterUnmappedDevices(devices).map(row => row.device_id), ['null', 'invalid']);
 });
+
+test('a failed reconciliation keeps the sensor rows already on screen', () => {
+  // The section renders the previous rows under an error banner rather than
+  // blanking. That is only possible if the reducer does not drop them.
+  const loaded = liveDashboardReducer(EMPTY_LIVE_DASHBOARD, {
+    type: 'reconcile',
+    datasets: { devices: [{ device_id: 'd1', operational_state: 'online' }] },
+    errors: {}, complete: true, at: new Date('2026-08-14T10:00:00Z'),
+  });
+  const failed = liveDashboardReducer(loaded, {
+    type: 'reconcile',
+    datasets: {},
+    errors: { devices: 'The dashboard cannot reach the service right now.' },
+    complete: false, at: new Date('2026-08-14T10:00:30Z'),
+  });
+
+  assert.equal(failed.devices.length, 1);
+  assert.equal(failed.devices[0].device_id, 'd1');
+  assert.ok(failed.errors.devices);
+  // "Last checked" must keep pointing at the last good read, not the failure.
+  assert.equal(failed.reconciledAt.toISOString(), '2026-08-14T10:00:00.000Z');
+});
+
+test('refreshing is separate from first-load loading, and always clears', () => {
+  const started = liveDashboardReducer(
+    { ...EMPTY_LIVE_DASHBOARD, loading: false },
+    { type: 'refresh_start' },
+  );
+  assert.equal(started.refreshing, true);
+  assert.equal(started.loading, false, 'a refresh must not re-enter the blocking first-load state');
+
+  assert.equal(liveDashboardReducer(started, { type: 'refresh_end' }).refreshing, false);
+});
+
+test('a click event is not an AbortSignal, which is what broke Refresh', () => {
+  // onClick={refresh} handed reconcile a React SyntheticEvent, which it passed
+  // to fetch as `signal`. fetch threw "Failed to execute 'fetch' on 'Window'",
+  // every source failed at once, and the word "fetch" in that message made
+  // getFriendlyError report a healthy dashboard as having lost its connection.
+  const clickEvent = { type: 'click', target: {}, nativeEvent: {} };
+  assert.equal(clickEvent instanceof AbortSignal, false);
+  assert.equal(new AbortController().signal instanceof AbortSignal, true);
+});

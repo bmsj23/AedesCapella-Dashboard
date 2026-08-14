@@ -9,6 +9,11 @@ export const EMPTY_LIVE_DASHBOARD = {
   mapDevices: [],
   errors: {},
   loading: true,
+  // `loading` is the first load, when there is nothing on screen yet and a
+  // section may legitimately show a placeholder instead of data. `refreshing`
+  // is a re-fetch over data the reader can already see, so it may only drive a
+  // button label -- never blank a section that is already populated.
+  refreshing: false,
   reconciledAt: null,
   connectionState: 'reconnecting',
 };
@@ -66,6 +71,10 @@ export function liveDashboardReducer(state, action) {
       return EMPTY_LIVE_DASHBOARD;
     case 'connection':
       return { ...state, connectionState: action.value };
+    case 'refresh_start':
+      return { ...state, refreshing: true };
+    case 'refresh_end':
+      return { ...state, refreshing: false };
     case 'reconcile':
       return {
         ...state,
