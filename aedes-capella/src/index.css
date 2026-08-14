@@ -616,14 +616,20 @@ a:focus-visible,
   border-collapse: collapse;
 }
 
+/*
+ * The header outranks the rows it names, so it is set larger, heavier and in
+ * full ink. It previously ran 11px/600 in --color-text-dim against rows at
+ * 12px/500 in --color-text, which inverted the hierarchy: the label a reader
+ * scans first was the least legible thing in the table.
+ */
 .data-table th {
   padding: 12px 16px;
   text-align: left;
   white-space: nowrap;
-  color: var(--color-text-dim);
+  color: var(--color-text);
   background: var(--color-surface-2);
   border-bottom: 1px solid var(--color-border);
-  font: 600 11px 'IBM Plex Mono', monospace;
+  font: 700 13px 'IBM Plex Mono', monospace;
   letter-spacing: .06em;
 }
 
@@ -1161,12 +1167,18 @@ a:focus-visible,
     text-align: right;
   }
 
+  /*
+   * The card-mode equivalent of a th. Matched to the desktop header's weight
+   * and ink. It sits on the same line as its value rather than above it, so it
+   * takes the value's size instead of exceeding it; going larger here would
+   * make the label outweigh the reading it labels.
+   */
   .data-table td::before {
     content: attr(data-label);
     flex-shrink: 0;
     text-align: left;
     color: var(--color-text);
-    font: 600 10px 'IBM Plex Mono', monospace;
+    font: 700 12px 'IBM Plex Mono', monospace;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -1209,11 +1221,16 @@ a:focus-visible,
   .activity-feed-row td + td { border-top: 1px dashed var(--pd-dash); }
   .activity-feed-row .activity-received { border-top: 0; }
 
+  /*
+   * Here the label sits above its value rather than beside it, so it is a
+   * stacked header and takes the desktop header's size and ink. At 9px dim
+   * over a 12px reading it was the most inverted of the three headers.
+   */
   .activity-feed-row td::before {
     display: block;
     margin-bottom: 7px;
-    color: var(--color-text-dim);
-    font-size: 9px;
+    color: var(--color-text);
+    font-size: 13px;
   }
 
   .activity-feed-row td > span,
