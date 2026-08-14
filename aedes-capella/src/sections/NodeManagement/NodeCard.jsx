@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { C } from '../../constants/colors';
 import { formatDeviceName } from '../../utils/viewer';
 import { useIsTechnical } from '../../contexts/viewerRole';
@@ -34,10 +35,19 @@ export default function NodeCard({ device }) {
   const backlog = describeUploadBacklog(device);
   /*
    * True once the sensor has stopped checking in but has reported at some
-   * point, which is exactly when the stored readings below stop describing it.
-   * A sensor that never reported has nothing frozen to disclaim.
+   * point, which is exactly when its stored readings stop describing it. A
+   * sensor that never reported has no snapshot to separate out, and one that
+   * is checking in has a snapshot that is current, so neither gets the toggle.
    */
   const staleReadings = device.has_ever_reported && !device.is_online;
+  const [showLastOnline, setShowLastOnline] = useState(false);
+  /*
+   * Current status is the default and always wins on first paint: an operator
+   * opening the section is asking what is true now, and must not have to
+   * notice a control to get an honest answer. The stored snapshot is shown
+   * only when it is still current, or when it is explicitly asked for.
+   */
+  const showSnapshot = !staleReadings || showLastOnline;
 
   return (
     <Card
@@ -71,11 +81,44 @@ export default function NodeCard({ device }) {
         {describeDeviceState(device)}
       </div>
 
+      {/*
+        * The card carries two kinds of reading and they are only the same thing
+        * while the sensor is checking in.
+        *
+        * Server-side facts stay true whatever the sensor is doing: when it was
+        * last heard from, what has arrived, how much has arrived this week.
+        * The heartbeat snapshot is different. Signal, uptime, storage and the
+        * relay state were measured at one moment and frozen, so on a unit that
+        * lost power they describe the past in the present tense.
+        *
+        * Labelling the frozen block in place was tried first and read as noise.
+        * Splitting the card is what the layout could not hold without this
+        * control (plan 3.1): the two groups need different tenses on screen at
+        * the same time, and no ordering of one list does that.
+        *
+        * While the sensor is online both groups are current, so there is no
+        * toggle and nothing changes from what the operator already knows.
+        */}
+      {staleReadings && (
+        <div className="card-view-toggle" role="group" aria-label="Which readings to show">
+          <button
+            type="button"
+            className={showLastOnline ? '' : 'is-active'}
+            onClick={() => setShowLastOnline(false)}
+          >
+            Current status
+          </button>
+          <button
+            type="button"
+            className={showLastOnline ? 'is-active' : ''}
+            onClick={() => setShowLastOnline(true)}
+          >
+            Last online status
+          </button>
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {/* The two readings that describe now rather than then: one is a
-            timestamp, the other counts forward from it. Everything below the
-            marker was measured at that moment and has not moved since, so
-            these two are lifted out to sit together above it. */}
         <Metric label="Last Seen">
           <Mono size="12px" color={C.text}>{formatTimestamp(device.last_seen_at)}</Mono>
         </Metric>
@@ -86,66 +129,66 @@ export default function NodeCard({ device }) {
           </Mono>
         </Metric>
 
-        {/*
-          * A sensor that has stopped reporting keeps rendering the readings from
-          * its last update: "Signal: Strong" and "Running For" for a unit that
-          * lost power a quarter of an hour ago. Those are measurements of a
-          * past moment printed in the present tense, which is the same claim
-          * the status label itself was making before the thresholds were fixed.
-          * Naming them costs one line and no layout change.
-          */}
-        {staleReadings && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            marginTop: '4px', paddingTop: '10px', borderTop: `1px dashed ${C.border}`,
-          }}>
-            <Mono size="10px" color={C.amber} style={{ letterSpacing: '0.08em' }}>
-              MEASURED AT THAT CHECK-IN, NOT NOW
-            </Mono>
-          </div>
+        {showLastOnline && (
+          <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.5 }}>
+            Below is what the sensor reported when it last checked in. It is not
+            what the sensor is doing now.
+          </Mono>
         )}
 
-        <Metric label="Saving Records">
-          <Tag color={device.log_healthy ? 'green' : device.has_ever_reported ? 'red' : 'gray'}>
-            {device.has_ever_reported ? device.log_healthy ? 'Okay' : 'Problem' : 'No update yet'}
-          </Tag>
-        </Metric>
+        {showSnapshot && (
+          <>
+            <Metric label="Saving Records">
+              <Tag color={device.log_healthy ? 'green' : device.has_ever_reported ? 'red' : 'gray'}>
+                {device.has_ever_reported ? device.log_healthy ? 'Okay' : 'Problem' : 'No update yet'}
+              </Tag>
+            </Metric>
 
-        <Metric label="Waiting To Send">
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-            <Tag color={backlog.color}>{backlog.label}</Tag>
-            {backlog.detail && <Mono size="11px" color={C.textDim}>{backlog.detail}</Mono>}
-          </div>
-        </Metric>
+            <Metric label="Waiting To Send">
+              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <Tag color={backlog.color}>{backlog.label}</Tag>
+                {backlog.detail && <Mono size="11px" color={C.textDim}>{backlog.detail}</Mono>}
+              </div>
+            </Metric>
 
-        <Metric label="Sprayer Safe">
-          <Tag color={device.relay_safe_high ? 'green' : 'red'}>
-            {device.relay_safe_high ? 'Safe-high reported' : 'Unsafe — check device'}
-          </Tag>
-        </Metric>
+            <Metric label="Sprayer Safe">
+              <Tag color={device.relay_safe_high ? 'green' : 'red'}>
+                {device.relay_safe_high ? 'Safe-high reported' : 'Unsafe — check device'}
+              </Tag>
+            </Metric>
 
-        <Metric label="Signal">
-          {device.wifi_rssi_dbm === null ? <Mono size="12px" color={C.textDim}>Not available</Mono> : <WifiSignal dbm={device.wifi_rssi_dbm} />}
-        </Metric>
+            <Metric label="Signal">
+              {device.wifi_rssi_dbm === null ? <Mono size="12px" color={C.textDim}>Not available</Mono> : <WifiSignal dbm={device.wifi_rssi_dbm} />}
+            </Metric>
 
-        {/* "Running For" is the one label that asserts the present rather than
-            reporting a number, so it is the only one whose wording changes. */}
-        <Metric label={staleReadings ? 'Had Been Running For' : 'Running For'}>
-          <Mono size="12px" color={C.text}>{formatDuration(device.uptime_ms)}</Mono>
-        </Metric>
+            <Metric label="Running For">
+              <Mono size="12px" color={C.text}>{formatDuration(device.uptime_ms)}</Mono>
+            </Metric>
 
-        {technical && <Metric label="C3 boot / ordinal">
-          <Mono size="12px" color={C.text}>{device.c3_boot ?? '—'} / {device.last_ordinal ?? '—'}</Mono>
-        </Metric>}
+            {technical && <Metric label="C3 boot / ordinal">
+              <Mono size="12px" color={C.text}>{device.c3_boot ?? '—'} / {device.last_ordinal ?? '—'}</Mono>
+            </Metric>}
 
-        {technical && <Metric label="Free Heap">
-          <Mono size="12px" color={C.text}>
-            {device.free_heap_bytes === null ? 'Not available' : `${Math.round(device.free_heap_bytes / 1024)} KiB`}
+            {technical && <Metric label="Free Heap">
+              <Mono size="12px" color={C.text}>
+                {device.free_heap_bytes === null ? 'Not available' : `${Math.round(device.free_heap_bytes / 1024)} KiB`}
+              </Mono>
+            </Metric>}
+          </>
+        )}
+
+        {!showSnapshot && (
+          <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.5 }}>
+            Signal, storage and sprayer readings come from the sensor, so there
+            are none while it is silent. Everything below arrived before it went
+            quiet and is still correct.
           </Mono>
-        </Metric>}
+        )}
 
         <div style={{ height: 1, background: C.border }} />
 
+        {/* Server-side, so these hold whatever the sensor is doing: they say
+            what reached the dashboard, not what the sensor is up to. */}
         <Metric label="Latest Uploaded Activity">
           <Mono size="12px" color={C.text}>{formatTimestamp(device.latest_upload_or_event_at)}</Mono>
         </Metric>
@@ -175,7 +218,11 @@ export default function NodeCard({ device }) {
             A later healthy update is needed. The earlier problem remains in the records.
           </Mono>
         </div>
-      ) : device.log_healthy ? (
+      ) : device.log_healthy && showSnapshot ? (
+        // Reads off log_healthy, which is part of the heartbeat snapshot, so it
+        // belongs with the snapshot rather than under Current status. A silent
+        // sensor reassuring the operator that records are being saved is the
+        // same stale claim in a friendlier voice.
         <div style={{ marginTop: '16px', display: 'flex', gap: '8px', alignItems: 'center', color: C.green }}>
           <Mono size="11px" color={C.green}>The latest update says records are being saved.</Mono>
         </div>

@@ -92,16 +92,15 @@ export function describeDeviceState(device) {
     return 'This sensor is listed but has never sent an update.';
   }
   /*
-   * Both of these end by disclaiming the readings underneath. The card keeps
-   * rendering signal, uptime and storage from the last update, and without
-   * this the section reads as a live description of a sensor that may have
-   * lost power a quarter of an hour ago.
+   * These deliberately say only what is known. The card no longer shows the
+   * frozen heartbeat snapshot by default, so there is nothing here to
+   * disclaim; the "Last online status" view carries its own note.
    */
   if (device.operational_state === 'stale') {
-    return `No update received within the ${device.stale_after_minutes}-minute check period. The readings below are from the last update, not from now.`;
+    return `No update received within the ${device.stale_after_minutes}-minute check period.`;
   }
   if (device.operational_state === 'offline') {
-    return `No update received within the ${device.offline_after_minutes}-minute offline period. The readings below are from the last update and may no longer be true.`;
+    return `No update received within the ${device.offline_after_minutes}-minute offline period.`;
   }
   // Reachable only while the sensor is still checking in: the database raises
   // 'stalled' for a live heartbeat with a backlog that is not draining. Without

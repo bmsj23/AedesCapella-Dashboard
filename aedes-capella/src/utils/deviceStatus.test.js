@@ -89,18 +89,20 @@ test('a stalled backlog contradicts the "sending normally" reading, so it replac
   );
 });
 
-test('a sensor that stopped reporting disclaims the readings it still shows', () => {
+test('a silent sensor states only what is known, without implying live readings', () => {
   const offline = describeDeviceState({
     operational_state: 'offline', offline_after_minutes: 10,
   });
   assert.match(offline, /10-minute offline period/);
-  assert.match(offline, /from the last update/i);
+  // The card no longer shows the frozen snapshot by default, so the state
+  // message has nothing to disclaim and must not imply the readings are live.
+  assert.doesNotMatch(offline, /from the last update/i);
 
   const stale = describeDeviceState({
     operational_state: 'stale', stale_after_minutes: 6,
   });
   assert.match(stale, /6-minute check period/);
-  assert.match(stale, /not from now/i);
+  assert.doesNotMatch(stale, /not from now/i);
 });
 
 test('a working sensor makes no such disclaimer', () => {
