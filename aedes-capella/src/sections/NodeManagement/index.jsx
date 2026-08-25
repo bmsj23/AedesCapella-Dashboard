@@ -4,9 +4,12 @@ import Banner from '../../components/ui/Banner';
 import EmptyState from '../../components/ui/EmptyState';
 import DeviceStateGuide from './DeviceStateGuide';
 import NodeCard from './NodeCard';
+import DeviceManager from './DeviceManager';
+import { useViewerRole } from '../../contexts/viewerRole';
 
 /** Section 4 - Node Management */
-export default function NodeManagement({ deviceStatus }) {
+export default function NodeManagement({ deviceStatus, dashboardData, accessToken }) {
+  const role = useViewerRole();
   const { devices, error, loading, refreshing, refresh, refreshedAt } = deviceStatus;
   const loggingFaults = devices.filter(device => device.operational_state === 'logging_fault');
 
@@ -85,6 +88,14 @@ export default function NodeManagement({ deviceStatus }) {
       {/* The legend reads as a footnote to the devices above it, not as a
           preamble a reader has to scroll past to reach their own sensors. */}
       <DeviceStateGuide devices={devices} />
+
+      <DeviceManager
+        accessToken={accessToken}
+        role={role}
+        registry={dashboardData?.deviceRegistry || []}
+        registryError={dashboardData?.errors?.deviceRegistry || ''}
+        onRefresh={refresh}
+      />
     </div>
   );
 }

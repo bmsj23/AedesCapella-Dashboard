@@ -196,6 +196,70 @@ export async function fetchDeviceMap(accessToken, signal) {
   });
 }
 
+export async function fetchDeviceRegistry(accessToken, signal) {
+  return request('/rest/v1/dashboard_device_registry?select=*&order=device_label.asc', {
+    accessToken,
+    signal,
+  });
+}
+
+export async function fetchDeviceRegistryById(accessToken, deviceId, signal) {
+  const rows = await request(
+    `/rest/v1/dashboard_device_registry?select=*&device_id=eq.${encodeURIComponent(deviceId)}&limit=1`,
+    { accessToken, signal },
+  );
+  return rows[0] || null;
+}
+
+export async function fetchLocations(accessToken, signal) {
+  return request('/rest/v1/locations?select=location_id,location_name,barangay_name,is_active&is_active=eq.true&order=barangay_name.asc,location_name.asc', {
+    accessToken,
+    signal,
+  });
+}
+
+export async function registerDevice(accessToken, device, signal) {
+  return request('/rest/v1/rpc/admin_register_device', {
+    method: 'POST',
+    accessToken,
+    signal,
+    body: device,
+  });
+}
+
+export async function updateDevice(accessToken, device, signal) {
+  return request('/rest/v1/rpc/technical_update_device', {
+    method: 'POST',
+    accessToken,
+    signal,
+    body: device,
+  });
+}
+
+export async function decommissionDevice(accessToken, deviceId, confirmationLabel, signal) {
+  return request('/rest/v1/rpc/admin_decommission_device', {
+    method: 'POST',
+    accessToken,
+    signal,
+    body: {
+      p_device_id: deviceId,
+      p_confirmation_label: confirmationLabel,
+    },
+  });
+}
+
+export async function rotateDeviceToken(accessToken, deviceLabel, tokenSha256, signal) {
+  return request('/rest/v1/rpc/admin_rotate_device_ingest_token', {
+    method: 'POST',
+    accessToken,
+    signal,
+    body: {
+      p_device_label: deviceLabel,
+      p_token_sha256: tokenSha256,
+    },
+  });
+}
+
 export async function fetchDeviceStatusById(accessToken, deviceId, signal) {
   const rows = await request(
     `/rest/v1/dashboard_device_status?select=*&device_id=eq.${encodeURIComponent(deviceId)}&limit=1`,
