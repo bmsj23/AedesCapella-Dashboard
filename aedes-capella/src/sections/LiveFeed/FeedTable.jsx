@@ -1,4 +1,5 @@
 import { C } from '../../constants/colors';
+import { DETECTION_TERM } from '../../constants/terminology';
 import EmptyState from '../../components/ui/EmptyState';
 import Mono from '../../components/ui/Mono';
 import Tag from '../../components/ui/Tag';
@@ -105,15 +106,28 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
                     </Mono>
                   )} */}
                 </td>
+                {/*
+                  * The sentence carries this cell, so the badge goes.
+                  *
+                  * "The sprayer was switched on. [ARRIVED 18M LATE]" put a
+                  * chip inline beside ordinary prose, which is the same
+                  * mistake as the two on the device card. The delay is real
+                  * information and is kept, on its own line, dim: it qualifies
+                  * the sentence above it rather than competing with it.
+                  */}
                 <td className="activity-notes" data-label="Notes">
                   <Mono size="12px" color={C.textDim} style={{ lineHeight: 1.45 }}>
                     {event.time_quality === 'unresolved'
-                      ? 'Sent after reconnecting. The event time is unavailable.'
+                      ? 'Sent after reconnecting. The time this happened is not known.'
                       : event.temporal_candidate
-                        ? 'Likely an Aedes aegypti sound.'
+                        ? DETECTION_TERM.caveat
                         : plainReason(event.reason)}
                   </Mono>
-                  {time.delay && <Tag color="amber">Arrived {time.delay}</Tag>}
+                  {time.delay && (
+                    <Mono size="11px" color={C.textDim} style={{ display: 'block', marginTop: '5px' }}>
+                      Reached the dashboard {time.delay}.
+                    </Mono>
+                  )}
                 </td>
               </tr>
             );

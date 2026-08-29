@@ -634,6 +634,24 @@ a:focus-visible,
   min-height: 22px;
 }
 
+/*
+ * A badge and its explanation stack; they never sit on one line.
+ *
+ * Side by side, the chip and the sentence read as one broken run of text and
+ * the reader cannot tell which is the label. Stacked, the chip is plainly the
+ * state and the line beneath it is plainly a footnote. The width cap stops a
+ * long note stretching the value column and squeezing its label.
+ */
+.node-metric-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  min-width: 0;
+  max-width: 30ch;
+  text-align: right;
+}
+
 .status-refresh-button {
   display: inline-flex;
   align-items: center;

@@ -98,13 +98,16 @@ export function describeDetector(device) {
       return {
         label: 'Detecting',
         color: 'green',
-        detail: 'A reading reached the hub recently.',
+        // No note. "A reading reached the hub recently" was the chip again in
+        // a longer sentence, and a badge beside a sentence saying the same
+        // thing is what made this row read as broken layout.
+        detail: null,
       };
     case 'detector_down':
       return {
         label: 'Not responding',
         color: 'red',
-        detail: 'The hub has stopped hearing from the microphone unit.',
+        detail: 'The sensor has stopped hearing from its microphone unit.',
       };
     case 'silent_unverifiable':
       return {
@@ -118,7 +121,7 @@ export function describeDetector(device) {
       return {
         label: 'Never detected yet',
         color: 'gray',
-        detail: 'No reading has ever reached the hub from this unit.',
+        detail: 'This sensor has never sent a reading.',
       };
     default:
       return { label: 'No update yet', color: 'gray', detail: null };
