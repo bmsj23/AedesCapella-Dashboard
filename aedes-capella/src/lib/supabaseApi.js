@@ -95,6 +95,10 @@ export async function fetchDeviceStatus(accessToken, signal) {
     // fails the whole request and blanks Device Status rather than degrading.
     'unsent_records', 'oldest_unsent_at', 'unsent_backlog_state',
     'backlog_stalled_after_minutes',
+    // Added by migration 202608290004. Same rule as above: an unknown column
+    // fails the whole request, so do not request these before it is applied.
+    'detector_state', 'detector_reporting_supported', 'detector_last_confirmed_at',
+    's3_last_packet_age_ms', 's3_boot_id', 's3_last_sequence',
   ].join(',');
 
   return request(`/rest/v1/dashboard_device_status?select=${columns}&order=device_label.asc`, {

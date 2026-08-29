@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   describeDeviceState,
   describeUploadBacklog,
+  describeDetector,
   formatDuration,
   formatTimestamp,
   getStatusPresentation,
@@ -111,4 +112,38 @@ test('a working sensor makes no such disclaimer', () => {
   });
   assert.match(online, /about every 2 minutes/);
   assert.doesNotMatch(online, /last update/i);
+});
+
+test('a recent reading is positive evidence the detector is alive', () => {
+  const d = describeDetector({ detector_state: 'confirmed_live' });
+  assert.equal(d.color, 'green');
+  assert.match(d.label, /Detecting/);
+});
+
+test('silence is never reported as a fault, and never as reassurance', () => {
+  const d = describeDetector({
+    detector_state: 'silent_unverifiable', detector_reporting_supported: false,
+  });
+  // Not red: on firmware with no keepalive a quiet night looks identical to a
+  // dead S3, so claiming a fault would be as wrong as claiming health.
+  assert.equal(d.color, 'gray');
+  assert.doesNotMatch(d.label, /working|okay|fine/i);
+  assert.match(d.detail, /cannot yet tell quiet apart from stopped/);
+});
+
+test('firmware that reports detector age drops the cannot-tell caveat', () => {
+  const d = describeDetector({
+    detector_state: 'silent_unverifiable', detector_reporting_supported: true,
+  });
+  assert.equal(d.detail, null);
+});
+
+test('a detector the hub says it cannot hear is a real fault', () => {
+  const d = describeDetector({ detector_state: 'detector_down' });
+  assert.equal(d.color, 'red');
+});
+
+test('an unknown or missing detector state degrades quietly', () => {
+  assert.equal(describeDetector({}).color, 'gray');
+  assert.equal(describeDetector({ detector_state: 'unknown' }).label, 'No update yet');
 });
