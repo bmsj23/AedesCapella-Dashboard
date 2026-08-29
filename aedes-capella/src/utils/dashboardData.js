@@ -174,6 +174,26 @@ export function getActivityTimePresentation(event = {}) {
   };
 }
 
+/*
+ * The instant the current Manila day began.
+ *
+ * "Today" on this dashboard means since midnight in Manila, which is not the
+ * same answer as "the last 24 hours" for all but one instant of the day, and
+ * is the one a barangay health worker means when she opens the page in the
+ * morning and asks what happened.
+ *
+ * Philippine Standard Time is a flat UTC+8 with no daylight saving, so the day
+ * boundary is arithmetic rather than a timezone-database lookup: shift into
+ * Manila, floor to the day, shift back.
+ *
+ * @param {number} [now] - injectable clock, for tests
+ * @returns {number} epoch milliseconds of 00:00 Asia/Manila today
+ */
+export function manilaStartOfDay(now = Date.now()) {
+  const shifted = now + MANILA_OFFSET_MS;
+  return (Math.floor(shifted / DAY_MS) * DAY_MS) - MANILA_OFFSET_MS;
+}
+
 export function average(values) {
   const numeric = values.map(Number).filter(Number.isFinite);
   return numeric.length

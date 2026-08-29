@@ -3,7 +3,9 @@ import { C } from './constants/colors';
 import { useOperatorSession } from './hooks/useOperatorSession';
 import { ViewerProvider } from './contexts/ViewerProvider';
 import { useLiveDashboard } from './hooks/useLiveDashboard';
-import { average, candidateScorePercent, countSince } from './utils/dashboardData';
+import {
+  average, candidateScorePercent, countSince, manilaStartOfDay,
+} from './utils/dashboardData';
 import LoginPage from './components/auth/LoginPage';
 import LogoutConfirmModal from './components/auth/LogoutConfirmModal';
 import {
@@ -100,16 +102,21 @@ export default function App() {
     liveData.reconciledAt?.getTime() || 0,
     Date.parse(liveData.activity[0]?.received_at || '') || 0,
   );
-  const since24h = metricsAsOf - (24 * 60 * 60 * 1000);
+  /*
+   * Since midnight in Manila, matching what the database is asked for, so the
+   * fallback below cannot quietly answer a different question from the one the
+   * header's label promises when the summary is briefly unavailable.
+   */
+  const sinceMidnight = manilaStartOfDay(metricsAsOf);
   const candidatesToday = liveData.activitySummary
     ? Number(liveData.activitySummary.candidates_in_window || 0)
-    : countSince(liveData.candidates, 'display_time', since24h);
+    : countSince(liveData.candidates, 'display_time', sinceMidnight);
   const relaysToday = liveData.activitySummary
     ? Number(liveData.activitySummary.relay_activations_in_window || 0)
     : countSince(
       liveData.relays.filter(relay => relay.recorded_relay_activation),
       'started_at',
-      since24h,
+      sinceMidnight,
     );
   const onlineNodes = deviceStatus.devices.filter(device => device.operational_state === 'online').length;
   const attentionNodes = deviceStatus.devices.filter(device => device.needs_attention).length;

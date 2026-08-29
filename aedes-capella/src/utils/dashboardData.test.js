@@ -8,6 +8,7 @@ import {
   deriveRelayEpisodes,
   getActivityTimePresentation,
   getEventPresentation,
+  manilaStartOfDay,
 } from './dashboardData.js';
 import { DETECTION_TERM } from '../constants/terminology.js';
 
@@ -127,6 +128,34 @@ test('no event label claims a confirmation or leaks the word candidate', () => {
       assert.ok(!label.includes(word), `${kind} label must not contain "${word}": ${label}`);
     });
   });
+});
+
+/*
+ * "Today" is the boundary the Latest Activity filter and the database summary
+ * both window on, so being an hour out here silently miscounts a day on both
+ * sides of the screen at once.
+ */
+test('the Manila day starts at 16:00 UTC the evening before', () => {
+  // 2026-08-29 07:30 UTC is 15:30 on the 29th in Manila, so the day began at
+  // 16:00 UTC on the 28th.
+  assert.equal(
+    new Date(manilaStartOfDay(Date.parse('2026-08-29T07:30:00Z'))).toISOString(),
+    '2026-08-28T16:00:00.000Z',
+  );
+
+  // One minute before midnight Manila still belongs to the previous day, and
+  // one minute after starts the next: the two sides of the boundary that a
+  // whole-hours window cannot express.
+  const justBefore = Date.parse('2026-08-29T15:59:00Z');
+  const justAfter = Date.parse('2026-08-29T16:01:00Z');
+  assert.equal(new Date(manilaStartOfDay(justBefore)).toISOString(), '2026-08-28T16:00:00.000Z');
+  assert.equal(new Date(manilaStartOfDay(justAfter)).toISOString(), '2026-08-29T16:00:00.000Z');
+
+  // Never in the future, and never more than a day back.
+  const now = Date.parse('2026-08-29T07:30:00Z');
+  const start = manilaStartOfDay(now);
+  assert.ok(start <= now);
+  assert.ok(now - start < 24 * 60 * 60 * 1000);
 });
 
 test('relay pairing uses device and source packet and derives evidence duration', () => {

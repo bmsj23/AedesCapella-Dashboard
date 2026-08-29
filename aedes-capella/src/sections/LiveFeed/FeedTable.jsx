@@ -21,7 +21,9 @@ function deviceLabel(deviceId, deviceLabels) {
 }
 
 /** Recent sensor activity table with plain-language labels. */
-export default function FeedTable({ events = [], deviceLabels = {}, loading = false, error = '' }) {
+export default function FeedTable({
+  events = [], deviceLabels = {}, loading = false, error = '', emptyToday = false,
+}) {
 
   if (loading) {
     return (
@@ -45,10 +47,17 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
   }
 
   if (!events.length) {
+    /*
+     * An empty day and an empty feed are different facts, and the filter is
+     * the only thing that knows which one this is. Saying "no recent activity"
+     * on a quiet morning would send a reader to check sensors that are fine.
+     */
     return (
       <EmptyState
-        title="No Recent Activity"
-        message="No sensor updates are showing right now. This does not prove that everything is okay."
+        title={emptyToday ? 'Nothing Recorded Today Yet' : 'No Recent Activity'}
+        message={emptyToday
+          ? 'The sensors have not recorded anything since midnight. This does not prove that everything is okay.'
+          : 'No sensor updates are showing right now. This does not prove that everything is okay.'}
         action="Open Sensor Status and check whether the sensors are reporting."
       />
     );

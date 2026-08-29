@@ -4,9 +4,15 @@ import Tag from '../ui/Tag';
 
 /* The average match score was removed: it is a model score, and showing it to
    a health worker invites reading it as a confidence in a species. */
+/*
+ * Today, not 24 hours. Both numbers come from the same summary the Latest
+ * Activity panel reads, which now asks the database for midnight in Manila, so
+ * the header and the section can no longer quote different figures for what
+ * the reader thinks of as the same question.
+ */
 const METRICS = [
-  { key: 'candidates', label: `${DETECTION_TERM.plural} (24h)` },
-  { key: 'relays', label: 'Sprayings (24h)' },
+  { key: 'candidates', label: `${DETECTION_TERM.plural} (today)` },
+  { key: 'relays', label: 'Sprayings (today)' },
   { key: 'nodes', label: 'Devices Working' },
 ];
 
