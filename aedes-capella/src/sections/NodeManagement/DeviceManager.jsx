@@ -282,7 +282,7 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
             <Banner
               icon={ShieldCheck}
               color="amber"
-              text="The previous token is revoked. Copy this replacement now and provision it only to this device."
+              text="Copy this now, it is shown only once. This sensor stays offline until you flash this token into it and restart it."
             />
             <div className="device-token-box">
               <code>{token}</code>
@@ -293,9 +293,20 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
             </div>
           </>
         ) : (
-          <p className="device-dialog-copy">
-            Rotation immediately invalidates the current credential. Continue only when the replacement can be placed in the intended C3 configuration.
-          </p>
+          <>
+            <Banner
+              icon={ShieldCheck}
+              color="amber"
+              text="This sensor will stop sending data as soon as you rotate, and stays offline until you flash the new token into it."
+            />
+            <p className="device-dialog-copy">
+              The token is the sensor&apos;s password for sending data. It is built into the device,
+              as <code>AEDES_DEVICE_TOKEN</code> in its <code>aedes_secrets.h</code>, so replacing it
+              here means reflashing the ESP32-C3 before it can upload again. Rotate only if a
+              credential may have leaked and you can reflash this unit. The replacement is shown
+              once and cannot be retrieved later.
+            </p>
+          </>
         )}
         <div className="device-dialog-actions">
           <button className="device-secondary-button" type="button" onClick={onClose}>{token ? 'Done' : 'Cancel'}</button>
