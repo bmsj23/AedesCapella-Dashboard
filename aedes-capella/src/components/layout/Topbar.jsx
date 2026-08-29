@@ -1,10 +1,11 @@
 import { usePHTime } from '../../hooks/usePHTime';
+import { DETECTION_TERM } from '../../constants/terminology';
 import Tag from '../ui/Tag';
 
-/* Average candidate score was removed: it is a model score, and showing it to
+/* The average match score was removed: it is a model score, and showing it to
    a health worker invites reading it as a confidence in a species. */
 const METRICS = [
-  { key: 'candidates', label: 'Possible Mosquitoes (24h)' },
+  { key: 'candidates', label: `${DETECTION_TERM.plural} (24h)` },
   { key: 'relays', label: 'Sprayings (24h)' },
   { key: 'nodes', label: 'Devices Working' },
 ];

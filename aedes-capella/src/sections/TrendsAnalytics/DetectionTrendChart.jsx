@@ -3,6 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { C } from '../../constants/colors';
+import { DETECTION_TERM, DETECTION_TERM_UPPER } from '../../constants/terminology';
 import Card from '../../components/ui/Card';
 import EmptyState from '../../components/ui/EmptyState';
 import { buildActivitySeries } from '../../utils/dashboardData';
@@ -19,7 +20,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '10px 14px' }}>
       <div style={{ fontFamily: 'var(--font-data)', fontSize: '12px', color: C.textDim }}>{label}</div>
       <div style={{ fontFamily: 'var(--font-data)', fontSize: '14px', color: C.amber, marginTop: '4px' }}>
-        {payload[0].value} candidates
+        {payload[0].value} {payload[0].value === 1 ? DETECTION_TERM.inlineSingular : DETECTION_TERM.inlinePlural}
       </div>
     </div>
   );
@@ -34,7 +35,7 @@ export default function DetectionTrendChart({ candidates = [] }) {
     <Card style={{ marginBottom: '20px', background: C.surface2 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '12px', flexWrap: 'wrap' }}>
         <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '16px', fontWeight: 700, color: C.textDim, letterSpacing: '0.08em' }}>
-          POSSIBLE MOSQUITOES OVER TIME · ASIA/MANILA
+          {DETECTION_TERM_UPPER.plural} OVER TIME · PHILIPPINE TIME
         </div>
         <div style={{ display: 'flex', gap: '6px' }}>
           {VIEWS.map(({ key, label }) => (
@@ -60,8 +61,8 @@ export default function DetectionTrendChart({ candidates = [] }) {
         </div>
       </div>
 
-      {candidates.length === 0 && <EmptyState title="No Possible Mosquitoes In This Period" message="Time slots with none recorded are shown as zero." compact />}
-      <div aria-label="Possible mosquitoes recorded over time, including time slots with none">
+      {candidates.length === 0 && <EmptyState title={`No ${DETECTION_TERM.inlinePlural} in this period`} message="Time slots with none recorded are shown as zero." compact />}
+      <div aria-label={`${DETECTION_TERM.plural} over time, including time slots with none`}>
         <ResponsiveContainer width="100%" height={220}>
           {/* A negative left margin used to pull the value axis off the plot,
               clipping its labels against the plate edge. */}

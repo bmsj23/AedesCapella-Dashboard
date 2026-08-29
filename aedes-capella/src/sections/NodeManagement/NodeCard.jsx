@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { C } from '../../constants/colors';
+import { DETECTION_TERM_UPPER } from '../../constants/terminology';
 import { formatDeviceName } from '../../utils/viewer';
 import { useIsTechnical } from '../../contexts/viewerRole';
 import Card from '../../components/ui/Card';
@@ -98,9 +99,13 @@ export default function NodeCard({ device }) {
         </div>
       </Metric>
 
-      <Metric label="Sprayer Safe">
+      {/* "Safe-high reported" named the GPIO level the firmware holds the relay
+          pin at. It is true, and it tells a barangay worker nothing. The two
+          readings a reader can act on are: the sprayer is off and safe, or it
+          is not and somebody should look. */}
+      <Metric label="Sprayer">
         <Tag color={device.relay_safe_high ? 'green' : 'red'}>
-          {device.relay_safe_high ? 'Safe-high reported' : 'Unsafe — check device'}
+          {device.relay_safe_high ? 'Off and safe' : 'Not safe, check the device'}
         </Tag>
       </Metric>
 
@@ -256,7 +261,7 @@ export default function NodeCard({ device }) {
         <div className="info-grid info-grid-two">
           <div style={{ padding: '10px', background: C.surface2, borderRadius: '7px', textAlign: 'center' }}>
             <Mono size="20px" color={C.text} style={{ display: 'block' }}>{device.candidates_last_7d ?? 0}</Mono>
-            <Mono size="10px" color={C.textDim}>POSSIBLE MOSQUITOES · 7 DAYS</Mono>
+            <Mono size="10px" color={C.textDim}>{DETECTION_TERM_UPPER.plural} · 7 DAYS</Mono>
           </div>
           <div style={{ padding: '10px', background: C.surface2, borderRadius: '7px', textAlign: 'center' }}>
             <Mono size="20px" color={C.text} style={{ display: 'block' }}>{device.mist_events_last_7d ?? 0}</Mono>

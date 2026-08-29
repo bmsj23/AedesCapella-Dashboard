@@ -1,3 +1,7 @@
+// Explicit extension: this module runs under `node --test`, whose ESM resolver
+// does not fill one in the way Vite does.
+import { DETECTION_TERM } from '../constants/terminology.js';
+
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const MANILA_OFFSET_MS = 8 * HOUR_MS;
@@ -39,7 +43,7 @@ const OPERATOR_ACTIVITY_KIND_SET = new Set(OPERATOR_ACTIVITY_KINDS);
 const EVENT_PRESENTATION = {
   BOOT: { label: 'Device turned on', color: 'blue' },
   TEST_ACCEPT: { label: 'Test check', color: 'gray' },
-  LIVE_ACCEPT: { label: 'Likely Aedes Mosquito', color: 'amber' },
+  LIVE_ACCEPT: { label: DETECTION_TERM.singular, color: 'amber' },
   RELAY_INTENT: { label: 'Spray requested', color: 'amber' },
   RELAY_ON: { label: 'Sprayer turned on', color: 'red' },
   RELAY_OFF: { label: 'Sprayer turned off', color: 'green' },

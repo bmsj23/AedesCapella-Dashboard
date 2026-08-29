@@ -1,5 +1,6 @@
 import { AlertTriangle } from 'lucide-react';
 import { C } from '../../constants/colors';
+import { DETECTION_TERM } from '../../constants/terminology';
 import Card from '../../components/ui/Card';
 import Tag from '../../components/ui/Tag';
 import { average, buildRuntimeSummary, candidateScorePercent, formatDashboardTimestamp } from '../../utils/dashboardData';
@@ -27,9 +28,9 @@ export default function MetricCards({ events = [], candidates = [] }) {
   const meanScore = average(candidates.map(candidateScorePercent));
   const metrics = [
     {
-      label: 'Possible mosquitoes recorded',
+      label: DETECTION_TERM.plural,
       value: String(candidates.length),
-      sub: candidates.length ? 'sounds that matched, still need checking' : 'nothing recorded yet',
+      sub: candidates.length ? DETECTION_TERM.caveat : 'nothing recorded yet',
       color: C.text,
       status: candidates.length ? 'Available' : 'None recorded',
       statusColor: candidates.length ? 'blue' : 'gray',

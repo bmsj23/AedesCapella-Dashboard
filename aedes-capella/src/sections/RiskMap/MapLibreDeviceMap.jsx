@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { DETECTION_TERM } from '../../constants/terminology';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
 import { formatDeviceName } from '../../utils/viewer';
 import {
@@ -60,10 +61,10 @@ function buildPopup(device, candidates, relays) {
   appendText(
     popup,
     'span',
-    `${device.candidates_last_24h ?? 0} possible matches · ${device.relay_activations_last_24h ?? 0} sprayer activations / 24h`,
+    `${device.candidates_last_24h ?? 0} ${DETECTION_TERM.inlinePlural} · ${device.relay_activations_last_24h ?? 0} sprayer activations / 24h`,
   );
   appendText(popup, 'span', `Latest activity: ${formatDashboardTimestamp(device.latest_activity_at)}`);
-  appendRecentRows(popup, 'Recent Possible Mosquitoes', candidates, 'display_time');
+  appendRecentRows(popup, `Recent ${DETECTION_TERM.inlinePlural}`, candidates, 'display_time');
   appendRecentRows(popup, 'Recent Sprayings', relays, 'display_time');
   return popup;
 }

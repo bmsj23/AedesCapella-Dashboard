@@ -1,7 +1,7 @@
 import { C } from '../../constants/colors';
+import { DETECTION_TERM } from '../../constants/terminology';
 import Card from '../../components/ui/Card';
 import Mono from '../../components/ui/Mono';
-import Tag from '../../components/ui/Tag';
 import { buildRuntimeSummary } from '../../utils/dashboardData';
 
 function Metric({ label, value, tone = C.text, note }) {
@@ -42,8 +42,8 @@ export default function ActivitySummary({ events, summary: databaseSummary }) {
       </div>
 
       <div className="info-grid info-grid-two">
-        <Metric label="Possible Aedes aegypti matches" value={summary.candidateCount} tone={C.amber} note="All recorded model and timing matches; not confirmed biological detections" />
-        <Metric label="Sprayer activations" value={summary.relayCount} tone={C.red} note="All recorded times the relay switched on" />
+        <Metric label={DETECTION_TERM.plural} value={summary.candidateCount} note={DETECTION_TERM.caveat} />
+        <Metric label="Sprayer switched on" value={summary.relayCount} note="Times the sprayer was recorded switching on. Not proof that spray reached anything." />
       </div>
     </Card>
   );

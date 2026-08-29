@@ -29,7 +29,7 @@ export function validateDeviceDraft(draft, { requireToken = false } = {}) {
   if (firmware.length > 120) return 'Firmware version must be 120 characters or fewer.';
   if (notes.length > 500) return 'Placement notes must be 500 characters or fewer.';
   if (requireToken && String(draft.ingestToken || '').length < 32) {
-    return 'Generate an ingest token before registering the device.';
+    return 'The sensor key could not be created. Close this form and try again.';
   }
 
   return rangeError(distance, 0, 100, 'Distance')
