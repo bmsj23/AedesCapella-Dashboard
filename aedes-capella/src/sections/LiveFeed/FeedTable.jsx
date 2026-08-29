@@ -98,8 +98,11 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
                       : deviceLabel(event.device_id, deviceLabels)}
                   </Mono>
                 </td>
+                {/* The icon carries what kind of event this is, which is the
+                    job colour used to do here before colour went back to
+                    meaning severity alone. */}
                 <td className="activity-kind" data-label="What happened">
-                  <Tag color={presentation.color}>{presentation.label}</Tag>
+                  <Tag color={presentation.color} icon={presentation.icon}>{presentation.label}</Tag>
                   {/* {event.temporal_candidate && (
                     <Mono size="11px" color={C.textDim} style={{ display: 'block', marginTop: '5px' }}>
                       {isNewCandidate ? 'just came in' : 'please check'}

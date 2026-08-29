@@ -13,7 +13,9 @@ const METRICS = [
 const CONNECTION = {
   live: { label: 'On', color: 'green' },
   reconnecting: { label: 'Connecting', color: 'amber' },
-  polling_fallback: { label: 'Slow', color: 'red' },
+  // Amber, not red. Slow updates mean the page may be a little behind; they do
+  // not mean anyone has to go and do something, which is what red is for.
+  polling_fallback: { label: 'Slow', color: 'amber' },
 };
 
 export default function Topbar({ metrics, connectionState, reconciledAt }) {

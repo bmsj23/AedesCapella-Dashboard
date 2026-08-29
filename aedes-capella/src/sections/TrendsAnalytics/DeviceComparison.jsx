@@ -20,6 +20,9 @@ import {
   buildDeviceComparison,
   COMPARISON_WINDOWS,
 } from '../../utils/deviceComparison';
+// The fourth copy of "online is green, everything else is amber" lived here.
+// One shared reading now answers for all of them.
+import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
 
 const BAR_COLORS = [C.amber, C.blue];
@@ -150,8 +153,8 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
                         <strong>{formatDeviceName(device?.device_label)}</strong>
                         <span>{placementSummary(registryDevice)}</span>
                       </div>
-                      <Tag color={device?.operational_state === 'online' ? 'green' : 'amber'}>
-                        {device?.operational_state === 'online' ? 'Online' : 'Check status'}
+                      <Tag color={getStatusPresentation(device?.operational_state).color}>
+                        {getStatusPresentation(device?.operational_state).label}
                       </Tag>
                     </div>
                     <ComparisonStat label={DETECTION_TERM.plural} value={row.candidates} />

@@ -1,4 +1,3 @@
-import { AlertTriangle } from 'lucide-react';
 import { C } from '../../constants/colors';
 import { DETECTION_TERM } from '../../constants/terminology';
 import Card from '../../components/ui/Card';
@@ -33,7 +32,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
       sub: candidates.length ? DETECTION_TERM.caveat : 'nothing recorded yet',
       color: C.text,
       status: candidates.length ? 'Available' : 'None recorded',
-      statusColor: candidates.length ? 'blue' : 'gray',
+      statusColor: candidates.length ? 'neutral' : 'gray',
     },
     {
       label: 'Sensor activities',
@@ -41,15 +40,17 @@ export default function MetricCards({ events = [], candidates = [] }) {
       sub: runtimeSummary.latestAt ? `last seen ${formatDashboardTimestamp(runtimeSummary.latestAt)}` : 'no activity yet',
       color: C.text,
       status: runtimeSummary.total ? 'Available' : 'No activity',
-      statusColor: runtimeSummary.total ? 'blue' : 'gray',
+      statusColor: runtimeSummary.total ? 'neutral' : 'gray',
     },
     {
       label: 'Busiest time',
       value: peakEventHour(events),
       sub: 'based on sensor activity',
       color: C.text,
-      status: events.length ? 'Review soon' : 'No activity',
-      statusColor: events.length ? 'amber' : 'gray',
+      // Not amber. The busiest hour of the night is a fact about the
+      // records, not a request to go and check anything.
+      status: events.length ? 'Available' : 'No activity',
+      statusColor: events.length ? 'neutral' : 'gray',
     },
     /*
      * Match strength is a model score. It reads as a confidence in the
@@ -63,7 +64,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
       sub: candidates.length ? 'how closely sounds matched, not proof of species' : 'nothing to score yet',
       color: C.text,
       status: meanScore === null ? 'No reports' : 'Available',
-      statusColor: meanScore === null ? 'gray' : 'blue',
+      statusColor: meanScore === null ? 'gray' : 'neutral',
     }] : []),
   ];
 
@@ -78,8 +79,10 @@ export default function MetricCards({ events = [], candidates = [] }) {
             gap: '8px',
             marginBottom: '12px',
           }}>
+            {/* An amber warning triangle used to appear here when the count
+                was zero. A night on which the sensor heard nothing is a normal
+                night, and the chip beside it already says "None recorded". */}
             <Tag color={statusColor}>{status}</Tag>
-            {index === 0 && candidates.length === 0 && <AlertTriangle size={16} color={C.amber} />}
           </div>
           <div style={{
             fontFamily:    'var(--font-data)',

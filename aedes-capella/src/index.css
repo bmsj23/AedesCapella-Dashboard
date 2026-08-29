@@ -114,9 +114,15 @@
   --tag-gray-bg: #f2f4f7;
   --tag-gray-fill: #8a94a6;
   --tag-gray-ink: #4a5563;
-  --tag-blue-bg: #ebf1fd;
-  --tag-blue-fill: #2563eb;
-  --tag-blue-ink: #1c46ad;
+  /*
+   * "Recorded, nothing to do." Deliberately not a hue: a normal event that
+   * needs no action should not compete with the three that carry urgency, and
+   * gray is already spoken for by "no information". Slate reads as definite
+   * rather than absent, which is the difference between the two.
+   */
+  --tag-neutral-bg: #eef1f5;
+  --tag-neutral-fill: #47536a;
+  --tag-neutral-ink: #2b3546;
   --banner-blue-bg: #dbeafe;
   --banner-blue-border: #93c5fd66;
   --banner-blue-text: #1d4ed8;
@@ -550,6 +556,11 @@ a:focus-visible,
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* Five is the full colour scale, so the legend is the only user of this. */
+.info-grid-five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .risk-map-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
@@ -885,11 +896,19 @@ a:focus-visible,
   background: var(--tag-fill);
 }
 
+/*
+ * A chip carrying an icon drops the square marker. Both are the chip's leading
+ * glyph, and drawing the two together reads as decoration rather than as one
+ * mark meaning one thing.
+ */
+.pd-tag-iconed::before { display: none; }
+.pd-tag svg { flex-shrink: 0; color: var(--tag-fill); }
+
 .pd-tag-amber { --tag-bg: var(--tag-amber-bg); --tag-fill: var(--tag-amber-fill); --tag-ink: var(--tag-amber-ink); }
 .pd-tag-red   { --tag-bg: var(--tag-red-bg);   --tag-fill: var(--tag-red-fill);   --tag-ink: var(--tag-red-ink); }
 .pd-tag-green { --tag-bg: var(--tag-green-bg); --tag-fill: var(--tag-green-fill); --tag-ink: var(--tag-green-ink); }
-.pd-tag-blue  { --tag-bg: var(--tag-blue-bg);  --tag-fill: var(--tag-blue-fill);  --tag-ink: var(--tag-blue-ink); }
 .pd-tag-gray  { --tag-bg: var(--tag-gray-bg);  --tag-fill: var(--tag-gray-fill);  --tag-ink: var(--tag-gray-ink); }
+.pd-tag-neutral { --tag-bg: var(--tag-neutral-bg); --tag-fill: var(--tag-neutral-fill); --tag-ink: var(--tag-neutral-ink); }
 
 /* Nav buttons carry no edge of any kind; only the fill marks the active item. */
 .dashboard-nav button {
@@ -993,7 +1012,8 @@ a:focus-visible,
 .map-popup-list span { font-size: 10px; }
 
 @media (max-width: 1100px) {
-  .info-grid-four {
+  .info-grid-four,
+  .info-grid-five {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1043,6 +1063,7 @@ a:focus-visible,
 @media (max-width: 720px) {
   .info-grid-three,
   .info-grid-four,
+  .info-grid-five,
   .info-grid-two {
     grid-template-columns: 1fr;
   }

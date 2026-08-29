@@ -23,7 +23,9 @@ test('unresolved activity never presents receipt time as when it happened', () =
   assert.equal(presentation.happenedLabel, 'Unavailable');
   assert.equal(presentation.receivedAt, receivedAt);
   assert.equal(presentation.qualityLabel, 'Time unavailable');
-  assert.equal(presentation.qualityTone, 'amber');
+  // Gray, not amber. A missing timestamp is missing information, which is what
+  // gray means; it is not a request to go and check the sensor.
+  assert.equal(presentation.qualityTone, 'gray');
   assert.equal(ACTIVITY_TABLE_HEADERS.includes('TIME'), false);
   assert.deepEqual(ACTIVITY_TABLE_HEADERS.slice(0, 2), [
     'WHEN IT HAPPENED',

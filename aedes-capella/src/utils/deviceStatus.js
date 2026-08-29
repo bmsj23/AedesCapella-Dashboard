@@ -7,7 +7,10 @@ export const STATUS_PRESENTATION = {
   // explicit that offline means no update arrived, not that the unit is off or
   // broken, which is why the description under it keeps saying so.
   offline: { label: 'Offline', color: 'gray', tone: 'offline' },
-  never_seen: { label: 'Not connected yet', color: 'blue', tone: 'startup' },
+  // Neutral, not blue: a sensor that has been added but has not reported yet
+  // is a normal step in setting one up, and nobody has to do anything about it
+  // on this screen. Blue was a sixth, undocumented meaning.
+  never_seen: { label: 'Not connected yet', color: 'neutral', tone: 'startup' },
   logging_fault: { label: 'Records may be missing', color: 'red', tone: 'critical' },
 };
 
@@ -74,7 +77,9 @@ export function describeUploadBacklog(device, nowMs = Date.now()) {
 
   return {
     label: `${count} waiting to send`,
-    color: stalled ? 'amber' : 'blue',
+    // A backlog that is draining is the sensor doing its job; only a stalled
+    // one asks anyone to look.
+    color: stalled ? 'amber' : 'neutral',
     // The server cannot date a record it never received, so this is stated as
     // silence since the last arrival rather than as the age of the oldest
     // pending record.
