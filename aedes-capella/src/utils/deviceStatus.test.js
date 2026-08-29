@@ -51,7 +51,7 @@ test('a backlog reports its depth and how long the silence has lasted', () => {
   );
   assert.equal(backlog.label, '7 waiting to send');
   assert.equal(backlog.detail, 'Nothing received for 0h 25m');
-  assert.equal(backlog.color, 'blue');
+  assert.equal(backlog.color, 'neutral');
 });
 
 test('only the database-decided stall turns the backlog amber', () => {
@@ -59,7 +59,7 @@ test('only the database-decided stall turns the backlog amber', () => {
     unsent_records: 40,
     oldest_unsent_at: '2026-08-14T06:00:00Z',
   };
-  assert.equal(describeUploadBacklog({ ...row, unsent_backlog_state: 'pending' }, NOW).color, 'blue');
+  assert.equal(describeUploadBacklog({ ...row, unsent_backlog_state: 'pending' }, NOW).color, 'neutral');
   assert.equal(describeUploadBacklog({ ...row, unsent_backlog_state: 'stalled' }, NOW).color, 'amber');
 });
 

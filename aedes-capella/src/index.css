@@ -114,9 +114,15 @@
   --tag-gray-bg: #f2f4f7;
   --tag-gray-fill: #8a94a6;
   --tag-gray-ink: #4a5563;
-  --tag-blue-bg: #ebf1fd;
-  --tag-blue-fill: #2563eb;
-  --tag-blue-ink: #1c46ad;
+  /*
+   * "Recorded, nothing to do." Deliberately not a hue: a normal event that
+   * needs no action should not compete with the three that carry urgency, and
+   * gray is already spoken for by "no information". Slate reads as definite
+   * rather than absent, which is the difference between the two.
+   */
+  --tag-neutral-bg: #eef1f5;
+  --tag-neutral-fill: #47536a;
+  --tag-neutral-ink: #2b3546;
   --banner-blue-bg: #dbeafe;
   --banner-blue-border: #93c5fd66;
   --banner-blue-text: #1d4ed8;
@@ -550,6 +556,11 @@ a:focus-visible,
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* Five is the full colour scale, so the legend is the only user of this. */
+.info-grid-five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .risk-map-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
@@ -632,6 +643,24 @@ a:focus-visible,
  */
 .node-card-close .node-metric {
   min-height: 22px;
+}
+
+/*
+ * A badge and its explanation stack; they never sit on one line.
+ *
+ * Side by side, the chip and the sentence read as one broken run of text and
+ * the reader cannot tell which is the label. Stacked, the chip is plainly the
+ * state and the line beneath it is plainly a footnote. The width cap stops a
+ * long note stretching the value column and squeezing its label.
+ */
+.node-metric-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  min-width: 0;
+  max-width: 30ch;
+  text-align: right;
 }
 
 .status-refresh-button {
@@ -867,11 +896,19 @@ a:focus-visible,
   background: var(--tag-fill);
 }
 
+/*
+ * A chip carrying an icon drops the square marker. Both are the chip's leading
+ * glyph, and drawing the two together reads as decoration rather than as one
+ * mark meaning one thing.
+ */
+.pd-tag-iconed::before { display: none; }
+.pd-tag svg { flex-shrink: 0; color: var(--tag-fill); }
+
 .pd-tag-amber { --tag-bg: var(--tag-amber-bg); --tag-fill: var(--tag-amber-fill); --tag-ink: var(--tag-amber-ink); }
 .pd-tag-red   { --tag-bg: var(--tag-red-bg);   --tag-fill: var(--tag-red-fill);   --tag-ink: var(--tag-red-ink); }
 .pd-tag-green { --tag-bg: var(--tag-green-bg); --tag-fill: var(--tag-green-fill); --tag-ink: var(--tag-green-ink); }
-.pd-tag-blue  { --tag-bg: var(--tag-blue-bg);  --tag-fill: var(--tag-blue-fill);  --tag-ink: var(--tag-blue-ink); }
 .pd-tag-gray  { --tag-bg: var(--tag-gray-bg);  --tag-fill: var(--tag-gray-fill);  --tag-ink: var(--tag-gray-ink); }
+.pd-tag-neutral { --tag-bg: var(--tag-neutral-bg); --tag-fill: var(--tag-neutral-fill); --tag-ink: var(--tag-neutral-ink); }
 
 /* Nav buttons carry no edge of any kind; only the fill marks the active item. */
 .dashboard-nav button {
@@ -975,7 +1012,8 @@ a:focus-visible,
 .map-popup-list span { font-size: 10px; }
 
 @media (max-width: 1100px) {
-  .info-grid-four {
+  .info-grid-four,
+  .info-grid-five {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1025,6 +1063,7 @@ a:focus-visible,
 @media (max-width: 720px) {
   .info-grid-three,
   .info-grid-four,
+  .info-grid-five,
   .info-grid-two {
     grid-template-columns: 1fr;
   }
@@ -1808,10 +1847,75 @@ a:focus-visible,
   line-height: 1.5;
 }
 
-.device-form-divider {
-  margin: 5px 0 14px;
+/*
+ * Everything a field install does not need, behind one disclosure.
+ *
+ * Native <details> rather than a state flag and a button: it is keyboard
+ * operable, announces its own expanded state, and cannot get out of step with
+ * the thing it hides. The summary says who the panel is for and that it can be
+ * skipped, because a collapsed panel with an unexplained heading is read as
+ * something the reader has forgotten to fill in.
+ */
+.device-advanced {
+  margin: 6px 0 14px;
   padding-top: 16px;
   border-top: 1px dashed var(--pd-dash);
+}
+
+/*
+ * A two-column grid, not a flex column with an absolutely positioned arrow.
+ * The title and the note stack in column two while one marker sits against
+ * both of them in column one, and nothing has to be positioned by hand.
+ */
+.device-advanced > summary {
+  cursor: pointer;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: start;
+  gap: 3px 4px;
+  font: 600 13px var(--font-data);
+  color: var(--color-text);
+  padding: 4px 0;
+}
+
+/* Safari draws its own marker on top of ours without this. */
+.device-advanced > summary::-webkit-details-marker { display: none; }
+
+.device-advanced > summary span {
+  grid-column: 2;
+  font: 400 12px var(--font-data);
+  color: var(--color-text-dim);
+  line-height: 1.45;
+}
+
+.device-advanced > summary::before {
+  content: '';
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: center;
+  margin-top: 5px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--color-text-dim);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.15s ease;
+}
+
+.device-advanced[open] > summary::before { transform: rotate(90deg); }
+
+.device-advanced > summary:focus-visible {
+  outline: 2px solid var(--pd-accent-ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.device-advanced-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 14px 0 2px 18px;
 }
 
 .device-dialog-actions {

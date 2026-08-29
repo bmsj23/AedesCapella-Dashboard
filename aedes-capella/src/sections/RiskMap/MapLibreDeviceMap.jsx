@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { DETECTION_TERM } from '../../constants/terminology';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
+import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
 import {
   addMapTilerKey,
@@ -51,19 +53,20 @@ function appendRecentRows(parent, label, rows, timestampKey) {
 function buildPopup(device, candidates, relays) {
   const popup = document.createElement('div');
   popup.className = 'map-popup';
-  const state = device.operational_state || 'offline';
-  const tone = state === 'online' ? 'green' : state === 'logging_fault' ? 'red' : 'amber';
+  // Same reading, same words and same colour as the device card and the table
+  // below the map, rather than a third private copy of the rule.
+  const status = getStatusPresentation(device.operational_state);
 
   appendText(popup, 'strong', formatDeviceName(device.device_label));
   appendText(popup, 'span', `${device.location_name || 'Location not named'} · ${device.barangay_name || 'Barangay not named'}`);
-  appendText(popup, 'span', state.replace('_', ' '), `pd-tag pd-tag-${tone}`);
+  appendText(popup, 'span', status.label, `pd-tag pd-tag-${status.color}`);
   appendText(
     popup,
     'span',
-    `${device.candidates_last_24h ?? 0} possible matches · ${device.relay_activations_last_24h ?? 0} sprayer activations / 24h`,
+    `${device.candidates_last_24h ?? 0} ${DETECTION_TERM.inlinePlural} · ${device.relay_activations_last_24h ?? 0} sprayer activations / 24h`,
   );
   appendText(popup, 'span', `Latest activity: ${formatDashboardTimestamp(device.latest_activity_at)}`);
-  appendRecentRows(popup, 'Recent Possible Mosquitoes', candidates, 'display_time');
+  appendRecentRows(popup, `Recent ${DETECTION_TERM.inlinePlural}`, candidates, 'display_time');
   appendRecentRows(popup, 'Recent Sprayings', relays, 'display_time');
   return popup;
 }
@@ -153,7 +156,10 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
       element.type = 'button';
       element.className = `maplibre-device-marker maplibre-device-marker-${state}`;
       element.style.setProperty('--device-marker-color', STATE_COLORS[state] || STATE_COLORS.offline);
-      element.setAttribute('aria-label', `${formatDeviceName(device.device_label)}: ${state.replace('_', ' ')}`);
+      element.setAttribute(
+        'aria-label',
+        `${formatDeviceName(device.device_label)}: ${getStatusPresentation(device.operational_state).label}`,
+      );
 
       const recentCandidates = candidates.filter(row => row.device_id === device.device_id);
       const recentRelays = relays.filter(row => row.device_id === device.device_id);

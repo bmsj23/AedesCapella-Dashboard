@@ -17,7 +17,7 @@ import {
   fetchRuntimeActivityById,
 } from '../lib/supabaseApi';
 import { getFriendlyError } from '../utils/userMessages';
-import { isOperatorActivityEvent } from '../utils/dashboardData';
+import { isOperatorActivityEvent, manilaStartOfDay } from '../utils/dashboardData';
 import {
   connectionStateForChannelStatus,
   EMPTY_LIVE_DASHBOARD,
@@ -33,6 +33,17 @@ const RELAY_EVENT_KINDS = new Set([
   'COOLDOWN_COMPLETE',
 ]);
 
+/*
+ * The summary is asked for today, meaning since midnight in Manila, and every
+ * caller here computes that boundary at the moment it asks rather than holding
+ * one. A tab left open overnight would otherwise keep counting yesterday.
+ */
+const todaySummary = (accessToken, signal) => fetchActivitySummary(
+  accessToken,
+  signal,
+  new Date(manilaStartOfDay()).toISOString(),
+);
+
 const SOURCES = [
   ['activity', fetchRuntimeActivity],
   ['candidates', fetchCandidateActivity],
@@ -40,7 +51,7 @@ const SOURCES = [
   ['devices', fetchDeviceStatus],
   ['mapDevices', fetchDeviceMap],
   ['deviceRegistry', fetchDeviceRegistry],
-  ['activitySummary', fetchActivitySummary],
+  ['activitySummary', todaySummary],
 ];
 
 export function useLiveDashboard(accessToken) {
@@ -127,7 +138,7 @@ export function useLiveDashboard(accessToken) {
     const eventId = event.runtime_event_id;
     const tasks = [
       hydrateDevice(event.device_id, signal),
-      fetchActivitySummary(accessToken, signal).then(row => {
+      todaySummary(accessToken, signal).then(row => {
         if (row) dispatch({ type: 'set_activity_summary', row });
       }),
     ];

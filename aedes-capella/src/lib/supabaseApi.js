@@ -107,6 +107,15 @@ export async function fetchDeviceStatus(accessToken, signal) {
   });
 }
 
+/*
+ * How many activity rows one fetch returns. Exported because the Latest
+ * Activity filter has to know it: a full buffer whose oldest row is still
+ * inside today means today has more rows than the table is holding, and the
+ * section says so rather than letting the table disagree with the count above
+ * it.
+ */
+export const ACTIVITY_FETCH_LIMIT = 100;
+
 export async function fetchRuntimeActivity(accessToken, signal) {
   const columns = [
     'runtime_event_id', 'device_id', 'device_label', 'location_id',
@@ -119,20 +128,43 @@ export async function fetchRuntimeActivity(accessToken, signal) {
   ].join(',');
 
   const operatorKinds = 'BOOT,LIVE_ACCEPT,RELAY_ON,RELAY_REJECT';
-  return request(`/rest/v1/dashboard_runtime_activity?select=${columns}&event_kind=in.(${operatorKinds})&order=display_time.desc&limit=100`, {
+  return request(`/rest/v1/dashboard_runtime_activity?select=${columns}&event_kind=in.(${operatorKinds})&order=display_time.desc&limit=${ACTIVITY_FETCH_LIMIT}`, {
     accessToken,
     signal,
   });
 }
 
-export async function fetchActivitySummary(accessToken, signal) {
-  const rows = await request('/rest/v1/rpc/dashboard_activity_summary', {
-    method: 'POST',
-    accessToken,
-    body: { p_window_hours: 24 },
-    signal,
-  });
-  return Array.isArray(rows) ? rows[0] || null : rows;
+/**
+ * Operator activity counts over one window, computed in the database.
+ *
+ * `windowStartIso` asks for a calendar boundary, which is what "today" means
+ * on this dashboard: midnight in Manila, not the last 24 hours. That parameter
+ * arrived with migration 202608290006, so a dashboard deployed ahead of the
+ * migration would otherwise get PGRST202 for an unknown function signature and
+ * blank the whole summary. It falls back to the rolling window instead, and
+ * the caller reads `window_start` off the answer to see which one it got, so
+ * the panel labels itself from what the database actually did rather than from
+ * what was asked for.
+ */
+export async function fetchActivitySummary(accessToken, signal, windowStartIso) {
+  async function call(body) {
+    const rows = await request('/rest/v1/rpc/dashboard_activity_summary', {
+      method: 'POST',
+      accessToken,
+      body,
+      signal,
+    });
+    return Array.isArray(rows) ? rows[0] || null : rows;
+  }
+
+  if (!windowStartIso) return call({ p_window_hours: 24 });
+
+  try {
+    return await call({ p_window_hours: 24, p_window_start: windowStartIso });
+  } catch (reason) {
+    if (reason?.name === 'AbortError') throw reason;
+    return call({ p_window_hours: 24 });
+  }
 }
 
 export async function fetchRuntimeActivityById(accessToken, runtimeEventId, signal) {

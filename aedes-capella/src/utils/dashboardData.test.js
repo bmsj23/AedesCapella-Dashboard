@@ -8,7 +8,9 @@ import {
   deriveRelayEpisodes,
   getActivityTimePresentation,
   getEventPresentation,
+  manilaStartOfDay,
 } from './dashboardData.js';
+import { DETECTION_TERM } from '../constants/terminology.js';
 
 test('unresolved activity never presents receipt time as when it happened', () => {
   const receivedAt = '2026-08-14T12:34:56Z';
@@ -22,7 +24,9 @@ test('unresolved activity never presents receipt time as when it happened', () =
   assert.equal(presentation.happenedLabel, 'Unavailable');
   assert.equal(presentation.receivedAt, receivedAt);
   assert.equal(presentation.qualityLabel, 'Time unavailable');
-  assert.equal(presentation.qualityTone, 'amber');
+  // Gray, not amber. A missing timestamp is missing information, which is what
+  // gray means; it is not a request to go and check the sensor.
+  assert.equal(presentation.qualityTone, 'gray');
   assert.equal(ACTIVITY_TABLE_HEADERS.includes('TIME'), false);
   assert.deepEqual(ACTIVITY_TABLE_HEADERS.slice(0, 2), [
     'WHEN IT HAPPENED',
@@ -100,8 +104,58 @@ test('candidate score distribution preserves empty buckets and cautious labels',
     { range: '80–89%', count: 1 },
     { range: '90–100%', count: 1 },
   ]);
-  assert.equal(getEventPresentation('LIVE_ACCEPT').label, 'Likely Aedes Mosquito');
+  assert.equal(getEventPresentation('LIVE_ACCEPT').label, DETECTION_TERM.singular);
   assert.equal(getEventPresentation('UNKNOWN').color, 'gray');
+});
+
+/*
+ * The label for a LIVE_ACCEPT row had drifted to "Likely Aedes Mosquito", which
+ * claims more than a 16.67 percent grouped precision supports, and "candidate"
+ * had leaked out of the database vocabulary into strings people read. Both are
+ * easy to reintroduce by editing one map, so they are asserted rather than
+ * merely commented.
+ */
+test('no event label claims a confirmation or leaks the word candidate', () => {
+  const kinds = [
+    'BOOT', 'TEST_ACCEPT', 'LIVE_ACCEPT', 'RELAY_INTENT', 'RELAY_ON',
+    'RELAY_OFF', 'RELAY_REJECT', 'COOLDOWN_COMPLETE', 'UNKNOWN',
+  ];
+  const banned = ['candidate', 'likely', 'confirmed', 'detected mosquito'];
+
+  kinds.forEach(kind => {
+    const label = getEventPresentation(kind).label.toLowerCase();
+    banned.forEach(word => {
+      assert.ok(!label.includes(word), `${kind} label must not contain "${word}": ${label}`);
+    });
+  });
+});
+
+/*
+ * "Today" is the boundary the Latest Activity filter and the database summary
+ * both window on, so being an hour out here silently miscounts a day on both
+ * sides of the screen at once.
+ */
+test('the Manila day starts at 16:00 UTC the evening before', () => {
+  // 2026-08-29 07:30 UTC is 15:30 on the 29th in Manila, so the day began at
+  // 16:00 UTC on the 28th.
+  assert.equal(
+    new Date(manilaStartOfDay(Date.parse('2026-08-29T07:30:00Z'))).toISOString(),
+    '2026-08-28T16:00:00.000Z',
+  );
+
+  // One minute before midnight Manila still belongs to the previous day, and
+  // one minute after starts the next: the two sides of the boundary that a
+  // whole-hours window cannot express.
+  const justBefore = Date.parse('2026-08-29T15:59:00Z');
+  const justAfter = Date.parse('2026-08-29T16:01:00Z');
+  assert.equal(new Date(manilaStartOfDay(justBefore)).toISOString(), '2026-08-28T16:00:00.000Z');
+  assert.equal(new Date(manilaStartOfDay(justAfter)).toISOString(), '2026-08-29T16:00:00.000Z');
+
+  // Never in the future, and never more than a day back.
+  const now = Date.parse('2026-08-29T07:30:00Z');
+  const start = manilaStartOfDay(now);
+  assert.ok(start <= now);
+  assert.ok(now - start < 24 * 60 * 60 * 1000);
 });
 
 test('relay pairing uses device and source packet and derives evidence duration', () => {

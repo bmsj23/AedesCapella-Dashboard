@@ -94,6 +94,21 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
 
   const change = (key, value) => setDraft(current => ({ ...current, [key]: value }));
 
+  /*
+   * Collapsed when there is nothing in it, open when there is. Editing a
+   * sensor whose geometry we already recorded should not hide the numbers
+   * behind a control the reader has to find, and adding a new one should not
+   * open a panel that is empty.
+   *
+   * Read once from the initial draft rather than tracked: this decides where
+   * the panel starts, and re-deriving it on every keystroke would slam the
+   * panel shut the moment somebody cleared a field they were editing.
+   */
+  const [hasAdvancedValues] = useState(() => Boolean(
+    draft.placementDistanceM || draft.placementHeightM
+    || draft.placementAngleDegrees || draft.placementNotes || draft.firmwareVersion,
+  ));
+
   async function submit(event) {
     event.preventDefault();
     const token = editing ? '' : generateDeviceToken();
@@ -143,8 +158,7 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
       <div className="device-dialog" role="dialog" aria-modal="true" aria-labelledby="device-form-title">
         <div className="device-dialog-head">
           <div>
-            <Mono size="10px" color={C.amber}>VALIDATED DEVICE RPC</Mono>
-            <h3 id="device-form-title">{editing ? 'Edit sensor' : issuedToken ? 'Sensor registered' : 'Register sensor'}</h3>
+            <h3 id="device-form-title">{editing ? 'Edit sensor' : issuedToken ? 'Sensor registered' : 'Add a sensor'}</h3>
           </div>
           <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close device form">
             <X size={18} />
@@ -156,13 +170,13 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
             <Banner
               icon={ShieldCheck}
               color="amber"
-              text="Copy this ingest token now. The database stores only its SHA-256 hash, so it cannot be shown again."
+              text="Copy this key now. Only a scrambled copy is stored, so it cannot be shown again."
             />
             <div className="device-token-box">
               <code>{issuedToken}</code>
               <button className="device-secondary-button" type="button" onClick={copyToken}>
                 {copied ? <Check size={15} /> : <Copy size={15} />}
-                {copied ? 'Copied' : 'Copy token'}
+                {copied ? 'Copied' : 'Copy key'}
               </button>
             </div>
             <button className="device-primary-button" type="button" onClick={onClose}>Done</button>
@@ -170,8 +184,24 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
         ) : (
           <form onSubmit={submit}>
             {error ? <Banner icon={ShieldCheck} color="red" text={error} /> : null}
+            {/*
+              * Two fields, and a sensor exists.
+              *
+              * This form used to ask for eight things at once: three of them
+              * needed a tape measure and a protractor, one needed a build hash
+              * the person standing at the pole does not have, and the person
+              * who wrote the form described himself as overwhelmed by it. None
+              * of the four is needed to create a working sensor.
+              *
+              * So they are still here, still saved, and still filled in for our
+              * own registrations. They are just not in the way of somebody
+              * installing a unit in a barangay. Every one of them accepts null
+              * both here and in register_device, so a field install is never
+              * blocked by a missing tape measure and the numbers can be added
+              * from this same form afterwards.
+              */}
             <div className="device-form-grid">
-              <Field label="Device label" hint="Lowercase letters, numbers, and hyphens only.">
+              <Field label="Sensor name" hint="Lowercase letters, numbers, and hyphens. For example, unit-2.">
                 <input
                   className="device-input"
                   value={draft.deviceLabel}
@@ -181,7 +211,7 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
                   required
                 />
               </Field>
-              <Field label="Deployment location">
+              <Field label="Location">
                 <select
                   className="device-input"
                   value={draft.locationId}
@@ -196,35 +226,48 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
                   ))}
                 </select>
               </Field>
-              <Field label="Firmware identity" hint="Use the verified build hash or receipt identity.">
-                <input
-                  className="device-input"
-                  value={draft.firmwareVersion}
-                  onChange={event => change('firmwareVersion', event.target.value)}
-                  placeholder="Awaiting verified readback"
-                  maxLength={120}
-                />
-              </Field>
             </div>
 
-            <div className="device-form-divider">
-              <Mono size="10px" color={C.textDim}>PREDECLARED PLACEMENT GEOMETRY</Mono>
-            </div>
-            <PlacementFields draft={draft} onChange={change} />
-            <Field label="Placement notes">
-              <textarea
-                className="device-input device-textarea"
-                value={draft.placementNotes}
-                onChange={event => change('placementNotes', event.target.value)}
-                maxLength={500}
-                placeholder="Direction, obstruction, shade, and reference point"
-              />
-            </Field>
+            {!editing ? (
+              <p className="device-dialog-copy">
+                That is everything needed. The sensor&apos;s key for sending data
+                is created for you when you save, and shown once on the next
+                screen.
+              </p>
+            ) : null}
+
+            <details className="device-advanced" open={hasAdvancedValues}>
+              <summary>
+                Placement and firmware details
+                <span>For the research team. Can be left blank and filled in later.</span>
+              </summary>
+              <div className="device-advanced-body">
+                <PlacementFields draft={draft} onChange={change} />
+                <Field label="Placement notes">
+                  <textarea
+                    className="device-input device-textarea"
+                    value={draft.placementNotes}
+                    onChange={event => change('placementNotes', event.target.value)}
+                    maxLength={500}
+                    placeholder="Direction, obstruction, shade, and reference point"
+                  />
+                </Field>
+                <Field label="Firmware version" hint="The verified build identity, once it has been read back off the unit.">
+                  <input
+                    className="device-input"
+                    value={draft.firmwareVersion}
+                    onChange={event => change('firmwareVersion', event.target.value)}
+                    placeholder="Leave blank until verified"
+                    maxLength={120}
+                  />
+                </Field>
+              </div>
+            </details>
 
             <div className="device-dialog-actions">
               <button className="device-secondary-button" type="button" onClick={onClose}>Cancel</button>
               <button className="device-primary-button" type="submit" disabled={busy || !locations.length}>
-                {busy ? 'Saving...' : editing ? 'Save changes' : 'Register and issue token'}
+                {busy ? 'Saving...' : editing ? 'Save changes' : 'Add sensor and create its key'}
               </button>
             </div>
           </form>
@@ -249,7 +292,7 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
       setToken(nextToken);
       await onSaved();
     } catch (reason) {
-      setError(getFriendlyError(reason, 'The ingest token could not be rotated.'));
+      setError(getFriendlyError(reason, 'The sensor key could not be replaced.'));
     } finally {
       setBusy(false);
     }
@@ -269,10 +312,9 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
       <div className="device-dialog" role="dialog" aria-modal="true" aria-labelledby="credential-title">
         <div className="device-dialog-head">
           <div>
-            <Mono size="10px" color={C.amber}>PER-DEVICE CREDENTIAL</Mono>
-            <h3 id="credential-title">Token for {formatDeviceName(device.device_label)}</h3>
+            <h3 id="credential-title">Key for {formatDeviceName(device.device_label)}</h3>
           </div>
-          <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close token dialog">
+          <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close sensor key dialog">
             <X size={18} />
           </button>
         </div>
@@ -282,13 +324,13 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
             <Banner
               icon={ShieldCheck}
               color="amber"
-              text="Copy this now, it is shown only once. This sensor stays offline until you flash this token into it and restart it."
+              text="Copy this now, it is shown only once. This sensor stays offline until you load this key into it and restart it."
             />
             <div className="device-token-box">
               <code>{token}</code>
               <button className="device-secondary-button" type="button" onClick={copyToken}>
                 {copied ? <Check size={15} /> : <Copy size={15} />}
-                {copied ? 'Copied' : 'Copy token'}
+                {copied ? 'Copied' : 'Copy key'}
               </button>
             </div>
           </>
@@ -297,14 +339,14 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
             <Banner
               icon={ShieldCheck}
               color="amber"
-              text="This sensor will stop sending data as soon as you rotate, and stays offline until you flash the new token into it."
+              text="This sensor will stop sending data the moment you replace its key, and stays offline until the new key is loaded into it."
             />
             <p className="device-dialog-copy">
-              The token is the sensor&apos;s password for sending data. It is built into the device,
-              as <code>AEDES_DEVICE_TOKEN</code> in its <code>aedes_secrets.h</code>, so replacing it
-              here means reflashing the ESP32-C3 before it can upload again. Rotate only if a
-              credential may have leaked and you can reflash this unit. The replacement is shown
-              once and cannot be retrieved later.
+              The key is the sensor&apos;s password for sending data. It is built into the device, as{' '}
+              <code>AEDES_DEVICE_TOKEN</code> in its <code>aedes_secrets.h</code>, so replacing it
+              here means reflashing the sensor before it can send again. Replace the key only if it
+              may have leaked and you can reflash this unit. The new key is shown once and cannot be
+              retrieved later.
             </p>
           </>
         )}
@@ -312,7 +354,7 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
           <button className="device-secondary-button" type="button" onClick={onClose}>{token ? 'Done' : 'Cancel'}</button>
           {!token ? (
             <button className="device-primary-button" type="button" onClick={rotate} disabled={busy}>
-              {busy ? 'Rotating...' : 'Rotate token'}
+              {busy ? 'Replacing...' : 'Replace key'}
             </button>
           ) : null}
         </div>
@@ -346,15 +388,14 @@ function DecommissionDialog({ device, accessToken, onClose, onSaved }) {
       <div className="device-dialog" role="dialog" aria-modal="true" aria-labelledby="decommission-title">
         <div className="device-dialog-head">
           <div>
-            <Mono size="10px" color={C.red}>HISTORY-PRESERVING REMOVAL</Mono>
-            <h3 id="decommission-title">Decommission {formatDeviceName(device.device_label)}</h3>
+            <h3 id="decommission-title">Retire {formatDeviceName(device.device_label)}</h3>
           </div>
-          <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close decommission dialog">
+          <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close retire sensor dialog">
             <X size={18} />
           </button>
         </div>
         <p className="device-dialog-copy">
-          The row and its evidence stay in the database. Its ingest token is revoked and it no longer counts as an active deployment unit.
+          Everything this sensor recorded stays in the records. Its key stops working and it no longer counts as a sensor in the field.
         </p>
         {error ? <Banner icon={ShieldCheck} color="red" text={error} /> : null}
         <form onSubmit={submit}>
@@ -374,7 +415,7 @@ function DecommissionDialog({ device, accessToken, onClose, onSaved }) {
               type="submit"
               disabled={busy || confirmation !== device.device_label}
             >
-              {busy ? 'Decommissioning...' : 'Decommission sensor'}
+              {busy ? 'Retiring...' : 'Retire sensor'}
             </button>
           </div>
         </form>
@@ -403,7 +444,7 @@ export default function DeviceManager({
       .then(setLocations)
       .catch(reason => {
         if (reason?.name !== 'AbortError') {
-          setLocationError(getFriendlyError(reason, 'Deployment locations are unavailable.'));
+          setLocationError(getFriendlyError(reason, 'The list of locations could not be loaded.'));
         }
       });
     return () => controller.abort();
@@ -417,13 +458,12 @@ export default function DeviceManager({
     <Card className="device-registry" style={{ marginTop: '24px', background: C.surface2 }}>
       <div className="device-registry-head">
         <div>
-          <Mono size="10px" color={C.amber}>SECURE DEVICE REGISTRY</Mono>
-          <h3>Deployment identities</h3>
-          <p>Changes use validated RPCs. Browser accounts have no direct write grant on the device table.</p>
+          <h3>Sensors</h3>
+          <p>Add a sensor, change its name or location, or retire one. Every sensor here keeps its own key for sending data.</p>
         </div>
         {technical ? (
           <button className="device-primary-button" type="button" onClick={() => setDialog({ type: 'form' })}>
-            <Plus size={16} /> Register sensor
+            <Plus size={16} /> Add a sensor
           </button>
         ) : null}
       </div>
@@ -449,9 +489,9 @@ export default function DeviceManager({
               </span>
             </div>
             <div>
-              <span className="device-registry-label">Credential</span>
+              <span className="device-registry-label">Key for sending data</span>
               <Tag color={device.ingest_token_active ? 'green' : 'amber'}>
-                {device.ingest_token_active ? 'Active' : 'Needs token'}
+                {device.ingest_token_active ? 'Active' : 'Needs a key'}
               </Tag>
             </div>
             <div className="device-registry-actions">
@@ -460,10 +500,10 @@ export default function DeviceManager({
               </button>
               {admin ? (
                 <>
-                  <button className="device-icon-button" type="button" onClick={() => setDialog({ type: 'token', device })} aria-label={`Rotate token for ${device.device_label}`}>
+                  <button className="device-icon-button" type="button" onClick={() => setDialog({ type: 'token', device })} aria-label={`Replace the key for ${device.device_label}`}>
                     <KeyRound size={16} />
                   </button>
-                  <button className="device-icon-button device-icon-danger" type="button" onClick={() => setDialog({ type: 'decommission', device })} aria-label={`Decommission ${device.device_label}`}>
+                  <button className="device-icon-button device-icon-danger" type="button" onClick={() => setDialog({ type: 'decommission', device })} aria-label={`Retire ${device.device_label}`}>
                     <Archive size={16} />
                   </button>
                 </>
@@ -472,7 +512,7 @@ export default function DeviceManager({
           </div>
         ))}
         {!registryError && activeDevices.length === 0 ? (
-          <div className="device-registry-empty">No active registry rows are available.</div>
+          <div className="device-registry-empty">No sensors have been added yet.</div>
         ) : null}
       </div>
 

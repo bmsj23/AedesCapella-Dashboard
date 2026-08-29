@@ -1,3 +1,15 @@
+import {
+  AudioLines,
+  CircleDot,
+  FlaskConical,
+  Power,
+  SprayCan,
+  Timer,
+} from 'lucide-react';
+// Explicit extension: this module runs under `node --test`, whose ESM resolver
+// does not fill one in the way Vite does.
+import { DETECTION_TERM } from '../constants/terminology.js';
+
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const MANILA_OFFSET_MS = 8 * HOUR_MS;
@@ -10,10 +22,17 @@ export const ACTIVITY_TABLE_HEADERS = Object.freeze([
   'NOTES',
 ]);
 
+/*
+ * How good the timestamp is, which is a fact about the record rather than a
+ * severity. A confirmed clock and an estimated one are both normal and neither
+ * asks anything of the reader, so both are neutral and the label does the
+ * work. Only "time unavailable" takes a colour, and it takes gray, because
+ * that is precisely what gray means: no information.
+ */
 const ACTIVITY_TIME_QUALITY = Object.freeze({
-  ntp: Object.freeze({ label: 'Confirmed time', tone: 'green' }),
-  boot_anchor: Object.freeze({ label: 'Estimated time', tone: 'gray' }),
-  unresolved: Object.freeze({ label: 'Time unavailable', tone: 'amber' }),
+  ntp: Object.freeze({ label: 'Confirmed time', tone: 'neutral' }),
+  boot_anchor: Object.freeze({ label: 'Estimated time', tone: 'neutral' }),
+  unresolved: Object.freeze({ label: 'Time unavailable', tone: 'gray' }),
 });
 
 const UNRESOLVED_ACTIVITY_TIME = ACTIVITY_TIME_QUALITY.unresolved;
@@ -32,19 +51,34 @@ const OPERATOR_ACTIVITY_KIND_SET = new Set(OPERATOR_ACTIVITY_KINDS);
  *
  * The audience is barangay health workers, not engineers, so nothing here may
  * assume familiarity with relays, models or firmware. The hedging survives the
- * simplification though: a possible match must never read as a confirmed
+ * simplification though: a possible detection must never read as a confirmed
  * mosquito, and a sprayer switching on must never read as proof that spray
  * reached anything.
+ *
+ * Every one of these is neutral, and that is the point.
+ *
+ * Colour used to carry the kind of event here while the legend told the reader
+ * colour carried severity. The result was that a completely normal, successful
+ * night rendered as amber ("check soon") for the detection followed by red
+ * ("needs action") for the spray that the detection correctly triggered, and
+ * the legend then told a barangay worker to inspect the device as soon as
+ * possible while nothing whatever was wrong. A busy night painted the screen
+ * red.
+ *
+ * None of these events asks anyone to do anything: they are the system working.
+ * So they are all "recorded, nothing to do", the icon says which kind of thing
+ * happened, and red is left for the faults on the device card, where a person
+ * genuinely has to act.
  */
 const EVENT_PRESENTATION = {
-  BOOT: { label: 'Device turned on', color: 'blue' },
-  TEST_ACCEPT: { label: 'Test check', color: 'gray' },
-  LIVE_ACCEPT: { label: 'Likely Aedes Mosquito', color: 'amber' },
-  RELAY_INTENT: { label: 'Spray requested', color: 'amber' },
-  RELAY_ON: { label: 'Sprayer turned on', color: 'red' },
-  RELAY_OFF: { label: 'Sprayer turned off', color: 'green' },
-  RELAY_REJECT: { label: 'Sprayer on cooldown', color: 'red' },
-  COOLDOWN_COMPLETE: { label: 'Ready again', color: 'green' },
+  BOOT: { label: 'Device turned on', color: 'neutral', icon: Power },
+  TEST_ACCEPT: { label: 'Test check', color: 'neutral', icon: FlaskConical },
+  LIVE_ACCEPT: { label: DETECTION_TERM.singular, color: 'neutral', icon: AudioLines },
+  RELAY_INTENT: { label: 'Spray requested', color: 'neutral', icon: SprayCan },
+  RELAY_ON: { label: 'Sprayer turned on', color: 'neutral', icon: SprayCan },
+  RELAY_OFF: { label: 'Sprayer turned off', color: 'neutral', icon: SprayCan },
+  RELAY_REJECT: { label: 'Sprayer on cooldown', color: 'neutral', icon: Timer },
+  COOLDOWN_COMPLETE: { label: 'Ready again', color: 'neutral', icon: Timer },
 };
 
 /*
@@ -69,7 +103,8 @@ export function plainReason(reason) {
 }
 
 export function getEventPresentation(eventKind) {
-  return EVENT_PRESENTATION[eventKind] || { label: 'Other activity', color: 'gray' };
+  return EVENT_PRESENTATION[eventKind]
+    || { label: 'Other activity', color: 'gray', icon: CircleDot };
 }
 
 export function isOperatorActivityEvent(event) {
@@ -137,6 +172,26 @@ export function getActivityTimePresentation(event = {}) {
     qualityTone: quality.tone,
     delay,
   };
+}
+
+/*
+ * The instant the current Manila day began.
+ *
+ * "Today" on this dashboard means since midnight in Manila, which is not the
+ * same answer as "the last 24 hours" for all but one instant of the day, and
+ * is the one a barangay health worker means when she opens the page in the
+ * morning and asks what happened.
+ *
+ * Philippine Standard Time is a flat UTC+8 with no daylight saving, so the day
+ * boundary is arithmetic rather than a timezone-database lookup: shift into
+ * Manila, floor to the day, shift back.
+ *
+ * @param {number} [now] - injectable clock, for tests
+ * @returns {number} epoch milliseconds of 00:00 Asia/Manila today
+ */
+export function manilaStartOfDay(now = Date.now()) {
+  const shifted = now + MANILA_OFFSET_MS;
+  return (Math.floor(shifted / DAY_MS) * DAY_MS) - MANILA_OFFSET_MS;
 }
 
 export function average(values) {

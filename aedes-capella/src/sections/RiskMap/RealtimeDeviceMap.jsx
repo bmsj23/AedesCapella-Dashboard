@@ -1,11 +1,13 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet';
 import { C } from '../../constants/colors';
+import { DETECTION_TERM } from '../../constants/terminology';
 import Card from '../../components/ui/Card';
 import EmptyState from '../../components/ui/EmptyState';
 import Mono from '../../components/ui/Mono';
 import Tag from '../../components/ui/Tag';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
+import { getStatusPresentation } from '../../utils/deviceStatus';
 import { filterMappedDevices } from '../../utils/liveDashboard';
 import { getMapTilerStyleUrl, mapTilerKey } from '../../utils/mapConfig';
 import { formatDeviceName } from '../../utils/viewer';
@@ -73,6 +75,10 @@ function LeafletDeviceMap({ mapped, candidates, relays, onTileFailure, onTileLoa
         const recentCandidates = candidates.filter(row => row.device_id === device.device_id);
         const recentRelays = relays.filter(row => row.device_id === device.device_id);
         const state = device.operational_state || 'offline';
+        // The marker keeps its own colour scale, which is already severity;
+        // the chip in the popup reads from the shared presentation so the map
+        // and the table beneath it never disagree about a sensor.
+        const status = getStatusPresentation(device.operational_state);
         return (
           <CircleMarker
             key={device.device_id}
@@ -90,12 +96,10 @@ function LeafletDeviceMap({ mapped, candidates, relays, onTileFailure, onTileLoa
               <div className="map-popup">
                 <strong>{formatDeviceName(device.device_label)}</strong>
                 <span>{device.location_name} · {device.barangay_name}</span>
-                <Tag color={state === 'online' ? 'green' : state === 'logging_fault' ? 'red' : 'amber'}>
-                  {state.replace('_', ' ')}
-                </Tag>
-                <span>{device.candidates_last_24h ?? 0} possible matches · {device.relay_activations_last_24h ?? 0} sprayer activations / 24h</span>
+                <Tag color={status.color}>{status.label}</Tag>
+                <span>{device.candidates_last_24h ?? 0} {DETECTION_TERM.inlinePlural} · {device.relay_activations_last_24h ?? 0} sprayer activations / 24h</span>
                 <span>Latest activity: {formatDashboardTimestamp(device.latest_activity_at)}</span>
-                <RecentRows label="Recent Possible Mosquitoes" rows={recentCandidates} timestampKey="display_time" />
+                <RecentRows label={`Recent ${DETECTION_TERM.inlinePlural}`} rows={recentCandidates} timestampKey="display_time" />
                 <RecentRows label="Recent Sprayings" rows={recentRelays} timestampKey="display_time" />
               </div>
             </Popup>

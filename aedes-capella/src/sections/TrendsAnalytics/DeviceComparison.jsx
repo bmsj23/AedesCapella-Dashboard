@@ -15,10 +15,14 @@ import EmptyState from '../../components/ui/EmptyState';
 import Mono from '../../components/ui/Mono';
 import Tag from '../../components/ui/Tag';
 import { C } from '../../constants/colors';
+import { DETECTION_TERM, DETECTION_TERM_UPPER } from '../../constants/terminology';
 import {
   buildDeviceComparison,
   COMPARISON_WINDOWS,
 } from '../../utils/deviceComparison';
+// The fourth copy of "online is green, everything else is amber" lived here.
+// One shared reading now answers for all of them.
+import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
 
 const BAR_COLORS = [C.amber, C.blue];
@@ -91,9 +95,9 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
     <Card className="device-comparison" style={{ marginBottom: '20px', background: C.surface2 }}>
       <div className="device-comparison-head">
         <div>
-          <Mono size="10px" color={C.amber}>PREDECLARED TWO-POINT COMPARISON</Mono>
-          <h3>Placement geometry</h3>
-          <p>Compare two units over the same clock window. The units share a model, so this measures placement coverage rather than independent-vote accuracy.</p>
+          <Mono size="10px" color={C.textDim}>COMPARING TWO SENSORS</Mono>
+          <h3>Where the sensors are pointed</h3>
+          <p>Compare two sensors over the same period. Both run the same model, so a difference here says something about where they are placed, not about which one is more accurate.</p>
         </div>
         <GitCompareArrows size={24} color={C.amber} aria-hidden="true" />
       </div>
@@ -149,31 +153,31 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
                         <strong>{formatDeviceName(device?.device_label)}</strong>
                         <span>{placementSummary(registryDevice)}</span>
                       </div>
-                      <Tag color={device?.operational_state === 'online' ? 'green' : 'amber'}>
-                        {device?.operational_state === 'online' ? 'Online' : 'Check status'}
+                      <Tag color={getStatusPresentation(device?.operational_state).color}>
+                        {getStatusPresentation(device?.operational_state).label}
                       </Tag>
                     </div>
-                    <ComparisonStat label="Possible mosquitoes" value={row.candidates} />
-                    <ComparisonStat label="Per clock hour" value={row.candidatesPerHour.toFixed(3)} />
-                    <ComparisonStat label="Recorded sprayings" value={row.relayActivations} />
+                    <ComparisonStat label={DETECTION_TERM.plural} value={row.candidates} />
+                    <ComparisonStat label="Per hour" value={row.candidatesPerHour.toFixed(3)} />
+                    <ComparisonStat label="Times the sprayer switched on" value={row.relayActivations} />
                   </div>
                 );
               })}
               <div className="comparison-agreement">
-                <span>Candidate agreement within {comparison.agreementWindowSeconds} seconds</span>
+                <span>How often both sensors flagged the same {comparison.agreementWindowSeconds} seconds</span>
                 <strong>{comparison.agreementPercent === null ? 'Not available' : `${comparison.agreementPercent.toFixed(1)}%`}</strong>
-                <small>{comparison.matchedCandidates} matched candidate pair{comparison.matchedCandidates === 1 ? '' : 's'}</small>
+                <small>{comparison.matchedCandidates} matched pair{comparison.matchedCandidates === 1 ? '' : 's'}</small>
               </div>
             </div>
 
-            <div className="comparison-chart" aria-label="Possible mosquito candidates per clock hour by sensor">
-              <Mono size="10px" color={C.textDim}>POSSIBLE MOSQUITOES PER CLOCK HOUR</Mono>
+            <div className="comparison-chart" aria-label={`${DETECTION_TERM.plural} per hour, by sensor`}>
+              <Mono size="10px" color={C.textDim}>{DETECTION_TERM_UPPER.plural} PER HOUR</Mono>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData} margin={{ top: 18, right: 8, bottom: 0, left: -8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={`${C.border}cc`} vertical={false} />
                   <XAxis dataKey="name" tick={{ fontFamily: 'var(--font-data)', fontSize: 11, fill: C.textDim }} axisLine={false} tickLine={false} />
                   <YAxis allowDecimals tick={{ fontFamily: 'var(--font-data)', fontSize: 11, fill: C.textDim }} axisLine={false} tickLine={false} />
-                  <Tooltip formatter={value => [value, 'Candidates per hour']} />
+                  <Tooltip formatter={value => [value, `${DETECTION_TERM.plural} per hour`]} />
                   <Bar dataKey="rate" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, index) => <Cell key={entry.name} fill={BAR_COLORS[index]} />)}
                   </Bar>
@@ -184,7 +188,7 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
 
           {candidates.length >= 500 ? (
             <div className="comparison-data-note">
-              The dashboard API returned its 500-row candidate limit. Longer-period rates may be incomplete and must be exported before interpretation.
+              The dashboard reached its 500-row limit for this period, so these rates may be incomplete. Export the full records before reading anything into them.
             </div>
           ) : null}
         </>

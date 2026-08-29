@@ -1,18 +1,27 @@
 import { usePHTime } from '../../hooks/usePHTime';
+import { DETECTION_TERM } from '../../constants/terminology';
 import Tag from '../ui/Tag';
 
-/* Average candidate score was removed: it is a model score, and showing it to
+/* The average match score was removed: it is a model score, and showing it to
    a health worker invites reading it as a confidence in a species. */
+/*
+ * Today, not 24 hours. Both numbers come from the same summary the Latest
+ * Activity panel reads, which now asks the database for midnight in Manila, so
+ * the header and the section can no longer quote different figures for what
+ * the reader thinks of as the same question.
+ */
 const METRICS = [
-  { key: 'candidates', label: 'Possible Mosquitoes (24h)' },
-  { key: 'relays', label: 'Sprayings (24h)' },
+  { key: 'candidates', label: `${DETECTION_TERM.plural} (today)` },
+  { key: 'relays', label: 'Sprayings (today)' },
   { key: 'nodes', label: 'Devices Working' },
 ];
 
 const CONNECTION = {
   live: { label: 'On', color: 'green' },
   reconnecting: { label: 'Connecting', color: 'amber' },
-  polling_fallback: { label: 'Slow', color: 'red' },
+  // Amber, not red. Slow updates mean the page may be a little behind; they do
+  // not mean anyone has to go and do something, which is what red is for.
+  polling_fallback: { label: 'Slow', color: 'amber' },
 };
 
 export default function Topbar({ metrics, connectionState, reconciledAt }) {

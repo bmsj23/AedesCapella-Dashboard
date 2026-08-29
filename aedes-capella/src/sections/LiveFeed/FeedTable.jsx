@@ -1,4 +1,5 @@
 import { C } from '../../constants/colors';
+import { DETECTION_TERM } from '../../constants/terminology';
 import EmptyState from '../../components/ui/EmptyState';
 import Mono from '../../components/ui/Mono';
 import Tag from '../../components/ui/Tag';
@@ -20,7 +21,9 @@ function deviceLabel(deviceId, deviceLabels) {
 }
 
 /** Recent sensor activity table with plain-language labels. */
-export default function FeedTable({ events = [], deviceLabels = {}, loading = false, error = '' }) {
+export default function FeedTable({
+  events = [], deviceLabels = {}, loading = false, error = '', emptyToday = false,
+}) {
 
   if (loading) {
     return (
@@ -44,10 +47,17 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
   }
 
   if (!events.length) {
+    /*
+     * An empty day and an empty feed are different facts, and the filter is
+     * the only thing that knows which one this is. Saying "no recent activity"
+     * on a quiet morning would send a reader to check sensors that are fine.
+     */
     return (
       <EmptyState
-        title="No Recent Activity"
-        message="No sensor updates are showing right now. This does not prove that everything is okay."
+        title={emptyToday ? 'Nothing Recorded Today Yet' : 'No Recent Activity'}
+        message={emptyToday
+          ? 'The sensors have not recorded anything since midnight. This does not prove that everything is okay.'
+          : 'No sensor updates are showing right now. This does not prove that everything is okay.'}
         action="Open Sensor Status and check whether the sensors are reporting."
       />
     );
@@ -97,23 +107,39 @@ export default function FeedTable({ events = [], deviceLabels = {}, loading = fa
                       : deviceLabel(event.device_id, deviceLabels)}
                   </Mono>
                 </td>
+                {/* The icon carries what kind of event this is, which is the
+                    job colour used to do here before colour went back to
+                    meaning severity alone. */}
                 <td className="activity-kind" data-label="What happened">
-                  <Tag color={presentation.color}>{presentation.label}</Tag>
+                  <Tag color={presentation.color} icon={presentation.icon}>{presentation.label}</Tag>
                   {/* {event.temporal_candidate && (
                     <Mono size="11px" color={C.textDim} style={{ display: 'block', marginTop: '5px' }}>
                       {isNewCandidate ? 'just came in' : 'please check'}
                     </Mono>
                   )} */}
                 </td>
+                {/*
+                  * The sentence carries this cell, so the badge goes.
+                  *
+                  * "The sprayer was switched on. [ARRIVED 18M LATE]" put a
+                  * chip inline beside ordinary prose, which is the same
+                  * mistake as the two on the device card. The delay is real
+                  * information and is kept, on its own line, dim: it qualifies
+                  * the sentence above it rather than competing with it.
+                  */}
                 <td className="activity-notes" data-label="Notes">
                   <Mono size="12px" color={C.textDim} style={{ lineHeight: 1.45 }}>
                     {event.time_quality === 'unresolved'
-                      ? 'Sent after reconnecting. The event time is unavailable.'
+                      ? 'Sent after reconnecting. The time this happened is not known.'
                       : event.temporal_candidate
-                        ? 'Likely an Aedes aegypti sound.'
+                        ? DETECTION_TERM.caveat
                         : plainReason(event.reason)}
                   </Mono>
-                  {time.delay && <Tag color="amber">Arrived {time.delay}</Tag>}
+                  {time.delay && (
+                    <Mono size="11px" color={C.textDim} style={{ display: 'block', marginTop: '5px' }}>
+                      Reached the dashboard {time.delay}.
+                    </Mono>
+                  )}
                 </td>
               </tr>
             );

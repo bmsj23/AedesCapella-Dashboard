@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { C } from '../../constants/colors';
+import { DETECTION_TERM_UPPER } from '../../constants/terminology';
 import { formatDeviceName } from '../../utils/viewer';
 import { useIsTechnical } from '../../contexts/viewerRole';
 import Card from '../../components/ui/Card';
@@ -15,6 +16,26 @@ import {
   getStatusPresentation,
 } from '../../utils/deviceStatus';
 import { getEventPresentation } from '../../utils/dashboardData';
+
+/*
+ * A cell holds a badge or a sentence, never both on one line.
+ *
+ * These rows rendered the chip and its explanation side by side, so the eye
+ * could not tell whether it was reading a label or a sentence and the row read
+ * as broken layout. The badge carries the state. Anything further is secondary
+ * and sits beneath it, dim and small, where it is clearly a footnote to the
+ * chip rather than a second thing competing with it.
+ */
+function BadgeWithNote({ color, label, note }) {
+  return (
+    <div className="node-metric-stack">
+      <Tag color={color}>{label}</Tag>
+      {note ? (
+        <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.45 }}>{note}</Mono>
+      ) : null}
+    </div>
+  );
+}
 
 function Metric({ label, children }) {
   return (
@@ -33,6 +54,15 @@ export default function NodeCard({ device }) {
   const isFault = device.operational_state === 'logging_fault';
   const isOffline = ['offline', 'never_seen'].includes(device.operational_state);
   const latestEvent = getEventPresentation(device.latest_event_kind);
+  /*
+   * Only the two qualified cases produce a line. 'ntp' is the normal, correct
+   * case and says nothing a reader can act on, so it says nothing.
+   */
+  const timeQualityNote = device.latest_event_time_quality === 'unresolved'
+    ? 'The exact time this happened is not known.'
+    : device.latest_event_time_quality === 'boot_anchor'
+      ? 'The time is worked out from when the sensor last started up.'
+      : '';
   const backlog = describeUploadBacklog(device);
   const detector = describeDetector(device);
   /*
@@ -85,22 +115,20 @@ export default function NodeCard({ device }) {
       </Metric>
 
       <Metric label="Waiting To Send">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          <Tag color={backlog.color}>{backlog.label}</Tag>
-          {backlog.detail && <Mono size="11px" color={C.textDim}>{backlog.detail}</Mono>}
-        </div>
+        <BadgeWithNote color={backlog.color} label={backlog.label} note={backlog.detail} />
       </Metric>
 
       <Metric label="Detector">
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-          <Tag color={detector.color}>{detector.label}</Tag>
-          {detector.detail && <Mono size="11px" color={C.textDim}>{detector.detail}</Mono>}
-        </div>
+        <BadgeWithNote color={detector.color} label={detector.label} note={detector.detail} />
       </Metric>
 
-      <Metric label="Sprayer Safe">
+      {/* "Safe-high reported" named the GPIO level the firmware holds the relay
+          pin at. It is true, and it tells a barangay worker nothing. The two
+          readings a reader can act on are: the sprayer is off and safe, or it
+          is not and somebody should look. */}
+      <Metric label="Sprayer">
         <Tag color={device.relay_safe_high ? 'green' : 'red'}>
-          {device.relay_safe_high ? 'Safe-high reported' : 'Unsafe — check device'}
+          {device.relay_safe_high ? 'Off and safe' : 'Not safe, check the device'}
         </Tag>
       </Metric>
 
@@ -247,16 +275,36 @@ export default function NodeCard({ device }) {
         </Metric>
 
         <Metric label="Latest Activity">
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-            <Mono size="12px" color={C.text}>{device.latest_event_kind ? latestEvent.label : 'No activity yet'}</Mono>
-            {device.latest_event_time_quality && <Tag color="blue">{device.latest_event_time_quality === 'unresolved' ? 'Exact event time unavailable' : device.latest_event_time_quality === 'boot_anchor' ? 'Time reconstructed from startup' : 'Device time synchronized'}</Tag>}
-          </div>
+          <Mono size="12px" color={C.text}>{device.latest_event_kind ? latestEvent.label : 'No activity yet'}</Mono>
         </Metric>
+
+        {/*
+          * The sentence carries this row, so the badge goes.
+          *
+          * "Ready again [DEVICE TIME SYNCHRONIZED]" put a chip next to an
+          * ordinary sentence, and the chip was the half that could not be
+          * acted on: a synchronised clock is the normal case, and a reader who
+          * cannot do anything differently on reading it is only being asked to
+          * decode a badge. So the good case now says nothing at all, and the
+          * two cases that qualify the timestamp say so in a plain line.
+          *
+          * Rendered even when empty, for the same reason as the closing note
+          * below: a card that omits the line has a shorter closing block and
+          * lifts its totals off the baseline its neighbour sits on.
+          */}
+        <div className={timeQualityNote ? undefined : 'is-hidden'}>
+          <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.45 }}>
+            {/* A non-breaking space, not a plain one. An ordinary space
+                collapses, the span then has no line box, and the row measures
+                zero rather than the line it is here to hold. */}
+            {timeQualityNote || ' '}
+          </Mono>
+        </div>
 
         <div className="info-grid info-grid-two">
           <div style={{ padding: '10px', background: C.surface2, borderRadius: '7px', textAlign: 'center' }}>
             <Mono size="20px" color={C.text} style={{ display: 'block' }}>{device.candidates_last_7d ?? 0}</Mono>
-            <Mono size="10px" color={C.textDim}>POSSIBLE MOSQUITOES · 7 DAYS</Mono>
+            <Mono size="10px" color={C.textDim}>{DETECTION_TERM_UPPER.plural} · 7 DAYS</Mono>
           </div>
           <div style={{ padding: '10px', background: C.surface2, borderRadius: '7px', textAlign: 'center' }}>
             <Mono size="20px" color={C.text} style={{ display: 'block' }}>{device.mist_events_last_7d ?? 0}</Mono>

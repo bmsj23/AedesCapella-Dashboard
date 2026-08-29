@@ -8,9 +8,10 @@ export default function FogSummaryCards({ relays = [] }) {
   const rejected = relays.filter(relay => relay.relay_status === 'rejected').length;
   const unresolved = relays.filter(relay => relay.relay_status === 'started').length;
   const summary = [
-    { label: 'Sprayings recorded', value: activations, note: 'Times the sprayer switched on', color: activations ? 'amber' : 'gray' },
-    { label: 'Stops recorded', value: stopped, note: 'Times it switched off again', color: stopped ? 'green' : 'gray' },
-    { label: 'Requests refused', value: rejected, note: 'The sprayer did not run', color: rejected ? 'red' : 'gray' },
+    { label: 'Sprayings recorded', value: activations, note: 'Times the sprayer switched on', color: activations ? 'neutral' : 'gray' },
+    { label: 'Stops recorded', value: stopped, note: 'Times it switched off again', color: stopped ? 'neutral' : 'gray' },
+    // A refused request is the cooldown doing its job, not a fault.
+    { label: 'Requests refused', value: rejected, note: 'The sprayer did not run', color: rejected ? 'neutral' : 'gray' },
     { label: 'Started, no stop row', value: unresolved, note: 'Needs record review', color: unresolved ? 'red' : 'gray' },
   ];
 
