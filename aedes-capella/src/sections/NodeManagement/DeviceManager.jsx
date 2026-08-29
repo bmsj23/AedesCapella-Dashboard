@@ -94,6 +94,21 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
 
   const change = (key, value) => setDraft(current => ({ ...current, [key]: value }));
 
+  /*
+   * Collapsed when there is nothing in it, open when there is. Editing a
+   * sensor whose geometry we already recorded should not hide the numbers
+   * behind a control the reader has to find, and adding a new one should not
+   * open a panel that is empty.
+   *
+   * Read once from the initial draft rather than tracked: this decides where
+   * the panel starts, and re-deriving it on every keystroke would slam the
+   * panel shut the moment somebody cleared a field they were editing.
+   */
+  const [hasAdvancedValues] = useState(() => Boolean(
+    draft.placementDistanceM || draft.placementHeightM
+    || draft.placementAngleDegrees || draft.placementNotes || draft.firmwareVersion,
+  ));
+
   async function submit(event) {
     event.preventDefault();
     const token = editing ? '' : generateDeviceToken();
@@ -169,8 +184,24 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
         ) : (
           <form onSubmit={submit}>
             {error ? <Banner icon={ShieldCheck} color="red" text={error} /> : null}
+            {/*
+              * Two fields, and a sensor exists.
+              *
+              * This form used to ask for eight things at once: three of them
+              * needed a tape measure and a protractor, one needed a build hash
+              * the person standing at the pole does not have, and the person
+              * who wrote the form described himself as overwhelmed by it. None
+              * of the four is needed to create a working sensor.
+              *
+              * So they are still here, still saved, and still filled in for our
+              * own registrations. They are just not in the way of somebody
+              * installing a unit in a barangay. Every one of them accepts null
+              * both here and in register_device, so a field install is never
+              * blocked by a missing tape measure and the numbers can be added
+              * from this same form afterwards.
+              */}
             <div className="device-form-grid">
-              <Field label="Device label" hint="Lowercase letters, numbers, and hyphens only.">
+              <Field label="Sensor name" hint="Lowercase letters, numbers, and hyphens. For example, unit-2.">
                 <input
                   className="device-input"
                   value={draft.deviceLabel}
@@ -195,30 +226,43 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
                   ))}
                 </select>
               </Field>
-              <Field label="Firmware identity" hint="Use the verified build hash or receipt identity.">
-                <input
-                  className="device-input"
-                  value={draft.firmwareVersion}
-                  onChange={event => change('firmwareVersion', event.target.value)}
-                  placeholder="Awaiting verified readback"
-                  maxLength={120}
-                />
-              </Field>
             </div>
 
-            <div className="device-form-divider">
-              <Mono size="10px" color={C.textDim}>PREDECLARED PLACEMENT GEOMETRY</Mono>
-            </div>
-            <PlacementFields draft={draft} onChange={change} />
-            <Field label="Placement notes">
-              <textarea
-                className="device-input device-textarea"
-                value={draft.placementNotes}
-                onChange={event => change('placementNotes', event.target.value)}
-                maxLength={500}
-                placeholder="Direction, obstruction, shade, and reference point"
-              />
-            </Field>
+            {!editing ? (
+              <p className="device-dialog-copy">
+                That is everything needed. The sensor&apos;s key for sending data
+                is created for you when you save, and shown once on the next
+                screen.
+              </p>
+            ) : null}
+
+            <details className="device-advanced" open={hasAdvancedValues}>
+              <summary>
+                Placement and firmware details
+                <span>For the research team. Can be left blank and filled in later.</span>
+              </summary>
+              <div className="device-advanced-body">
+                <PlacementFields draft={draft} onChange={change} />
+                <Field label="Placement notes">
+                  <textarea
+                    className="device-input device-textarea"
+                    value={draft.placementNotes}
+                    onChange={event => change('placementNotes', event.target.value)}
+                    maxLength={500}
+                    placeholder="Direction, obstruction, shade, and reference point"
+                  />
+                </Field>
+                <Field label="Firmware version" hint="The verified build identity, once it has been read back off the unit.">
+                  <input
+                    className="device-input"
+                    value={draft.firmwareVersion}
+                    onChange={event => change('firmwareVersion', event.target.value)}
+                    placeholder="Leave blank until verified"
+                    maxLength={120}
+                  />
+                </Field>
+              </div>
+            </details>
 
             <div className="device-dialog-actions">
               <button className="device-secondary-button" type="button" onClick={onClose}>Cancel</button>

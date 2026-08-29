@@ -1847,10 +1847,75 @@ a:focus-visible,
   line-height: 1.5;
 }
 
-.device-form-divider {
-  margin: 5px 0 14px;
+/*
+ * Everything a field install does not need, behind one disclosure.
+ *
+ * Native <details> rather than a state flag and a button: it is keyboard
+ * operable, announces its own expanded state, and cannot get out of step with
+ * the thing it hides. The summary says who the panel is for and that it can be
+ * skipped, because a collapsed panel with an unexplained heading is read as
+ * something the reader has forgotten to fill in.
+ */
+.device-advanced {
+  margin: 6px 0 14px;
   padding-top: 16px;
   border-top: 1px dashed var(--pd-dash);
+}
+
+/*
+ * A two-column grid, not a flex column with an absolutely positioned arrow.
+ * The title and the note stack in column two while one marker sits against
+ * both of them in column one, and nothing has to be positioned by hand.
+ */
+.device-advanced > summary {
+  cursor: pointer;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: start;
+  gap: 3px 4px;
+  font: 600 13px var(--font-data);
+  color: var(--color-text);
+  padding: 4px 0;
+}
+
+/* Safari draws its own marker on top of ours without this. */
+.device-advanced > summary::-webkit-details-marker { display: none; }
+
+.device-advanced > summary span {
+  grid-column: 2;
+  font: 400 12px var(--font-data);
+  color: var(--color-text-dim);
+  line-height: 1.45;
+}
+
+.device-advanced > summary::before {
+  content: '';
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: center;
+  margin-top: 5px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--color-text-dim);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  transition: transform 0.15s ease;
+}
+
+.device-advanced[open] > summary::before { transform: rotate(90deg); }
+
+.device-advanced > summary:focus-visible {
+  outline: 2px solid var(--pd-accent-ink);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.device-advanced-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 14px 0 2px 18px;
 }
 
 .device-dialog-actions {

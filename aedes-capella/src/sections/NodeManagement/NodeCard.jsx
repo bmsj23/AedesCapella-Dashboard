@@ -294,7 +294,10 @@ export default function NodeCard({ device }) {
           */}
         <div className={timeQualityNote ? undefined : 'is-hidden'}>
           <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.45 }}>
-            {timeQualityNote || ' '}
+            {/* A non-breaking space, not a plain one. An ordinary space
+                collapses, the span then has no line box, and the row measures
+                zero rather than the line it is here to hold. */}
+            {timeQualityNote || ' '}
           </Mono>
         </div>
 
