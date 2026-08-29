@@ -84,6 +84,47 @@ export function describeUploadBacklog(device, nowMs = Date.now()) {
   };
 }
 
+export function describeDetector(device) {
+  /*
+   * The S3 transmits only when a detection passes the decision policy; there is
+   * no keepalive. So a Gate-4 packet arriving is positive evidence the detector
+   * is alive, and no packet arriving is evidence of nothing at all. These labels
+   * refuse to turn that silence into either reassurance or an alarm.
+   *
+   * detector_down is only reachable once firmware reports s3_last_packet_age_ms.
+   */
+  switch (device.detector_state) {
+    case 'confirmed_live':
+      return {
+        label: 'Detecting',
+        color: 'green',
+        detail: 'A reading reached the hub recently.',
+      };
+    case 'detector_down':
+      return {
+        label: 'Not responding',
+        color: 'red',
+        detail: 'The hub has stopped hearing from the microphone unit.',
+      };
+    case 'silent_unverifiable':
+      return {
+        label: 'Nothing heard recently',
+        color: 'gray',
+        detail: device.detector_reporting_supported
+          ? null
+          : 'Normal on a quiet night. This sensor cannot yet tell quiet apart from stopped.',
+      };
+    case 'never_confirmed':
+      return {
+        label: 'Never detected yet',
+        color: 'gray',
+        detail: 'No reading has ever reached the hub from this unit.',
+      };
+    default:
+      return { label: 'No update yet', color: 'gray', detail: null };
+  }
+}
+
 export function describeDeviceState(device) {
   if (device.operational_state === 'logging_fault') {
     return 'The sensor is sending a signal, but some records may not be saved. Treat its information as incomplete until a later healthy update.';

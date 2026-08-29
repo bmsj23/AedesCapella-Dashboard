@@ -9,6 +9,7 @@ import WifiSignal from '../../components/charts/WifiSignal';
 import {
   describeDeviceState,
   describeUploadBacklog,
+  describeDetector,
   formatDuration,
   formatTimestamp,
   getStatusPresentation,
@@ -33,6 +34,7 @@ export default function NodeCard({ device }) {
   const isOffline = ['offline', 'never_seen'].includes(device.operational_state);
   const latestEvent = getEventPresentation(device.latest_event_kind);
   const backlog = describeUploadBacklog(device);
+  const detector = describeDetector(device);
   /*
    * True once the sensor has stopped checking in but has reported at some
    * point, which is exactly when its stored readings stop describing it. A
@@ -86,6 +88,13 @@ export default function NodeCard({ device }) {
         <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <Tag color={backlog.color}>{backlog.label}</Tag>
           {backlog.detail && <Mono size="11px" color={C.textDim}>{backlog.detail}</Mono>}
+        </div>
+      </Metric>
+
+      <Metric label="Detector">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+          <Tag color={detector.color}>{detector.label}</Tag>
+          {detector.detail && <Mono size="11px" color={C.textDim}>{detector.detail}</Mono>}
         </div>
       </Metric>
 
