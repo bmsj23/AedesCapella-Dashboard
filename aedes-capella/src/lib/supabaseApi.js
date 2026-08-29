@@ -219,7 +219,7 @@ export async function fetchLocations(accessToken, signal) {
 }
 
 export async function registerDevice(accessToken, device, signal) {
-  return request('/rest/v1/rpc/admin_register_device', {
+  return request('/rest/v1/rpc/register_device', {
     method: 'POST',
     accessToken,
     signal,

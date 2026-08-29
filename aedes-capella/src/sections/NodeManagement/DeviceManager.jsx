@@ -410,7 +410,7 @@ export default function DeviceManager({
           <h3>Deployment identities</h3>
           <p>Changes use validated RPCs. Browser accounts have no direct write grant on the device table.</p>
         </div>
-        {admin ? (
+        {technical ? (
           <button className="device-primary-button" type="button" onClick={() => setDialog({ type: 'form' })}>
             <Plus size={16} /> Register sensor
           </button>
