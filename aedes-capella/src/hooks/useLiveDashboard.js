@@ -7,6 +7,8 @@ import {
   fetchDeviceMap,
   fetchDeviceMapById,
   fetchDeviceMapByLocation,
+  fetchDeviceRegistry,
+  fetchDeviceRegistryById,
   fetchDeviceStatus,
   fetchDeviceStatusById,
   fetchRelayActivity,
@@ -37,6 +39,7 @@ const SOURCES = [
   ['relays', fetchRelayActivity],
   ['devices', fetchDeviceStatus],
   ['mapDevices', fetchDeviceMap],
+  ['deviceRegistry', fetchDeviceRegistry],
   ['activitySummary', fetchActivitySummary],
 ];
 
@@ -114,6 +117,9 @@ export function useLiveDashboard(accessToken) {
     }),
     fetchDeviceMapById(accessToken, deviceId, signal).then(row => {
       if (row) dispatch({ type: 'upsert_map', rows: row });
+    }),
+    fetchDeviceRegistryById(accessToken, deviceId, signal).then(row => {
+      if (row) dispatch({ type: 'upsert_registry', row });
     }),
   ]), [accessToken]);
 

@@ -14,7 +14,7 @@ test('initial authenticated hydration installs every shared dataset', () => {
     datasets: {
       activity: [{ runtime_event_id: 1 }],
       activitySummary: { candidates_all_time: 22 },
-      candidates: [], relays: [], devices: [], mapDevices: [],
+      candidates: [], relays: [], devices: [], mapDevices: [], deviceRegistry: [],
     },
     errors: {}, complete: true, at: new Date('2026-08-09T00:00:00Z'),
   });

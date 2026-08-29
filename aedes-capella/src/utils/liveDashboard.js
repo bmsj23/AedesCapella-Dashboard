@@ -6,6 +6,7 @@ export const EMPTY_LIVE_DASHBOARD = {
   candidates: [],
   relays: [],
   devices: [],
+  deviceRegistry: [],
   mapDevices: [],
   errors: {},
   loading: true,
@@ -118,6 +119,16 @@ export function liveDashboardReducer(state, action) {
       return {
         ...state,
         mapDevices: upsertByKey(state.mapDevices, action.rows, 'device_id', Number.POSITIVE_INFINITY),
+      };
+    case 'upsert_registry':
+      return {
+        ...state,
+        deviceRegistry: upsertByKey(
+          state.deviceRegistry,
+          action.row,
+          'device_id',
+          Number.POSITIVE_INFINITY,
+        ),
       };
     default:
       return state;

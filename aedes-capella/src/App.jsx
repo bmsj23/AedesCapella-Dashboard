@@ -192,6 +192,7 @@ export default function App() {
             <ActiveSection
               deviceStatus={deviceStatus}
               dashboardData={liveData}
+              accessToken={session.accessToken}
             />
           </Suspense>
         </main>
