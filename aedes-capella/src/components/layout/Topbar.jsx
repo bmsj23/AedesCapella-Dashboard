@@ -24,7 +24,7 @@ const CONNECTION = {
   polling_fallback: { label: 'Slow', color: 'amber' },
 };
 
-export default function Topbar({ metrics, connectionState, reconciledAt }) {
+export default function Topbar({ metrics, connectionState }) {
   const { clock, date } = usePHTime();
   const connection = CONNECTION[connectionState] || CONNECTION.polling_fallback;
   const values = {
@@ -52,11 +52,6 @@ export default function Topbar({ metrics, connectionState, reconciledAt }) {
       <div className="topbar-connection" role="status" aria-live="polite">
         <div className="topbar-label">Updates</div>
         <Tag color={connection.color}>{connection.label}</Tag>
-        <div className="topbar-reconciled">
-          {reconciledAt
-            ? `Last checked ${reconciledAt.toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' })}`
-            : 'Waiting for first update'}
-        </div>
       </div>
 
       <div className="topbar-clock">

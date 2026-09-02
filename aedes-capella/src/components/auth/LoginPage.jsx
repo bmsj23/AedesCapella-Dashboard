@@ -34,13 +34,12 @@ export default function LoginPage({ onLogin }) {
         className="login-card"
         padding="var(--login-pad)"
         label="Barangay Mosquito Watch"
-        fig="SEC.00"
         figure={(
           <>
             <div className="login-brand">AedesCapella</div>
             <h1 className="login-headline">Keep an eye on mosquito activity.</h1>
             <p className="login-lede">
-              Sign in to check sensor updates, see areas needing attention, and review recorded
+              Sign in to check device updates, see areas needing attention, and review recorded
               spraying activity around the barangay.
             </p>
           </>

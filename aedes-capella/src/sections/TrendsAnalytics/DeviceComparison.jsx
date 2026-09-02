@@ -95,16 +95,16 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
     <Card className="device-comparison" style={{ marginBottom: '20px', background: C.surface2 }}>
       <div className="device-comparison-head">
         <div>
-          <Mono size="10px" color={C.textDim}>COMPARING TWO SENSORS</Mono>
-          <h3>Where the sensors are pointed</h3>
-          <p>Compare two sensors over the same period. Both run the same model, so a difference here says something about where they are placed, not about which one is more accurate.</p>
+          <Mono size="10px" color={C.textDim}>COMPARING TWO DEVICES</Mono>
+          <h3>Where the devices are pointed</h3>
+          <p>Compare two devices over the same period. Both run the same model, so a difference here says something about where they are placed, not about which one is more accurate.</p>
         </div>
         <GitCompareArrows size={24} color={C.amber} aria-hidden="true" />
       </div>
 
       {selectable.length < 2 ? (
         <EmptyState
-          title="Two Active Sensors Required"
+          title="Two Active Devices Required"
           message="Register and provision the second unit before a side-by-side comparison can be calculated."
           compact
         />
@@ -112,7 +112,7 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
         <>
           <div className="device-comparison-controls">
             <label>
-              <span>First sensor</span>
+              <span>First device</span>
               <select value={leftDeviceId} onChange={event => setLeftSelection(event.target.value)}>
                 {selectable.map(device => (
                   <option key={device.device_id} value={device.device_id}>{formatDeviceName(device.device_label)}</option>
@@ -120,7 +120,7 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
               </select>
             </label>
             <label>
-              <span>Second sensor</span>
+              <span>Second device</span>
               <select value={rightDeviceId} onChange={event => setRightSelection(event.target.value)}>
                 {selectable.filter(device => device.device_id !== leftDeviceId).map(device => (
                   <option key={device.device_id} value={device.device_id}>{formatDeviceName(device.device_label)}</option>
@@ -164,13 +164,13 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
                 );
               })}
               <div className="comparison-agreement">
-                <span>How often both sensors flagged the same {comparison.agreementWindowSeconds} seconds</span>
+                <span>How often both devices flagged the same {comparison.agreementWindowSeconds} seconds</span>
                 <strong>{comparison.agreementPercent === null ? 'Not available' : `${comparison.agreementPercent.toFixed(1)}%`}</strong>
                 <small>{comparison.matchedCandidates} matched pair{comparison.matchedCandidates === 1 ? '' : 's'}</small>
               </div>
             </div>
 
-            <div className="comparison-chart" aria-label={`${DETECTION_TERM.plural} per hour, by sensor`}>
+            <div className="comparison-chart" aria-label={`${DETECTION_TERM.plural} per hour, by device`}>
               <Mono size="10px" color={C.textDim}>{DETECTION_TERM_UPPER.plural} PER HOUR</Mono>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData} margin={{ top: 18, right: 8, bottom: 0, left: -8 }}>

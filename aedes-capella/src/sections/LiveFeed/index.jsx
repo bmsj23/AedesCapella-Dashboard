@@ -10,7 +10,7 @@ import { filterOperatorActivity, manilaStartOfDay } from '../../utils/dashboardD
 import { ACTIVITY_FETCH_LIMIT } from '../../lib/supabaseApi';
 import { formatDeviceName } from '../../utils/viewer';
 
-/** Section 1 - Latest sensor activity */
+/** Section 1 - Latest device activity */
 export default function LiveFeed({ dashboardData, deviceStatus }) {
   /*
    * Today is the default, because the question this section answers is "what
@@ -42,9 +42,8 @@ export default function LiveFeed({ dashboardData, deviceStatus }) {
   return (
     <div>
       <SectionHeader
-        fig="SEC.01"
         title="Latest Activity"
-        subtitle="What the sensors recorded today."
+        subtitle="What the devices recorded today."
         action={dashboardData?.refresh && (
           <button
             type="button"

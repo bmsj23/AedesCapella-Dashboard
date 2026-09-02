@@ -123,6 +123,30 @@
   --tag-neutral-bg: #eef1f5;
   --tag-neutral-fill: #47536a;
   --tag-neutral-ink: #2b3546;
+  /*
+   * Kind tones. These say what sort of thing happened, never how urgent it is,
+   * so they are drawn as coloured text and a coloured icon with no tint behind
+   * them. That is the whole distinction a reader has to make on this screen:
+   *
+   *   filled pill      severity, and someone may have to act
+   *   coloured text    a kind of event, and nothing is being asked
+   *
+   * They are deliberately outside the amber/red/green scale. Colouring the
+   * activity feed with severity hues is what made a normal successful night
+   * render amber then red while the legend told a barangay worker to inspect a
+   * device that was working correctly.
+   *
+   * Ink tones clear 4.5:1 on the page background; fills are icon-only and need
+   * 3:1, so they sit a step brighter.
+   */
+  --tag-indigo-fill: #4f46e5;
+  --tag-indigo-ink: #3730a3;
+  --tag-slate-fill: #64748b;
+  --tag-slate-ink: #475569;
+  --tag-teal-fill: #0d9488;
+  --tag-teal-ink: #0f766e;
+  --tag-violet-fill: #7c3aed;
+  --tag-violet-ink: #6d28d9;
   --banner-blue-bg: #dbeafe;
   --banner-blue-border: #93c5fd66;
   --banner-blue-text: #1d4ed8;
@@ -479,8 +503,7 @@ a:focus-visible,
   border-right: 1px dashed var(--pd-dash);
 }
 
-.topbar-label,
-.topbar-reconciled {
+.topbar-label {
   font: 500 10px var(--font-data);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -495,17 +518,10 @@ a:focus-visible,
   font-weight: 600;
 }
 
-.topbar-reconciled { color: var(--color-gray); }
-
 .topbar-value {
   color: var(--color-text);
   font: 700 20px var(--font-data);
   letter-spacing: -0.02em;
-}
-
-.topbar-reconciled {
-  text-transform: none;
-  letter-spacing: 0.02em;
 }
 
 .topbar-clock {
@@ -684,7 +700,7 @@ a:focus-visible,
 
 /*
  * Two-way switch on a device card, between what is true now and what the
- * sensor last reported. Built from the same tokens as .status-refresh-button
+ * device last reported. Built from the same tokens as .status-refresh-button
  * rather than as a new control: monospace tracked caps in a plate-radius
  * container, with the selected side carrying the accent tint the rest of the
  * system uses for a current choice.
@@ -909,6 +925,48 @@ a:focus-visible,
 .pd-tag-green { --tag-bg: var(--tag-green-bg); --tag-fill: var(--tag-green-fill); --tag-ink: var(--tag-green-ink); }
 .pd-tag-gray  { --tag-bg: var(--tag-gray-bg);  --tag-fill: var(--tag-gray-fill);  --tag-ink: var(--tag-gray-ink); }
 .pd-tag-neutral { --tag-bg: var(--tag-neutral-bg); --tag-fill: var(--tag-neutral-fill); --tag-ink: var(--tag-neutral-ink); }
+
+/*
+ * Kind tones: colour rides on the text and the icon, with nothing behind them.
+ * The tint and the ring are dropped rather than made transparent so the chip
+ * sits on the baseline as text, and the horizontal padding goes with them for
+ * the same reason. A pill shape with no fill still reads as a pill.
+ */
+.pd-tag-indigo { --tag-fill: var(--tag-indigo-fill); --tag-ink: var(--tag-indigo-ink); }
+.pd-tag-slate  { --tag-fill: var(--tag-slate-fill);  --tag-ink: var(--tag-slate-ink); }
+.pd-tag-teal   { --tag-fill: var(--tag-teal-fill);   --tag-ink: var(--tag-teal-ink); }
+.pd-tag-violet { --tag-fill: var(--tag-violet-fill); --tag-ink: var(--tag-violet-ink); }
+
+.pd-tag-indigo,
+.pd-tag-slate,
+.pd-tag-teal,
+.pd-tag-violet {
+  background: none;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/*
+ * Activity chips wrap. The feed's two tables pin their columns with
+ * table-layout:fixed so the header stays aligned with the scrolling body, which
+ * means "What happened" is stuck at its share of the width and cannot grow to
+ * fit "Possible Aedes detection". A nowrap chip therefore spills into Notes.
+ *
+ * It always did. The filled pill's opaque tint painted over the overlap and
+ * hid it, and removing the fill only made an existing collision visible.
+ * Widening the column is not the fix, because both tables share one colgroup.
+ *
+ * The icon aligns to the first line rather than to the middle of a wrapped
+ * block, and the square marker takes a nudge to sit on the cap height.
+ */
+.activity-feed-row .pd-tag {
+  align-items: flex-start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.activity-feed-row .pd-tag::before { margin-top: 4px; }
 
 /* Nav buttons carry no edge of any kind; only the fill marks the active item. */
 .dashboard-nav button {
@@ -1967,7 +2025,7 @@ a:focus-visible,
 }
 
 /* ---------------------------------------------------------------------------
-   Two-sensor placement comparison
+   Two-device placement comparison
    --------------------------------------------------------------------------- */
 
 .device-comparison-head {

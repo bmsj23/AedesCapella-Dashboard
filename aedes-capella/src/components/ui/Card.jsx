@@ -11,8 +11,7 @@ import { C } from '../../constants/colors';
  * @param {boolean} glow      - accent edge and brackets, for rows needing attention
  * @param {boolean} grid      - fill the body with the faint square grid
  * @param {node}    figure    - content for the gridded upper zone
- * @param {string}  label     - left corner label, accent, e.g. "Sensor Status"
- * @param {string}  fig       - right corner label, muted, e.g. "SEC.04"
+ * @param {string}  label     - left corner label, accent, e.g. "Device Status"
  * @param {node}    meta      - dot-separated monospace footer
  * @param {string|number} padding - body padding; pass 0 for flush content
  *                                  such as a table that should meet the edge
@@ -27,12 +26,11 @@ export default function Card({
   grid = false,
   figure = null,
   label = null,
-  fig = null,
   meta = null,
   padding = '20px',
   className = '',
 }) {
-  const hasFigure = figure !== null || label !== null || fig !== null;
+  const hasFigure = figure !== null || label !== null;
 
   /*
    * `background` is a shorthand: setting it resets background-image, which
@@ -58,7 +56,6 @@ export default function Card({
         <div className="pd-figure pd-grid">
           {figure}
           {label && <span className="pd-figlabel pd-figlabel-left">{label}</span>}
-          {fig && <span className="pd-figlabel pd-figlabel-right">{fig}</span>}
         </div>
       )}
 

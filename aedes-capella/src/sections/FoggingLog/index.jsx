@@ -12,7 +12,6 @@ export default function FoggingLog({ dashboardData }) {
   return (
     <div>
       <SectionHeader
-        fig="SEC.03"
         title="Spraying History"
         subtitle="When the sprayers were asked to run, when they ran, and when a request was refused."
       />

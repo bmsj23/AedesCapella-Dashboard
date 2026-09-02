@@ -20,7 +20,6 @@ export default function TrendsAnalytics({ dashboardData, deviceStatus }) {
   return (
     <div>
       <SectionHeader
-        fig="SEC.05"
         title="Activity Summary"
         subtitle="Totals over time, in Philippine time."
       />

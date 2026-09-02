@@ -142,7 +142,6 @@ export default function App() {
     <Topbar
       metrics={topbarMetrics}
       connectionState={liveData.connectionState}
-      reconciledAt={liveData.reconciledAt}
     />
   );
 

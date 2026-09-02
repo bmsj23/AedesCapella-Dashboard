@@ -27,7 +27,7 @@ export function isTechnicalRole(role) {
  * This is deliberately not gated on the technical role. Maintainers identify
  * hardware by the device id, which the device cards already print beside the
  * name, so showing the slug bought nothing and cost consistency: the same
- * sensor was called two different things depending on who was signed in.
+ * device was called two different things depending on who was signed in.
  */
 export function formatDeviceName(label) {
   if (!label) return 'Unknown device';

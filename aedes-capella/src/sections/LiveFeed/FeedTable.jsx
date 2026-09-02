@@ -20,7 +20,7 @@ function deviceLabel(deviceId, deviceLabels) {
   return deviceId ? `Device ${deviceId.slice(0, 4)}` : 'Unknown device';
 }
 
-/** Recent sensor activity table with plain-language labels. */
+/** Recent device activity table with plain-language labels. */
 export default function FeedTable({
   events = [], deviceLabels = {}, loading = false, error = '', emptyToday = false,
 }) {
@@ -29,7 +29,7 @@ export default function FeedTable({
     return (
       <EmptyState
         title="Loading Recent Activity"
-        message="Please wait while the latest sensor updates load."
+        message="Please wait while the latest device updates load."
         variant="startup"
       />
     );
@@ -50,15 +50,15 @@ export default function FeedTable({
     /*
      * An empty day and an empty feed are different facts, and the filter is
      * the only thing that knows which one this is. Saying "no recent activity"
-     * on a quiet morning would send a reader to check sensors that are fine.
+     * on a quiet morning would send a reader to check devices that are fine.
      */
     return (
       <EmptyState
         title={emptyToday ? 'Nothing Recorded Today Yet' : 'No Recent Activity'}
         message={emptyToday
-          ? 'The sensors have not recorded anything since midnight. This does not prove that everything is okay.'
-          : 'No sensor updates are showing right now. This does not prove that everything is okay.'}
-        action="Open Sensor Status and check whether the sensors are reporting."
+          ? 'The devices have not recorded anything since midnight. This does not prove that everything is okay.'
+          : 'No device updates are showing right now. This does not prove that everything is okay.'}
+        action="Open Device Status and check whether the devices are reporting."
       />
     );
   }
@@ -68,7 +68,6 @@ export default function FeedTable({
       title="What The Devices Recorded"
       note={`Showing the ${events.length} most recent`}
       label="Activity"
-      fig="SEC.01"
       headers={ACTIVITY_TABLE_HEADERS}
       columns={COLUMNS}
       rows={events}

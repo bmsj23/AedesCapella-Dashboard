@@ -64,7 +64,6 @@ export default function ActivitySummary({ events, summary: databaseSummary }) {
         <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.01em', color: C.text }}>
           {windowLabel}
         </div>
-        <Mono size="11px" color={C.textDim}>Philippine time</Mono>
       </div>
 
       <div className="info-grid info-grid-two">

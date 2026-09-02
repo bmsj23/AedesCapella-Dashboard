@@ -35,7 +35,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
       statusColor: candidates.length ? 'neutral' : 'gray',
     },
     {
-      label: 'Sensor activities',
+      label: 'Device activities',
       value: String(runtimeSummary.total),
       sub: runtimeSummary.latestAt ? `last seen ${formatDashboardTimestamp(runtimeSummary.latestAt)}` : 'no activity yet',
       color: C.text,
@@ -45,7 +45,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
     {
       label: 'Busiest time',
       value: peakEventHour(events),
-      sub: 'based on sensor activity',
+      sub: 'based on device activity',
       color: C.text,
       // Not amber. The busiest hour of the night is a fact about the
       // records, not a request to go and check anything.
@@ -80,7 +80,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
             marginBottom: '12px',
           }}>
             {/* An amber warning triangle used to appear here when the count
-                was zero. A night on which the sensor heard nothing is a normal
+                was zero. A night on which the device heard nothing is a normal
                 night, and the chip beside it already says "None recorded". */}
             <Tag color={statusColor}>{status}</Tag>
           </div>

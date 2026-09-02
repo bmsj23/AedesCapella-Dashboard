@@ -16,7 +16,7 @@ function DeviceTable({ devices, title }) {
       <div className="table-section-title">{title}</div>
       <div className="table-scroll">
         <table className="data-table">
-          <thead><tr><th>SENSOR / LOCATION</th><th>STATE</th><th>COORDINATES</th><th>{DETECTION_TERM_UPPER.plural} / 24H</th><th>SPRAYINGS / 24H</th><th>LATEST ACTIVITY</th></tr></thead>
+          <thead><tr><th>DEVICE / LOCATION</th><th>STATE</th><th>COORDINATES</th><th>{DETECTION_TERM_UPPER.plural} / 24H</th><th>SPRAYINGS / 24H</th><th>LATEST ACTIVITY</th></tr></thead>
           <tbody>
             {devices.map(device => {
               /*
@@ -24,7 +24,7 @@ function DeviceTable({ devices, title }) {
                * This table, both maps and the comparison panel each carried
                * their own copy of the rule, and every copy had drifted to
                * "anything that is not online or a fault is amber", which
-               * painted an ordinary offline sensor as "check soon" and then
+               * painted an ordinary offline device as "check soon" and then
                * printed the raw state name at the reader.
                *
                * It also keeps the null guard that this line exists for.
@@ -38,7 +38,7 @@ function DeviceTable({ devices, title }) {
               const status = getStatusPresentation(device.operational_state);
               return (
               <tr key={device.device_id}>
-                <td data-label="Sensor / Location"><Mono size="12px" style={{ fontWeight: 700 }}>{formatDeviceName(device.device_label)}</Mono><Mono size="11px" color={C.textDim} style={{ display: 'block' }}>{device.location_name} · {device.barangay_name}</Mono></td>
+                <td data-label="Device / Location"><Mono size="12px" style={{ fontWeight: 700 }}>{formatDeviceName(device.device_label)}</Mono><Mono size="11px" color={C.textDim} style={{ display: 'block' }}>{device.location_name} · {device.barangay_name}</Mono></td>
                 <td data-label="State"><Tag color={status.color}>{status.label}</Tag></td>
                 <td data-label="Coordinates"><Mono size="11px" color={C.textDim}>{device.latitude === null || device.longitude === null ? 'Not mapped' : `${device.latitude}, ${device.longitude}`}</Mono></td>
                 <td data-label={`${DETECTION_TERM.plural} / 24h`}>{device.candidates_last_24h ?? 0}</td>

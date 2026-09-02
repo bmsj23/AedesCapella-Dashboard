@@ -16,7 +16,17 @@
  * by an icon; never by its colour. An unknown tone falls back to gray, which
  * claims the least.
  */
-const TONES = new Set(['amber', 'red', 'green', 'gray', 'neutral']);
+const TONES = new Set([
+  /* Severity. Drawn as a filled pill, because someone may have to act. */
+  'amber', 'red', 'green', 'gray', 'neutral',
+  /*
+   * Kind. Drawn as coloured text and a coloured icon with no fill behind them,
+   * so the activity feed can say what sort of event a row is without borrowing
+   * the severity scale and implying something is wrong. See the kind-tone block
+   * in index.css for why these sit outside amber/red/green.
+   */
+  'indigo', 'slate', 'teal', 'violet',
+]);
 
 /**
  * Status chip.
@@ -30,7 +40,8 @@ const TONES = new Set(['amber', 'red', 'green', 'gray', 'neutral']);
  * icon is hidden from assistive technology because the chip's own text already
  * says what it is.
  *
- * @param {string} color - 'green' | 'amber' | 'red' | 'gray' | 'neutral'
+ * @param {string} color - severity: 'green' | 'amber' | 'red' | 'gray' | 'neutral'
+ *                         kind:     'indigo' | 'slate' | 'teal' | 'violet'
  * @param {Function} [icon] - a lucide-react component, drawn in place of the marker
  */
 export default function Tag({ children, color = 'gray', icon: Icon }) {

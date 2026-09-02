@@ -7,7 +7,7 @@
  * matches", "Possible mosquitoes", "Likely Aedes Mosquito", "possible
  * matches", "candidates"), and two of them claimed more than the measurement
  * supports: grouped Aedes precision is 16.67 percent, so this is a signal the
- * sensor matched, not a confirmed mosquito and not a confirmed species.
+ * device matched, not a confirmed mosquito and not a confirmed species.
  *
  * Imported rather than retyped so the next screen cannot invent a sixth name.
  * The caveat travels with the term for the same reason: a count shown without
@@ -27,7 +27,7 @@ export const DETECTION_TERM = Object.freeze({
    */
   inlinePlural: 'possible Aedes detections',
   inlineSingular: 'possible Aedes detection',
-  caveat: 'Sounds the sensor matched to Aedes. Not checked by a person.',
+  caveat: 'Sounds the device matched to Aedes.',
 });
 
 /*

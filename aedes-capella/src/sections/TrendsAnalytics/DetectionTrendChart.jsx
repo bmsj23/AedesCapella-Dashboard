@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-/** Sensor-activity trend with plain labels. */
+/** Device-activity trend with plain labels. */
 export default function DetectionTrendChart({ candidates = [] }) {
   const [view, setView] = useState('today');
   const activeData = buildActivitySeries(candidates, view);

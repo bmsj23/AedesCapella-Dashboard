@@ -5,7 +5,7 @@ import { C } from '../../constants/colors';
  *
  * The name is historical. It set IBM Plex Mono until the interface moved its
  * reading text onto the heading face, and now follows --font-data like every
- * other piece of body copy. Only the SEC.0x plate labels stay monospace, and
+ * other piece of body copy. Only the plate corner labels stay monospace, and
  * they do not use this component.
  */
 export default function Mono({ children, size = '13px', color, style = {} }) {

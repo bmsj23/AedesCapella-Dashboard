@@ -23,15 +23,21 @@ export const ACTIVITY_TABLE_HEADERS = Object.freeze([
 ]);
 
 /*
- * How good the timestamp is, which is a fact about the record rather than a
- * severity. A confirmed clock and an estimated one are both normal and neither
- * asks anything of the reader, so both are neutral and the label does the
- * work. Only "time unavailable" takes a colour, and it takes gray, because
- * that is precisely what gray means: no information.
+ * How good the timestamp is. A confirmed clock and an estimated one are both
+ * normal and neither asks anything of the reader, so they take kind tones and
+ * read as coloured text: teal for a clock that was checked against a time
+ * server, slate for one inferred from the boot anchor.
+ *
+ * "Time unavailable" is the exception and stays gray, so it draws as a filled
+ * pill among two plain ones and is visibly the odd one out. Gray, not amber:
+ * the record exists but cannot be placed in time, which is missing information
+ * and precisely what gray means. Amber says "look at this when you can", and
+ * there is nothing a barangay worker can do about a clock that was not set
+ * before the unit buffered those events. `dashboardData.test.js` guards this.
  */
 const ACTIVITY_TIME_QUALITY = Object.freeze({
-  ntp: Object.freeze({ label: 'Confirmed time', tone: 'neutral' }),
-  boot_anchor: Object.freeze({ label: 'Estimated time', tone: 'neutral' }),
+  ntp: Object.freeze({ label: 'Confirmed time', tone: 'teal' }),
+  boot_anchor: Object.freeze({ label: 'Estimated time', tone: 'slate' }),
   unresolved: Object.freeze({ label: 'Time unavailable', tone: 'gray' }),
 });
 
@@ -55,30 +61,33 @@ const OPERATOR_ACTIVITY_KIND_SET = new Set(OPERATOR_ACTIVITY_KINDS);
  * mosquito, and a sprayer switching on must never read as proof that spray
  * reached anything.
  *
- * Every one of these is neutral, and that is the point.
- *
- * Colour used to carry the kind of event here while the legend told the reader
- * colour carried severity. The result was that a completely normal, successful
- * night rendered as amber ("check soon") for the detection followed by red
- * ("needs action") for the spray that the detection correctly triggered, and
- * the legend then told a barangay worker to inspect the device as soon as
- * possible while nothing whatever was wrong. A busy night painted the screen
- * red.
- *
  * None of these events asks anyone to do anything: they are the system working.
- * So they are all "recorded, nothing to do", the icon says which kind of thing
- * happened, and red is left for the faults on the device card, where a person
- * genuinely has to act.
+ *
+ * Colour here once came off the severity scale, and that was the bug. A
+ * completely normal, successful night rendered amber ("check soon") for the
+ * detection followed by red ("needs action") for the spray that the detection
+ * correctly triggered, and the legend then told a barangay worker to inspect a
+ * device while nothing whatever was wrong. A busy night painted the screen red.
+ * Making everything neutral fixed that, and left the feed unreadably flat.
+ *
+ * So these carry a second, separate dimension: kind tones, which are drawn as
+ * coloured text and a coloured icon with no fill behind them. Nothing in this
+ * map may ever take amber, red or green. Those stay on the device card, where a
+ * filled pill means a person genuinely has to act, and the difference in shape
+ * is what keeps the two scales from being confused.
+ *
+ * Grouping: what the device did (indigo boot), what it heard (teal), what the
+ * sprayer did (violet), and the quiet bookkeeping either side of it (slate).
  */
 const EVENT_PRESENTATION = {
-  BOOT: { label: 'Device turned on', color: 'neutral', icon: Power },
-  TEST_ACCEPT: { label: 'Test check', color: 'neutral', icon: FlaskConical },
-  LIVE_ACCEPT: { label: DETECTION_TERM.singular, color: 'neutral', icon: AudioLines },
-  RELAY_INTENT: { label: 'Spray requested', color: 'neutral', icon: SprayCan },
-  RELAY_ON: { label: 'Sprayer turned on', color: 'neutral', icon: SprayCan },
-  RELAY_OFF: { label: 'Sprayer turned off', color: 'neutral', icon: SprayCan },
-  RELAY_REJECT: { label: 'Sprayer on cooldown', color: 'neutral', icon: Timer },
-  COOLDOWN_COMPLETE: { label: 'Ready again', color: 'neutral', icon: Timer },
+  BOOT: { label: 'Device turned on', color: 'indigo', icon: Power },
+  TEST_ACCEPT: { label: 'Test check', color: 'slate', icon: FlaskConical },
+  LIVE_ACCEPT: { label: DETECTION_TERM.singular, color: 'teal', icon: AudioLines },
+  RELAY_INTENT: { label: 'Spray requested', color: 'violet', icon: SprayCan },
+  RELAY_ON: { label: 'Sprayer turned on', color: 'violet', icon: SprayCan },
+  RELAY_OFF: { label: 'Sprayer turned off', color: 'violet', icon: SprayCan },
+  RELAY_REJECT: { label: 'Sprayer on cooldown', color: 'slate', icon: Timer },
+  COOLDOWN_COMPLETE: { label: 'Ready again', color: 'slate', icon: Timer },
 };
 
 /*

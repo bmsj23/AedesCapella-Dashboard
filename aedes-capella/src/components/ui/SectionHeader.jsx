@@ -1,20 +1,18 @@
 import { C } from '../../constants/colors';
 
 /**
- * Section heading in the technical-plate language: a tracked accent overline,
- * a heavy display title trailed by an accent lozenge, and a monospace figure
- * number on the right that gives each section a fixed identity.
+ * Section heading in the technical-plate language: a tracked accent overline
+ * and a heavy display title trailed by an accent lozenge.
  *
- * No icon. The overline and the figure number carry the identification, which
- * is how the reference language does it; a glyph in a tinted rounded square
- * beside every title is the generic dashboard tell we are removing.
+ * No icon, and no figure number. The plate numbering was decoration that every
+ * section carried and nothing referred to; a glyph in a tinted rounded square
+ * beside every title is the same generic dashboard tell, and neither is here.
  *
  * @param {string} overline - tracked uppercase kicker above the title
- * @param {string} fig      - figure number, e.g. "SEC.01"
  * @param {node}   action   - control for the right of the title row, e.g. a
- *                            refresh button; sits above the rule beside fig
+ *                            refresh button; sits above the rule
  */
-export default function SectionHeader({ title, subtitle, overline, fig, action }) {
+export default function SectionHeader({ title, subtitle, overline, action }) {
   return (
     <header style={{
       display:       'flex',
@@ -48,7 +46,7 @@ export default function SectionHeader({ title, subtitle, overline, fig, action }
         )}
       </div>
 
-      {(action || fig) && (
+      {action && (
         <div style={{
           flexShrink:  0,
           marginTop:   '6px',
@@ -57,15 +55,6 @@ export default function SectionHeader({ title, subtitle, overline, fig, action }
           gap:         '14px',
         }}>
           {action}
-          {fig && (
-            <span style={{
-              color:         C.gray,
-              font:          '500 11px var(--font-plate)',
-              letterSpacing: '0.08em',
-            }}>
-              {fig}
-            </span>
-          )}
         </div>
       )}
     </header>

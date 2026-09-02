@@ -9,7 +9,7 @@ import {
   getStatusPresentation,
 } from './deviceStatus.js';
 
-test('maps every declared sensor state to a plain-language label', () => {
+test('maps every declared device state to a plain-language label', () => {
   assert.equal(getStatusPresentation('online').label, 'Working');
   assert.equal(getStatusPresentation('stale').label, 'Check soon');
   assert.equal(getStatusPresentation('offline').label, 'Offline');
@@ -30,7 +30,7 @@ test('duration and null timestamps are safe', () => {
 
 const NOW = Date.parse('2026-08-14T10:00:00Z');
 
-test('a fully uploaded sensor says so, without a nag', () => {
+test('a fully uploaded device says so, without a nag', () => {
   const backlog = describeUploadBacklog(
     { unsent_backlog_state: 'clear', unsent_records: 0, oldest_unsent_at: null },
     NOW,
@@ -63,7 +63,7 @@ test('only the database-decided stall turns the backlog amber', () => {
   assert.equal(describeUploadBacklog({ ...row, unsent_backlog_state: 'stalled' }, NOW).color, 'amber');
 });
 
-test('a sensor that has never reported is not reported as zero', () => {
+test('a device that has never reported is not reported as zero', () => {
   const backlog = describeUploadBacklog(
     { unsent_backlog_state: 'unknown', unsent_records: null, oldest_unsent_at: null },
     NOW,
@@ -90,7 +90,7 @@ test('a stalled backlog contradicts the "sending normally" reading, so it replac
   );
 });
 
-test('a silent sensor states only what is known, without implying live readings', () => {
+test('a silent device states only what is known, without implying live readings', () => {
   const offline = describeDeviceState({
     operational_state: 'offline', offline_after_minutes: 10,
   });
@@ -106,7 +106,7 @@ test('a silent sensor states only what is known, without implying live readings'
   assert.doesNotMatch(stale, /not from now/i);
 });
 
-test('a working sensor makes no such disclaimer', () => {
+test('a working device makes no such disclaimer', () => {
   const online = describeDeviceState({
     operational_state: 'online', expected_heartbeat_cadence_minutes: 2,
   });

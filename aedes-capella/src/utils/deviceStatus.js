@@ -1,13 +1,13 @@
 export const STATUS_PRESENTATION = {
   online: { label: 'Working', color: 'green', tone: 'healthy' },
   stale: { label: 'Check soon', color: 'amber', tone: 'warning' },
-  // "Not reporting" read as a sensor that was powered and merely quiet, which
+  // "Not reporting" read as a device that was powered and merely quiet, which
   // is the one thing this state does not claim. "Offline" is the plainer word
   // for the same evidence. It still does not assert a cause: the plan is
   // explicit that offline means no update arrived, not that the unit is off or
   // broken, which is why the description under it keeps saying so.
   offline: { label: 'Offline', color: 'gray', tone: 'offline' },
-  // Neutral, not blue: a sensor that has been added but has not reported yet
+  // Neutral, not blue: a device that has been added but has not reported yet
   // is a normal step in setting one up, and nobody has to do anything about it
   // on this screen. Blue was a sixth, undocumented meaning.
   never_seen: { label: 'Not connected yet', color: 'neutral', tone: 'startup' },
@@ -77,7 +77,7 @@ export function describeUploadBacklog(device, nowMs = Date.now()) {
 
   return {
     label: `${count} waiting to send`,
-    // A backlog that is draining is the sensor doing its job; only a stalled
+    // A backlog that is draining is the device doing its job; only a stalled
     // one asks anyone to look.
     color: stalled ? 'amber' : 'neutral',
     // The server cannot date a record it never received, so this is stated as
@@ -112,7 +112,7 @@ export function describeDetector(device) {
       return {
         label: 'Not responding',
         color: 'red',
-        detail: 'The sensor has stopped hearing from its microphone unit.',
+        detail: 'The device has stopped hearing from its microphone unit.',
       };
     case 'silent_unverifiable':
       return {
@@ -120,13 +120,13 @@ export function describeDetector(device) {
         color: 'gray',
         detail: device.detector_reporting_supported
           ? null
-          : 'Normal on a quiet night. This sensor cannot yet tell quiet apart from stopped.',
+          : 'Normal on a quiet night. This device cannot yet tell quiet apart from stopped.',
       };
     case 'never_confirmed':
       return {
         label: 'Never detected yet',
         color: 'gray',
-        detail: 'This sensor has never sent a reading.',
+        detail: 'This device has never sent a reading.',
       };
     default:
       return { label: 'No update yet', color: 'gray', detail: null };
@@ -135,10 +135,10 @@ export function describeDetector(device) {
 
 export function describeDeviceState(device) {
   if (device.operational_state === 'logging_fault') {
-    return 'The sensor is sending a signal, but some records may not be saved. Treat its information as incomplete until a later healthy update.';
+    return 'The device is sending a signal, but some records may not be saved. Treat its information as incomplete until a later healthy update.';
   }
   if (device.operational_state === 'never_seen') {
-    return 'This sensor is listed but has never sent an update.';
+    return 'This device is listed but has never sent an update.';
   }
   /*
    * These deliberately say only what is known. The card no longer shows the
@@ -151,12 +151,12 @@ export function describeDeviceState(device) {
   if (device.operational_state === 'offline') {
     return `No update received within the ${device.offline_after_minutes}-minute offline period.`;
   }
-  // Reachable only while the sensor is still checking in: the database raises
+  // Reachable only while the device is still checking in: the database raises
   // 'stalled' for a live heartbeat with a backlog that is not draining. Without
   // this branch the card would read "sending updates normally" inside an amber
   // plate, because a stalled backlog now counts toward needs_attention.
   if (device.unsent_backlog_state === 'stalled') {
-    return `This sensor is checking in, but ${device.unsent_records} of its saved records have not reached the dashboard. The records are still on the sensor; its connection may be reaching the check-in service only.`;
+    return `This device is checking in, but ${device.unsent_records} of its saved records have not reached the dashboard. The records are still on the device; its connection may be reaching the check-in service only.`;
   }
-  return `This sensor is sending updates normally (about every ${device.expected_heartbeat_cadence_minutes} minutes).`;
+  return `This device is sending updates normally (about every ${device.expected_heartbeat_cadence_minutes} minutes).`;
 }

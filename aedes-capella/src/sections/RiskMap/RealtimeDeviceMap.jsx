@@ -77,7 +77,7 @@ function LeafletDeviceMap({ mapped, candidates, relays, onTileFailure, onTileLoa
         const state = device.operational_state || 'offline';
         // The marker keeps its own colour scale, which is already severity;
         // the chip in the popup reads from the shared presentation so the map
-        // and the table beneath it never disagree about a sensor.
+        // and the table beneath it never disagree about a device.
         const status = getStatusPresentation(device.operational_state);
         return (
           <CircleMarker

@@ -11,28 +11,28 @@ import EmptyState from '../../components/ui/EmptyState';
 const staticStates = (staleMinutes, offlineMinutes) => [
   {
     title: 'Not connected yet',
-    message: 'This sensor is listed, but has never sent an update.',
+    message: 'This device is listed, but has never sent an update.',
     action: 'Ask the system administrator to check the setup.',
     icon: Power,
     variant: 'startup',
   },
   {
     title: 'Check soon',
-    message: `The last sensor update was more than ${staleMinutes} minutes ago.`,
-    action: 'Check the sensor soon or wait for a fresh update.',
+    message: `The last device update was more than ${staleMinutes} minutes ago.`,
+    action: 'Check the device soon or wait for a fresh update.',
     icon: Clock3,
     variant: 'warning',
   },
   {
     title: 'Offline',
-    message: `The last sensor update was more than ${offlineMinutes} minutes ago.`,
+    message: `The last device update was more than ${offlineMinutes} minutes ago.`,
     action: 'Ask the field or system team to check it safely.',
     icon: WifiOff,
     variant: 'offline',
   },
   {
     title: 'Records may be missing',
-    message: 'The sensor is sending a signal, but some records may not be saved.',
+    message: 'The device is sending a signal, but some records may not be saved.',
     action: 'Treat its information as incomplete until a later healthy update.',
     icon: AlertTriangle,
     variant: 'critical',

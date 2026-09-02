@@ -61,14 +61,14 @@ export default function NodeCard({ device }) {
   const timeQualityNote = device.latest_event_time_quality === 'unresolved'
     ? 'The exact time this happened is not known.'
     : device.latest_event_time_quality === 'boot_anchor'
-      ? 'The time is worked out from when the sensor last started up.'
+      ? 'The time is worked out from when the device last started up.'
       : '';
   const backlog = describeUploadBacklog(device);
   const detector = describeDetector(device);
   /*
-   * True once the sensor has stopped checking in but has reported at some
+   * True once the device has stopped checking in but has reported at some
    * point, which is exactly when its stored readings stop describing it. A
-   * sensor that never reported has no snapshot to separate out, and one that
+   * device that never reported has no snapshot to separate out, and one that
    * is checking in has a snapshot that is current, so neither gets the toggle.
    */
   const staleReadings = device.has_ever_reported && !device.is_online;
@@ -101,7 +101,7 @@ export default function NodeCard({ device }) {
       : { text: ' ', color: C.textDim, visible: false };
 
   /*
-   * The heartbeat snapshot: everything the sensor measured about itself at one
+   * The heartbeat snapshot: everything the device measured about itself at one
    * moment. Held in a variable because it is rendered in two different places
    * depending on whether the card has a toggle, and duplicating the block is
    * how the two would drift apart.
@@ -186,9 +186,9 @@ export default function NodeCard({ device }) {
 
       {/*
         * The card carries two kinds of reading and they are only the same thing
-        * while the sensor is checking in.
+        * while the device is checking in.
         *
-        * Server-side facts stay true whatever the sensor is doing: when it was
+        * Server-side facts stay true whatever the device is doing: when it was
         * last heard from, what has arrived, how much has arrived this week.
         * The heartbeat snapshot is different. Signal, uptime, storage and the
         * relay state were measured at one moment and frozen, so on a unit that
@@ -199,7 +199,7 @@ export default function NodeCard({ device }) {
         * control (plan 3.1): the two groups need different tenses on screen at
         * the same time, and no ordering of one list does that.
         *
-        * While the sensor is online both groups are current, so there is no
+        * While the device is online both groups are current, so there is no
         * toggle and nothing changes from what the operator already knows.
         */}
       {staleReadings && (
@@ -238,21 +238,21 @@ export default function NodeCard({ device }) {
           * pressed. The hidden view keeps its space but is taken out of the
           * accessibility tree by visibility:hidden rather than being unmounted.
           *
-          * A sensor with no toggle renders the snapshot directly: there is only
+          * A device with no toggle renders the snapshot directly: there is only
           * one view, so there is nothing to reserve space against.
           */}
         {staleReadings ? (
           <div className="node-card-views">
             <div className={showLastOnline ? undefined : 'is-hidden'}>
               <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.5 }}>
-                Below is what the sensor reported when it last checked in. It is
-                not what the sensor is doing now.
+                Below is what the device reported when it last checked in. It is
+                not what the device is doing now.
               </Mono>
               {snapshotMetrics}
             </div>
             <div className={showLastOnline ? 'is-hidden' : undefined}>
               <Mono size="11px" color={C.textDim} style={{ lineHeight: 1.5 }}>
-                Signal, storage and sprayer readings come from the sensor, so
+                Signal, storage and sprayer readings come from the device, so
                 there are none while it is silent. Everything below arrived
                 before it went quiet and is still correct.
               </Mono>
@@ -265,8 +265,8 @@ export default function NodeCard({ device }) {
           lands on the same baseline on every card in the row however many rows
           the view above it is showing.
 
-          Server-side, so these hold whatever the sensor is doing: they say what
-          reached the dashboard, not what the sensor is up to. */}
+          Server-side, so these hold whatever the device is doing: they say what
+          reached the dashboard, not what the device is up to. */}
       <div className="node-card-close">
         <div style={{ height: 1, background: C.border }} />
 
@@ -320,7 +320,7 @@ export default function NodeCard({ device }) {
           * line of space and hides.
           *
           * The healthy line reads off log_healthy, part of the heartbeat
-          * snapshot, so it hides with the snapshot too: a silent sensor
+          * snapshot, so it hides with the snapshot too: a silent device
           * reassuring the operator that records are being saved is the same
           * stale claim in a friendlier voice.
           */}

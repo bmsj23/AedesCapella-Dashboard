@@ -96,7 +96,7 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
 
   /*
    * Collapsed when there is nothing in it, open when there is. Editing a
-   * sensor whose geometry we already recorded should not hide the numbers
+   * device whose geometry we already recorded should not hide the numbers
    * behind a control the reader has to find, and adding a new one should not
    * open a panel that is empty.
    *
@@ -158,7 +158,7 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
       <div className="device-dialog" role="dialog" aria-modal="true" aria-labelledby="device-form-title">
         <div className="device-dialog-head">
           <div>
-            <h3 id="device-form-title">{editing ? 'Edit sensor' : issuedToken ? 'Sensor registered' : 'Add a sensor'}</h3>
+            <h3 id="device-form-title">{editing ? 'Edit device' : issuedToken ? 'Device registered' : 'Add a device'}</h3>
           </div>
           <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close device form">
             <X size={18} />
@@ -185,13 +185,13 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
           <form onSubmit={submit}>
             {error ? <Banner icon={ShieldCheck} color="red" text={error} /> : null}
             {/*
-              * Two fields, and a sensor exists.
+              * Two fields, and a device exists.
               *
               * This form used to ask for eight things at once: three of them
               * needed a tape measure and a protractor, one needed a build hash
               * the person standing at the pole does not have, and the person
               * who wrote the form described himself as overwhelmed by it. None
-              * of the four is needed to create a working sensor.
+              * of the four is needed to create a working device.
               *
               * So they are still here, still saved, and still filled in for our
               * own registrations. They are just not in the way of somebody
@@ -201,7 +201,7 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
               * from this same form afterwards.
               */}
             <div className="device-form-grid">
-              <Field label="Sensor name" hint="Lowercase letters, numbers, and hyphens. For example, unit-2.">
+              <Field label="Device name" hint="Lowercase letters, numbers, and hyphens. For example, unit-2.">
                 <input
                   className="device-input"
                   value={draft.deviceLabel}
@@ -230,7 +230,7 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
 
             {!editing ? (
               <p className="device-dialog-copy">
-                That is everything needed. The sensor&apos;s key for sending data
+                That is everything needed. The device&apos;s key for sending data
                 is created for you when you save, and shown once on the next
                 screen.
               </p>
@@ -267,7 +267,7 @@ function DeviceFormDialog({ device, locations, onClose, onSaved, accessToken }) 
             <div className="device-dialog-actions">
               <button className="device-secondary-button" type="button" onClick={onClose}>Cancel</button>
               <button className="device-primary-button" type="submit" disabled={busy || !locations.length}>
-                {busy ? 'Saving...' : editing ? 'Save changes' : 'Add sensor and create its key'}
+                {busy ? 'Saving...' : editing ? 'Save changes' : 'Add device and create its key'}
               </button>
             </div>
           </form>
@@ -292,7 +292,7 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
       setToken(nextToken);
       await onSaved();
     } catch (reason) {
-      setError(getFriendlyError(reason, 'The sensor key could not be replaced.'));
+      setError(getFriendlyError(reason, 'The device key could not be replaced.'));
     } finally {
       setBusy(false);
     }
@@ -314,7 +314,7 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
           <div>
             <h3 id="credential-title">Key for {formatDeviceName(device.device_label)}</h3>
           </div>
-          <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close sensor key dialog">
+          <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close device key dialog">
             <X size={18} />
           </button>
         </div>
@@ -324,7 +324,7 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
             <Banner
               icon={ShieldCheck}
               color="amber"
-              text="Copy this now, it is shown only once. This sensor stays offline until you load this key into it and restart it."
+              text="Copy this now, it is shown only once. This device stays offline until you load this key into it and restart it."
             />
             <div className="device-token-box">
               <code>{token}</code>
@@ -339,12 +339,12 @@ function CredentialDialog({ device, accessToken, onClose, onSaved }) {
             <Banner
               icon={ShieldCheck}
               color="amber"
-              text="This sensor will stop sending data the moment you replace its key, and stays offline until the new key is loaded into it."
+              text="This device will stop sending data the moment you replace its key, and stays offline until the new key is loaded into it."
             />
             <p className="device-dialog-copy">
-              The key is the sensor&apos;s password for sending data. It is built into the device, as{' '}
+              The key is the device&apos;s password for sending data. It is built into the device, as{' '}
               <code>AEDES_DEVICE_TOKEN</code> in its <code>aedes_secrets.h</code>, so replacing it
-              here means reflashing the sensor before it can send again. Replace the key only if it
+              here means reflashing the device before it can send again. Replace the key only if it
               may have leaked and you can reflash this unit. The new key is shown once and cannot be
               retrieved later.
             </p>
@@ -390,12 +390,12 @@ function DecommissionDialog({ device, accessToken, onClose, onSaved }) {
           <div>
             <h3 id="decommission-title">Retire {formatDeviceName(device.device_label)}</h3>
           </div>
-          <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close retire sensor dialog">
+          <button className="device-icon-button" type="button" onClick={onClose} aria-label="Close retire device dialog">
             <X size={18} />
           </button>
         </div>
         <p className="device-dialog-copy">
-          Everything this sensor recorded stays in the records. Its key stops working and it no longer counts as a sensor in the field.
+          Everything this device recorded stays in the records. Its key stops working and it no longer counts as a device in the field.
         </p>
         {error ? <Banner icon={ShieldCheck} color="red" text={error} /> : null}
         <form onSubmit={submit}>
@@ -415,7 +415,7 @@ function DecommissionDialog({ device, accessToken, onClose, onSaved }) {
               type="submit"
               disabled={busy || confirmation !== device.device_label}
             >
-              {busy ? 'Retiring...' : 'Retire sensor'}
+              {busy ? 'Retiring...' : 'Retire device'}
             </button>
           </div>
         </form>
@@ -458,12 +458,12 @@ export default function DeviceManager({
     <Card className="device-registry" style={{ marginTop: '24px', background: C.surface2 }}>
       <div className="device-registry-head">
         <div>
-          <h3>Sensors</h3>
-          <p>Add a sensor, change its name or location, or retire one. Every sensor here keeps its own key for sending data.</p>
+          <h3>Devices</h3>
+          <p>Add a device, change its name or location, or retire one. Every device here keeps its own key for sending data.</p>
         </div>
         {technical ? (
           <button className="device-primary-button" type="button" onClick={() => setDialog({ type: 'form' })}>
-            <Plus size={16} /> Add a sensor
+            <Plus size={16} /> Add a device
           </button>
         ) : null}
       </div>
@@ -512,7 +512,7 @@ export default function DeviceManager({
           </div>
         ))}
         {!registryError && activeDevices.length === 0 ? (
-          <div className="device-registry-empty">No sensors have been added yet.</div>
+          <div className="device-registry-empty">No devices have been added yet.</div>
         ) : null}
       </div>
 

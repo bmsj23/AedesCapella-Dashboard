@@ -42,7 +42,6 @@ export default function TablePlate({
   title,
   note = null,
   label,
-  fig,
   headers,
   columns,
   rows = [],
@@ -72,7 +71,6 @@ export default function TablePlate({
     <Card
       padding={0}
       label={label}
-      fig={fig}
       style={{ overflow: 'hidden', marginBottom: '24px', ...style }}
       figure={(
         <div style={{

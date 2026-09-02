@@ -38,7 +38,6 @@ export default function FogTable({ relays = [], loading = false, error = '' }) {
         ? `${episodes} episodes held · ${started} with a recorded activation`
         : `${started} of ${episodes} actually started the sprayer`}
       label="Sprayings"
-      fig="SEC.03"
       headers={technical ? HEADERS_TECHNICAL : HEADERS_PLAIN}
       columns={technical ? COLUMNS_TECHNICAL : COLUMNS_PLAIN}
       rows={relays}

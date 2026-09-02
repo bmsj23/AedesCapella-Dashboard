@@ -102,7 +102,7 @@ test('invalid and null coordinates remain explicitly unmapped', () => {
   assert.deepEqual(filterUnmappedDevices(devices).map(row => row.device_id), ['null', 'invalid']);
 });
 
-test('a failed reconciliation keeps the sensor rows already on screen', () => {
+test('a failed reconciliation keeps the device rows already on screen', () => {
   // The section renders the previous rows under an error banner rather than
   // blanking. That is only possible if the reducer does not drop them.
   const loaded = liveDashboardReducer(EMPTY_LIVE_DASHBOARD, {

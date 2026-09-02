@@ -3,9 +3,9 @@ import { C } from '../../constants/colors';
 import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
 import Mono from '../ui/Mono';
-/* Figure numbers, not glyphs. They match the SEC.0x on each section header so
-   the sidebar doubles as the plate index. The list is shared with the number
-   shortcuts and the lazy-loading fallback, so it lives in one place. */
+/* Numbers, not glyphs. Each one is the keyboard shortcut that opens its
+   section, which is why the list is shared with the number shortcuts and the
+   lazy-loading fallback and lives in one place. */
 import { DASHBOARD_SECTIONS as NAV_ITEMS } from '../../utils/sectionNavigation';
 
 export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLogout }) {
