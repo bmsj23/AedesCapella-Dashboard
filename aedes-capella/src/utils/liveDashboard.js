@@ -44,11 +44,21 @@ export function upsertByKey(current, incoming, key, limit = MAX_ACTIVITY_ROWS) {
  * activity feed reads newest first. That is right for events and wrong for
  * devices: every heartbeat or detection moved its device to the front, so
  * Device 2 swapped places with Device 1 until the next 30-second reconcile put
- * the server's order back. Numeric-aware, so Device 10 follows Device 9 rather
- * than Device 1.
+ * the server's order back.
+ *
+ * Sorted by the number a reader sees ("Device 2"), not the raw label: labels
+ * in production are 'aedescapella-unit-1' and 'unit-2', so text order would
+ * put a future 'aedescapella-unit-3' ahead of Device 2. Device 10 follows
+ * Device 9. Labels without a number go last, in text order.
  */
+function deviceNumber(device) {
+  const match = String(device?.device_label ?? '').match(/(\d+)\s*$/);
+  return match ? Number(match[1]) : Number.POSITIVE_INFINITY;
+}
+
 export function compareDeviceLabels(a, b) {
-  return String(a?.device_label ?? '').localeCompare(String(b?.device_label ?? ''), 'en', { numeric: true })
+  return (deviceNumber(a) - deviceNumber(b) || 0)
+    || String(a?.device_label ?? '').localeCompare(String(b?.device_label ?? ''), 'en', { numeric: true })
     || String(a?.device_id ?? '').localeCompare(String(b?.device_id ?? ''));
 }
 

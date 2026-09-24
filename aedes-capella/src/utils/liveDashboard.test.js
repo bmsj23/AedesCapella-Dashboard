@@ -172,5 +172,9 @@ test('a live update never moves a device out of number order', () => {
     type: 'upsert_device',
     row: { device_id: 'c', device_label: 'aedescapella-unit-10' },
   });
-  assert.deepEqual(state.devices.map(device => device.device_id), ['a', 'b', 'c']);
+  state = liveDashboardReducer(state, {
+    type: 'upsert_device',
+    row: { device_id: 'd', device_label: 'unit-3' },
+  });
+  assert.deepEqual(state.devices.map(device => device.device_id), ['a', 'b', 'd', 'c']);
 });
