@@ -37,6 +37,29 @@ export function upsertByKey(current, incoming, key, limit = MAX_ACTIVITY_ROWS) {
     .slice(0, limit);
 }
 
+/*
+ * Devices are always listed by their number, whatever reported last.
+ *
+ * Device rows went through upsertByKey, which sorts by latest activity so the
+ * activity feed reads newest first. That is right for events and wrong for
+ * devices: every heartbeat or detection moved its device to the front, so
+ * Device 2 swapped places with Device 1 until the next 30-second reconcile put
+ * the server's order back. Numeric-aware, so Device 10 follows Device 9 rather
+ * than Device 1.
+ */
+export function compareDeviceLabels(a, b) {
+  return String(a?.device_label ?? '').localeCompare(String(b?.device_label ?? ''), 'en', { numeric: true })
+    || String(a?.device_id ?? '').localeCompare(String(b?.device_id ?? ''));
+}
+
+function upsertDevices(current, incoming) {
+  return upsertByKey(current, incoming, 'device_id', Number.POSITIVE_INFINITY).sort(compareDeviceLabels);
+}
+
+function sortedDevices(rows) {
+  return Array.isArray(rows) ? [...rows].sort(compareDeviceLabels) : rows;
+}
+
 export function filterMappedDevices(devices) {
   return devices.filter(device => {
     if (device.latitude === null || device.latitude === undefined || device.latitude === ''
@@ -80,6 +103,11 @@ export function liveDashboardReducer(state, action) {
       return {
         ...state,
         ...action.datasets,
+        ...(action.datasets.devices && { devices: sortedDevices(action.datasets.devices) }),
+        ...(action.datasets.mapDevices && { mapDevices: sortedDevices(action.datasets.mapDevices) }),
+        ...(action.datasets.deviceRegistry && {
+          deviceRegistry: sortedDevices(action.datasets.deviceRegistry),
+        }),
         activity: action.datasets.activity
           ? upsertByKey(state.activity, action.datasets.activity, 'runtime_event_id')
           : state.activity,
@@ -113,22 +141,17 @@ export function liveDashboardReducer(state, action) {
     case 'upsert_device':
       return {
         ...state,
-        devices: upsertByKey(state.devices, action.row, 'device_id', Number.POSITIVE_INFINITY),
+        devices: upsertDevices(state.devices, action.row),
       };
     case 'upsert_map':
       return {
         ...state,
-        mapDevices: upsertByKey(state.mapDevices, action.rows, 'device_id', Number.POSITIVE_INFINITY),
+        mapDevices: upsertDevices(state.mapDevices, action.rows),
       };
     case 'upsert_registry':
       return {
         ...state,
-        deviceRegistry: upsertByKey(
-          state.deviceRegistry,
-          action.row,
-          'device_id',
-          Number.POSITIVE_INFINITY,
-        ),
+        deviceRegistry: upsertDevices(state.deviceRegistry, action.row),
       };
     default:
       return state;

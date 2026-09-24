@@ -6,6 +6,7 @@ import { DETECTION_TERM } from '../../constants/terminology';
 import { formatDashboardTimestamp } from '../../utils/dashboardData';
 import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
+import { describeDeviceRisk, riskZonesGeoJson } from '../../utils/riskZones';
 import {
   addMapTilerKey,
   describeMapError,
@@ -20,6 +21,35 @@ import {
 // road, label, and area stays blank. Vite's `?worker&url` pipeline emits the
 // worker together with its shared dependency as one self-contained asset.
 maplibregl.setWorkerUrl(workerUrl);
+
+const ZONE_SOURCE = 'risk-zones';
+
+/*
+ * The zones are a GeoJSON fill under the markers. Markers are DOM elements, so
+ * they always sit above the canvas and the zones never hide a device.
+ */
+function showRiskZones(map, zones) {
+  const data = riskZonesGeoJson(zones);
+  const source = map.getSource(ZONE_SOURCE);
+  if (source) {
+    source.setData(data);
+    return;
+  }
+
+  map.addSource(ZONE_SOURCE, { type: 'geojson', data });
+  map.addLayer({
+    id: `${ZONE_SOURCE}-fill`,
+    type: 'fill',
+    source: ZONE_SOURCE,
+    paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.18 },
+  });
+  map.addLayer({
+    id: `${ZONE_SOURCE}-outline`,
+    type: 'line',
+    source: ZONE_SOURCE,
+    paint: { 'line-color': ['get', 'color'], 'line-width': 2 },
+  });
+}
 
 const STATE_COLORS = {
   online: '#16a34a',
@@ -50,7 +80,7 @@ function appendRecentRows(parent, label, rows, timestampKey) {
   parent.append(list);
 }
 
-function buildPopup(device, candidates, relays) {
+function buildPopup(device, zone, candidates, relays) {
   const popup = document.createElement('div');
   popup.className = 'map-popup';
   // Same reading, same words and same colour as the device card and the table
@@ -65,17 +95,19 @@ function buildPopup(device, candidates, relays) {
     'span',
     `${device.candidates_last_24h ?? 0} ${DETECTION_TERM.inlinePlural} · ${device.relay_activations_last_24h ?? 0} sprayer activations / 24h`,
   );
+  appendText(popup, 'span', describeDeviceRisk(zone?.detections ?? 0));
   appendText(popup, 'span', `Latest activity: ${formatDashboardTimestamp(device.latest_activity_at)}`);
   appendRecentRows(popup, `Recent ${DETECTION_TERM.inlinePlural}`, candidates, 'display_time');
   appendRecentRows(popup, 'Recent Sprayings', relays, 'display_time');
   return popup;
 }
 
-export default function MapLibreDeviceMap({ devices, candidates, relays, styleUrl, apiKey, onFailure, onReady }) {
+export default function MapLibreDeviceMap({ devices, zones, candidates, relays, styleUrl, apiKey, onFailure, onReady }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const lastFitKeyRef = useRef('');
+  const zonesRef = useRef(zones);
 
   useEffect(() => {
     let loaded = false;
@@ -135,6 +167,9 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
       onReady();
     };
     MAP_READY_EVENTS.forEach(eventName => map.on(eventName, markReadyWhenComplete));
+    // The source can only be added once the style has loaded; later changes
+    // go through the zones effect below.
+    map.on('load', () => showRiskZones(map, zonesRef.current));
 
     return () => {
       window.clearTimeout(timeout);
@@ -164,7 +199,12 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
       const recentCandidates = candidates.filter(row => row.device_id === device.device_id);
       const recentRelays = relays.filter(row => row.device_id === device.device_id);
       const popup = new maplibregl.Popup({ offset: 16, maxWidth: '320px' })
-        .setDOMContent(buildPopup(device, recentCandidates, recentRelays));
+        .setDOMContent(buildPopup(
+          device,
+          zones.find(zone => zone.deviceId === device.device_id),
+          recentCandidates,
+          recentRelays,
+        ));
 
       return new maplibregl.Marker({ element })
         .setLngLat([Number(device.longitude), Number(device.latitude)])
@@ -192,7 +232,13 @@ export default function MapLibreDeviceMap({ devices, candidates, relays, styleUr
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
     };
-  }, [candidates, devices, relays]);
+  }, [candidates, devices, relays, zones]);
+
+  useEffect(() => {
+    zonesRef.current = zones;
+    const map = mapRef.current;
+    if (map?.isStyleLoaded()) showRiskZones(map, zones);
+  }, [zones]);
 
   return <div ref={containerRef} className="device-map" aria-label="Live device location map" />;
 }

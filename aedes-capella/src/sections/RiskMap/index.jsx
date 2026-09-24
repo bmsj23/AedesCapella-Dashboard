@@ -9,7 +9,7 @@ export default function RiskMap({ dashboardData }) {
     <div>
       <SectionHeader
         title="Barangay Map"
-        subtitle="Where each device is, and what it recorded recently."
+        subtitle="Where each device is, and where it recorded possible Aedes activity."
       />
       {/* <Banner
         icon={Database}
@@ -18,6 +18,7 @@ export default function RiskMap({ dashboardData }) {
       /> */}
       <RealtimeDeviceMap
         devices={devices}
+        statusDevices={dashboardData?.devices || []}
         candidates={dashboardData?.candidates || []}
         relays={dashboardData?.relays || []}
         loading={dashboardData?.loading}

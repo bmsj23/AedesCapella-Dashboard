@@ -144,3 +144,33 @@ test('a click event is not an AbortSignal, which is what broke Refresh', () => {
   assert.equal(clickEvent instanceof AbortSignal, false);
   assert.equal(new AbortController().signal instanceof AbortSignal, true);
 });
+
+test('a live update never moves a device out of number order', () => {
+  const devices = [
+    { device_id: 'a', device_label: 'aedescapella-unit-1', latest_activity_at: '2026-09-24T01:00:00Z' },
+    { device_id: 'b', device_label: 'aedescapella-unit-2', latest_activity_at: '2026-09-24T01:00:00Z' },
+  ];
+  let state = liveDashboardReducer(EMPTY_LIVE_DASHBOARD, {
+    type: 'reconcile',
+    datasets: { devices: [...devices].reverse(), mapDevices: [], deviceRegistry: [] },
+    errors: {}, complete: true, at: new Date(),
+  });
+  assert.deepEqual(state.devices.map(device => device.device_id), ['a', 'b']);
+
+  state = liveDashboardReducer(state, {
+    type: 'upsert_device',
+    row: { ...devices[1], latest_activity_at: '2026-09-24T02:00:00Z' },
+  });
+  state = liveDashboardReducer(state, {
+    type: 'upsert_map',
+    rows: [{ ...devices[1], latest_activity_at: '2026-09-24T02:00:00Z' }, devices[0]],
+  });
+  assert.deepEqual(state.devices.map(device => device.device_id), ['a', 'b']);
+  assert.deepEqual(state.mapDevices.map(device => device.device_id), ['a', 'b']);
+
+  state = liveDashboardReducer(state, {
+    type: 'upsert_device',
+    row: { device_id: 'c', device_label: 'aedescapella-unit-10' },
+  });
+  assert.deepEqual(state.devices.map(device => device.device_id), ['a', 'b', 'c']);
+});
