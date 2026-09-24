@@ -1,19 +1,54 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   fetchCurrentUserRole,
   refreshOperatorSession,
   signInWithPassword,
   signOut,
 } from '../lib/supabaseApi';
+import {
+  isAuthRejection,
+  needsRefresh,
+  newerStoredSession,
+  parseStoredSession,
+  refreshDelay,
+  RETRY_DELAY_MS,
+  SESSION_KEY,
+} from '../utils/operatorSession';
 
-const SESSION_KEY = 'aedes-capella-operator-session-v1';
+/*
+ * Storage can throw (private windows, blocked site data). A failure there must
+ * cost only persistence, never the sign-in the user is looking at.
+ */
+function readStored() {
+  try {
+    return parseStoredSession(window.localStorage.getItem(SESSION_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function writeStored(session) {
+  try {
+    if (session) window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    else window.localStorage.removeItem(SESSION_KEY);
+  } catch {
+    // Signed in for this tab only.
+  }
+}
 
 function loadSession() {
   if (typeof window === 'undefined') return null;
 
+  const stored = readStored();
+  if (stored) return stored;
+
+  // One-time carry-over from the old per-tab store, so an open tab is not
+  // logged out by the deploy that fixes the logouts.
   try {
-    const session = JSON.parse(window.sessionStorage.getItem(SESSION_KEY));
-    return session?.accessToken && session.expiresAt > Date.now() ? session : null;
+    const legacy = parseStoredSession(window.sessionStorage.getItem(SESSION_KEY));
+    window.sessionStorage.removeItem(SESSION_KEY);
+    if (legacy) writeStored(legacy);
+    return legacy;
   } catch {
     return null;
   }
@@ -21,6 +56,9 @@ function loadSession() {
 
 export function useOperatorSession() {
   const [session, setSession] = useState(loadSession);
+  const sessionRef = useRef(session);
+  const refreshingRef = useRef(null);
+  const [retryAt, setRetryAt] = useState(0);
   /*
    * The resolved role is stored against the token it was fetched for, so the
    * effect never has to null it out synchronously on logout: a token that no
@@ -32,6 +70,11 @@ export function useOperatorSession() {
    * exposing it.
    */
   const [resolvedRole, setResolvedRole] = useState({ token: null, role: null });
+
+  const adopt = useCallback(next => {
+    sessionRef.current = next;
+    setSession(next);
+  }, []);
 
   useEffect(() => {
     const token = session?.accessToken;
@@ -49,39 +92,103 @@ export function useOperatorSession() {
     ? resolvedRole.role
     : null;
 
-  useEffect(() => {
-    if (!session?.refreshToken) return undefined;
+  const refresh = useCallback(() => {
+    if (refreshingRef.current) return refreshingRef.current;
 
-    const refreshIn = Math.max(1_000, session.expiresAt - Date.now() - 60_000);
-    const timeout = window.setTimeout(async () => {
-      try {
-        const nextSession = await refreshOperatorSession(session.refreshToken);
-        window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
-        setSession(nextSession);
-      } catch {
-        window.sessionStorage.removeItem(SESSION_KEY);
-        setSession(null);
+    const run = async () => {
+      const current = sessionRef.current;
+      if (!current) return;
+
+      const rotatedElsewhere = newerStoredSession(current, readStored());
+      if (rotatedElsewhere) {
+        adopt(rotatedElsewhere);
+        return;
       }
-    }, refreshIn);
 
+      try {
+        const next = await refreshOperatorSession(current.refreshToken);
+        writeStored(next);
+        adopt(next);
+      } catch (error) {
+        if (!isAuthRejection(error)) {
+          setRetryAt(Date.now() + RETRY_DELAY_MS);
+          return;
+        }
+
+        // Another tab may have used this refresh token a moment ago.
+        const rotated = newerStoredSession(current, readStored());
+        if (rotated) {
+          adopt(rotated);
+          return;
+        }
+
+        writeStored(null);
+        adopt(null);
+      }
+    };
+
+    refreshingRef.current = run().finally(() => { refreshingRef.current = null; });
+    return refreshingRef.current;
+  }, [adopt]);
+
+  // Scheduled refresh shortly before the access token lapses, or a retry after
+  // a failed attempt, whichever is later.
+  useEffect(() => {
+    if (!session) return undefined;
+
+    const delay = Math.max(refreshDelay(session), retryAt - Date.now(), 0);
+    const timeout = window.setTimeout(refresh, delay);
     return () => window.clearTimeout(timeout);
-  }, [session]);
+  }, [session, retryAt, refresh]);
+
+  /*
+   * Timers do not run while a laptop sleeps or a phone locks a background tab,
+   * so the token can be long expired when the dashboard is looked at again.
+   * Refresh as soon as it is, rather than waiting for a timer that fired late.
+   */
+  useEffect(() => {
+    if (!session) return undefined;
+
+    const refreshIfStale = () => {
+      if (document.visibilityState === 'visible' && needsRefresh(sessionRef.current)) refresh();
+    };
+
+    document.addEventListener('visibilitychange', refreshIfStale);
+    window.addEventListener('focus', refreshIfStale);
+    window.addEventListener('online', refreshIfStale);
+    return () => {
+      document.removeEventListener('visibilitychange', refreshIfStale);
+      window.removeEventListener('focus', refreshIfStale);
+      window.removeEventListener('online', refreshIfStale);
+    };
+  }, [session, refresh]);
+
+  // Signing in or out in one tab does the same in every other open tab.
+  useEffect(() => {
+    const handleStorage = event => {
+      if (event.key !== SESSION_KEY) return;
+      adopt(parseStoredSession(event.newValue));
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [adopt]);
 
   const login = useCallback(async (email, password) => {
     const nextSession = await signInWithPassword(email, password);
-    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
-    setSession(nextSession);
-  }, []);
+    writeStored(nextSession);
+    adopt(nextSession);
+  }, [adopt]);
 
   const logout = useCallback(async () => {
     const accessToken = session?.accessToken;
-    window.sessionStorage.removeItem(SESSION_KEY);
-    setSession(null);
+    writeStored(null);
+    adopt(null);
 
     if (accessToken) {
       await signOut(accessToken).catch(() => undefined);
     }
-  }, [session?.accessToken]);
+  }, [adopt, session?.accessToken]);
 
   return { session, role, login, logout };
 }

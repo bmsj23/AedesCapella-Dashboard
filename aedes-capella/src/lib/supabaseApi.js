@@ -35,7 +35,11 @@ async function request(path, { accessToken, body, method = 'GET', signal } = {})
   const payload = response.status === 204 ? null : await response.json().catch(() => null);
   if (!response.ok) {
     const message = payload?.msg || payload?.message || payload?.error_description || payload?.error;
-    throw new Error(message || `Supabase request failed (${response.status}).`);
+    // The status lets the session hook tell a rejected token from a dropped connection.
+    throw Object.assign(
+      new Error(message || `Supabase request failed (${response.status}).`),
+      { status: response.status },
+    );
   }
 
   return payload;
@@ -59,7 +63,9 @@ export async function refreshOperatorSession(refreshToken) {
 }
 
 export async function signOut(accessToken) {
-  await request('/auth/v1/logout', { method: 'POST', accessToken });
+  // Local scope: Supabase's default is global, which would end the session on
+  // every other device signed in to the same account.
+  await request('/auth/v1/logout?scope=local', { method: 'POST', accessToken });
 }
 
 /*
