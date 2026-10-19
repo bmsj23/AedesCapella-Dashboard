@@ -38,7 +38,7 @@ export default function TrendsAnalytics({ dashboardData, deviceStatus }) {
         relays={dashboardData?.relays || []}
       />
       <DetectionTrendChart candidates={candidates} />
-      <DistributionCharts events={events} candidates={candidates} deviceLabels={deviceLabels} />
+      <DistributionCharts events={events} deviceLabels={deviceLabels} />
     </div>
   );
 }

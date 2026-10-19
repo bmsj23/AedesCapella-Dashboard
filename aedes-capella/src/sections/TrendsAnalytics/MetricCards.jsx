@@ -1,11 +1,9 @@
-import { matchText } from '../../utils/activityGuidance';
 import TechnicalTerm from '../../components/ui/TechnicalTerm';
 import { C } from '../../constants/colors';
 import { DETECTION_TERM } from '../../constants/terminology';
 import Card from '../../components/ui/Card';
 import Tag from '../../components/ui/Tag';
-import { average, buildRuntimeSummary, candidateScorePercent, formatDashboardTimestamp } from '../../utils/dashboardData';
-import { useIsTechnical } from '../../contexts/viewerRole';
+import { buildRuntimeSummary, formatDashboardTimestamp } from '../../utils/dashboardData';
 
 function peakEventHour(events) {
   const counts = new Map();
@@ -24,9 +22,7 @@ function peakEventHour(events) {
 
 /** Simple activity summary for barangay workers. */
 export default function MetricCards({ events = [], candidates = [] }) {
-  const technical = useIsTechnical();
   const runtimeSummary = buildRuntimeSummary(events);
-  const meanScore = average(candidates.map(candidateScorePercent));
   const metrics = [
     {
       label: DETECTION_TERM.plural,
@@ -54,24 +50,10 @@ export default function MetricCards({ events = [], candidates = [] }) {
       status: events.length ? 'Available' : 'No activity',
       statusColor: events.length ? 'neutral' : 'gray',
     },
-    /*
-     * Match strength is a model score. It reads as a confidence in the
-     * species to anyone not maintaining the model, which is the misreading
-     * this dashboard works hardest to avoid, so it stays with the roles that
-     * can act on it.
-     */
-    ...(technical ? [{
-      label: 'Average match strength (Aedes score)',
-      value: matchText(meanScore, true),
-      sub: candidates.length ? 'how closely sounds matched, not proof of species' : 'nothing to score yet',
-      color: C.text,
-      status: meanScore === null ? 'No reports' : 'Available',
-      statusColor: meanScore === null ? 'gray' : 'neutral',
-    }] : []),
   ];
 
   return (
-    <div className="metric-card-grid">
+    <div className="metric-card-grid metric-card-grid--three">
       {metrics.map(({ label, value, sub, color, status, statusColor }, index) => (
         <Card key={label} style={{ background: C.surface2, padding: '16px' }}>
           <div style={{
@@ -93,7 +75,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
             marginBottom:  '10px',
             letterSpacing: '0.05em',
           }}>
-            <span title={label.includes('Aedes score') ? 'How closely sounds matched Aedes. Not proof of species. See Helpful Words in Latest Activity.' : undefined}>{label}</span>
+            <span>{label}</span>
           </div>
           <div style={{
             fontFamily:   'var(--font-data)',
