@@ -1,3 +1,4 @@
+import TechnicalTerm from './TechnicalTerm';
 import { C } from '../../constants/colors';
 
 /**
@@ -8,15 +9,15 @@ import { C } from '../../constants/colors';
  * other piece of body copy. Only the plate corner labels stay monospace, and
  * they do not use this component.
  */
-export default function Mono({ children, size = '13px', color, style = {} }) {
+export default function Mono({ children, size = '13px', color, style = {}, title }) {
   return (
-    <span style={{
+    <span title={title} style={{
       fontFamily: 'var(--font-data)',
       fontSize:   size,
       color:      color ?? C.text,
       ...style,
     }}>
-      {children}
+      <TechnicalTerm>{children}</TechnicalTerm>
     </span>
   );
 }

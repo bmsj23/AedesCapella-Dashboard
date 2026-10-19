@@ -10,7 +10,7 @@ export const STATUS_PRESENTATION = {
   // Neutral, not blue: a device that has been added but has not reported yet
   // is a normal step in setting one up, and nobody has to do anything about it
   // on this screen. Blue was a sixth, undocumented meaning.
-  never_seen: { label: 'Not connected yet', color: 'neutral', tone: 'startup' },
+  never_seen: { label: 'Not connected yet', color: 'gray', tone: 'startup' },
   logging_fault: { label: 'Records may be missing', color: 'red', tone: 'critical' },
 };
 
@@ -138,7 +138,7 @@ export function describeDeviceState(device) {
     return 'The device is sending a signal, but some records may not be saved. Treat its information as incomplete until a later healthy update.';
   }
   if (device.operational_state === 'never_seen') {
-    return 'This device is listed but has never sent an update.';
+    return 'This device is listed but has never sent an update. Check the power bank and Wi-Fi.';
   }
   /*
    * These deliberately say only what is known. The card no longer shows the
@@ -146,10 +146,10 @@ export function describeDeviceState(device) {
    * disclaim; the "Last online status" view carries its own note.
    */
   if (device.operational_state === 'stale') {
-    return `No update received within the ${device.stale_after_minutes}-minute check period.`;
+    return `No update received within the ${device.stale_after_minutes}-minute check period. Check the power bank and Wi-Fi.`;
   }
   if (device.operational_state === 'offline') {
-    return `No update received within the ${device.offline_after_minutes}-minute offline period.`;
+    return `No update received within the ${device.offline_after_minutes}-minute offline period. Check the power bank and Wi-Fi.`;
   }
   // Reachable only while the device is still checking in: the database raises
   // 'stalled' for a live heartbeat with a backlog that is not draining. Without

@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { useViewerRole } from '../../contexts/viewerRole';
+import { roleDisplayName } from '../../utils/viewer';
 import { Menu, X } from 'lucide-react';
 
 const MENU_ID = 'dashboard-mobile-menu';
@@ -13,6 +15,7 @@ const MENU_ID = 'dashboard-mobile-menu';
  * down.
  */
 export default function MobileChrome({ open, onToggle, onClose, attention, children }) {
+  const role = useViewerRole();
   const panelRef = useRef(null);
 
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function MobileChrome({ open, onToggle, onClose, attention, child
       <header className="mobile-bar">
         <div className="mobile-bar-brand">
           <div className="mobile-bar-name">AedesCapella</div>
-          <div className="mobile-bar-sub">BARANGAY MOSQUITO WATCH</div>
+          <div className="mobile-bar-sub">Signed in as {roleDisplayName(role)}</div>
         </div>
 
         <button

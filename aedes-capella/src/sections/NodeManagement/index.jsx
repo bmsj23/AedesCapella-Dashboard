@@ -71,6 +71,9 @@ export default function NodeManagement({ deviceStatus, dashboardData, accessToke
           reported above them and the reader keeps the last known state, dated
           by "Last checked" above. Only a failure with nothing to fall back on
           takes over the section. */}
+      {!loading && !error && devices.length > 0 && !devices.some(device => device.operational_state === 'online') && (
+        <Banner icon={AlertTriangle} color="amber" text="No devices online. Check the power bank and Wi-Fi, then refresh Device Status." />
+      )}
       {error && devices.length > 0 && (
         <Banner
           icon={AlertTriangle}

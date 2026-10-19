@@ -1,7 +1,8 @@
 import { LogOut, Settings } from 'lucide-react';
 import { C } from '../../constants/colors';
 import { getStatusPresentation } from '../../utils/deviceStatus';
-import { formatDeviceName } from '../../utils/viewer';
+import { useViewerRole } from '../../contexts/viewerRole';
+import { canViewSection, formatDeviceName } from '../../utils/viewer';
 import Mono from '../ui/Mono';
 /* Numbers, not glyphs. Each one is the keyboard shortcut that opens its
    section, which is why the list is shared with the number shortcuts and the
@@ -9,6 +10,7 @@ import Mono from '../ui/Mono';
 import { DASHBOARD_SECTIONS as NAV_ITEMS } from '../../utils/sectionNavigation';
 
 export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLogout }) {
+  const role = useViewerRole();
   /*
    * Layout lives in the stylesheet rather than inline: below 900px this
    * element dissolves so its three blocks can be ordered against the summary
@@ -44,7 +46,7 @@ export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLog
 
       {/* Navigation */}
       <nav className="dashboard-nav" style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
-        {NAV_ITEMS.map(({ id, fig, label }) => {
+        {NAV_ITEMS.filter(item => canViewSection(role, item.id)).map(({ id, fig, label }) => {
           const active = activeSection === id;
           return (
             <button
@@ -124,14 +126,14 @@ export default function Sidebar({ activeSection, onNavigate, deviceStatus, onLog
                 width:        '7px',
                 height:       '7px',
                 borderRadius: '50%',
-                background:   isHealthy ? C.green : C.gray,
+                background:   C[presentation.color] || C.gray,
                 boxShadow:    isHealthy ? `0 0 6px ${C.green}` : 'none',
                 animation:    isHealthy ? 'pulse 2s infinite' : 'none',
               }} />
               <Mono size="12px" color={isHealthy ? C.text : C.textDim} style={{ flex: 1, fontWeight: 700 }}>
                 {formatDeviceName(device.device_label)}
               </Mono>
-              <Mono size="12px" color={presentation.color === 'red' ? C.red : C.textDim}>
+              <Mono size="12px" color={C[presentation.color] || C.textDim}>
                 {presentation.label}
               </Mono>
             </div>

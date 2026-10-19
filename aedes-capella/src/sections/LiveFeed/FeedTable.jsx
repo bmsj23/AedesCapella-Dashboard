@@ -1,3 +1,6 @@
+import { actionForEvent, sprayReason } from '../../utils/activityGuidance';
+import { candidateScorePercent, matchStrengthLabel } from '../../utils/dashboardData';
+import { useIsTechnical } from '../../contexts/viewerRole';
 import { C } from '../../constants/colors';
 import { DETECTION_TERM } from '../../constants/terminology';
 import EmptyState from '../../components/ui/EmptyState';
@@ -23,8 +26,9 @@ function deviceLabel(deviceId, deviceLabels) {
 
 /** Recent device activity table with plain-language labels. */
 export default function FeedTable({
-  events = [], deviceLabels = {}, loading = false, error = '', emptyToday = false,
+  events = [], devices = [], mapDevices = [], deviceLabels = {}, loading = false, error = '', emptyToday = false,
 }) {
+  const technical = useIsTechnical();
 
   if (loading) {
     return (
@@ -63,6 +67,7 @@ export default function FeedTable({
       />
     );
   }
+
 
   return (
     <TablePlate
@@ -135,6 +140,9 @@ export default function FeedTable({
                         ? DETECTION_TERM.caveat
                         : plainReason(event.reason)}
                   </Mono>
+                  {isDetectionCandidate(event) && <p className="activity-guidance">{actionForEvent(event, devices, mapDevices)}.</p>}
+                  {isDetectionCandidate(event) && <p title="How closely the sound matched Aedes. This is not proof of species.">Match strength: {matchStrengthLabel(candidateScorePercent(event))}{technical && candidateScorePercent(event) !== null ? ` (${candidateScorePercent(event).toFixed(1)}%)` : ''}</p>}
+                  {['RELAY_ON', 'RELAY_REJECT'].includes(event.event_kind) && <p className="activity-guidance">{sprayReason(event)}</p>}
                   {time.delay && (
                     <Mono size="11px" color={C.textDim} style={{ display: 'block', marginTop: '5px' }}>
                       Reached the dashboard {time.delay}.

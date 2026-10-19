@@ -4,6 +4,7 @@ import Banner from '../../components/ui/Banner';
 import SectionHeader from '../../components/ui/SectionHeader';
 import Glossary from '../../components/ui/Glossary';
 import PaletteGuide from '../../components/ui/PaletteGuide';
+import NeedsAttention from './NeedsAttention';
 import FeedTable from './FeedTable';
 import ActivitySummary from './ActivitySummary';
 import { filterOperatorActivity, manilaStartOfDay } from '../../utils/dashboardData';
@@ -55,6 +56,7 @@ export default function LiveFeed({ dashboardData, deviceStatus }) {
           </button>
         )}
       />
+      <NeedsAttention dashboardData={dashboardData} deviceStatus={deviceStatus} />
       {!dashboardData?.loading && !dashboardData?.errors?.activity && (
         <ActivitySummary events={events} summary={dashboardData?.activitySummary} />
       )}
@@ -82,12 +84,14 @@ export default function LiveFeed({ dashboardData, deviceStatus }) {
         <Banner
           icon={Info}
           color="amber"
-          text="Today has more activity than fits in one list. The counts above are complete; the table below shows only the most recent."
+          text="Today has more activity than fits in one list. The counts above are complete. The table below shows only the most recent."
         />
       )}
 
       <FeedTable
         events={events}
+        devices={deviceStatus?.devices || []}
+        mapDevices={dashboardData?.mapDevices || []}
         deviceLabels={deviceLabels}
         loading={dashboardData?.loading}
         error={dashboardData?.errors?.activity}

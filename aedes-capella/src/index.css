@@ -2251,3 +2251,26 @@ a:focus-visible,
   .comparison-window { grid-column: span 1; }
   .comparison-window button { flex: 1; }
 }
+
+/* Role and field attention layout */
+.dashboard-topbar { flex-wrap: wrap; }
+.signed-in-role { width: 100%; font-size: 12px; color: var(--color-text-dim); }
+.attention-device { border-left: 4px solid; padding: 12px 16px; margin-top: 12px; background: var(--color-surface-2); }
+.attention-device p { margin: 8px 0; }
+.attention-device small { color: var(--color-text-dim); }
+.mobile-bar-sub { letter-spacing: normal; }
+
+.signed-in-role { grid-column: 1 / -1; line-height: 1.4; padding: 5px 12px; border-bottom: 1px dashed var(--pd-dash); }
+.dashboard-topbar { height: auto; min-height: var(--pd-chrome-h); flex-shrink: 0; }
+.needs-attention { margin-bottom: 20px; }
+.needs-attention h2 { font-size: 20px; }
+.needs-attention > p { margin-top: 10px; font-size: 13px; line-height: 1.5; color: var(--color-text-dim); }
+.attention-device > div { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.activity-guidance { margin-top: 8px; font-weight: 600; }
+.activity-notes p { margin-top: 8px; font-size: 12px; line-height: 1.5; }
+.mobile-bar-sub { white-space: normal; line-height: 1.4; }
+
+.technical-term { position: relative; display: inline; }
+.technical-term > button { font: inherit; color: inherit; border: 0; border-bottom: 1px dotted currentColor; background: none; cursor: help; text-align: inherit; }
+.term-explanation { display: none; position: absolute; z-index: 100; top: 100%; left: 0; width: min(260px, 65vw); padding: 12px; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); box-shadow: var(--shadow-card); color: var(--color-text); font: 400 13px/1.5 var(--font-data); letter-spacing: normal; text-transform: none; white-space: normal; }
+.technical-term:hover > .term-explanation, .technical-term:focus-within > .term-explanation, .term-explanation.is-open { display: block; }

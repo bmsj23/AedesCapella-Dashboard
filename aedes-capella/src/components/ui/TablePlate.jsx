@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { C } from '../../constants/colors';
+import TechnicalTerm from './TechnicalTerm';
 import Card from './Card';
 import Mono from './Mono';
 
@@ -99,7 +100,7 @@ export default function TablePlate({
           <table className="data-table">
             <Columns columns={columns} />
             <thead>
-              <tr>{headers.map(header => <th key={header}>{header}</th>)}</tr>
+              <tr>{headers.map(header => <th key={header}><TechnicalTerm>{header}</TechnicalTerm></th>)}</tr>
             </thead>
           </table>
         </div>

@@ -22,22 +22,10 @@ export const ACTIVITY_TABLE_HEADERS = Object.freeze([
   'NOTES',
 ]);
 
-/*
- * How good the timestamp is. A confirmed clock and an estimated one are both
- * normal and neither asks anything of the reader, so they take kind tones and
- * read as coloured text: teal for a clock that was checked against a time
- * server, slate for one inferred from the boot anchor.
- *
- * "Time unavailable" is the exception and stays gray, so it draws as a filled
- * pill among two plain ones and is visibly the odd one out. Gray, not amber:
- * the record exists but cannot be placed in time, which is missing information
- * and precisely what gray means. Amber says "look at this when you can", and
- * there is nothing a barangay worker can do about a clock that was not set
- * before the unit buffered those events. `dashboardData.test.js` guards this.
- */
+// Presentation follows the four-color legend in PaletteGuide.
 const ACTIVITY_TIME_QUALITY = Object.freeze({
-  ntp: Object.freeze({ label: 'Confirmed time', tone: 'teal' }),
-  boot_anchor: Object.freeze({ label: 'Estimated time', tone: 'slate' }),
+  ntp: Object.freeze({ label: 'Confirmed time', tone: 'green' }),
+  boot_anchor: Object.freeze({ label: 'Estimated time', tone: 'gray' }),
   unresolved: Object.freeze({ label: 'Time unavailable', tone: 'gray' }),
 });
 
@@ -52,42 +40,16 @@ export const OPERATOR_ACTIVITY_KINDS = Object.freeze([
 
 const OPERATOR_ACTIVITY_KIND_SET = new Set(OPERATOR_ACTIVITY_KINDS);
 
-/*
- * Plain-language event names.
- *
- * The audience is barangay health workers, not engineers, so nothing here may
- * assume familiarity with relays, models or firmware. The hedging survives the
- * simplification though: a possible detection must never read as a confirmed
- * mosquito, and a sprayer switching on must never read as proof that spray
- * reached anything.
- *
- * None of these events asks anyone to do anything: they are the system working.
- *
- * Colour here once came off the severity scale, and that was the bug. A
- * completely normal, successful night rendered amber ("check soon") for the
- * detection followed by red ("needs action") for the spray that the detection
- * correctly triggered, and the legend then told a barangay worker to inspect a
- * device while nothing whatever was wrong. A busy night painted the screen red.
- * Making everything neutral fixed that, and left the feed unreadably flat.
- *
- * So these carry a second, separate dimension: kind tones, which are drawn as
- * coloured text and a coloured icon with no fill behind them. Nothing in this
- * map may ever take amber, red or green. Those stay on the device card, where a
- * filled pill means a person genuinely has to act, and the difference in shape
- * is what keeps the two scales from being confused.
- *
- * Grouping: what the device did (indigo boot), what it heard (teal), what the
- * sprayer did (violet), and the quiet bookkeeping either side of it (slate).
- */
+// Presentation follows the four-color legend in PaletteGuide.
 const EVENT_PRESENTATION = {
-  BOOT: { label: 'Device turned on', color: 'indigo', icon: Power },
-  TEST_ACCEPT: { label: 'Test check', color: 'slate', icon: FlaskConical },
-  LIVE_ACCEPT: { label: DETECTION_TERM.singular, color: 'teal', icon: AudioLines },
-  RELAY_INTENT: { label: 'Spray requested', color: 'violet', icon: SprayCan },
-  RELAY_ON: { label: 'Sprayer turned on', color: 'violet', icon: SprayCan },
-  RELAY_OFF: { label: 'Sprayer turned off', color: 'violet', icon: SprayCan },
-  RELAY_REJECT: { label: 'Sprayer on cooldown', color: 'slate', icon: Timer },
-  COOLDOWN_COMPLETE: { label: 'Ready again', color: 'slate', icon: Timer },
+  BOOT: { label: 'Device turned on', color: 'green', icon: Power },
+  TEST_ACCEPT: { label: 'Test check', color: 'gray', icon: FlaskConical },
+  LIVE_ACCEPT: { label: DETECTION_TERM.singular, color: 'green', icon: AudioLines },
+  RELAY_INTENT: { label: 'Spray requested', color: 'red', icon: SprayCan },
+  RELAY_ON: { label: 'Sprayer turned on', color: 'red', icon: SprayCan },
+  RELAY_OFF: { label: 'Sprayer turned off', color: 'red', icon: SprayCan },
+  RELAY_REJECT: { label: 'Sprayer on cooldown', color: 'amber', icon: Timer },
+  COOLDOWN_COMPLETE: { label: 'Ready again', color: 'gray', icon: Timer },
 };
 
 /*
@@ -151,7 +113,7 @@ export function isDetectionCandidate(event) {
 }
 
 const COOLDOWN_OBSERVATION_PRESENTATION = Object.freeze({
-  label: 'Heard again while waiting', color: 'slate', icon: Timer,
+  label: 'Heard again while waiting', color: 'gray', icon: Timer,
 });
 
 export function getEventPresentation(eventKind, reason) {
@@ -250,7 +212,7 @@ export function manilaStartOfDay(now = Date.now()) {
 }
 
 export function average(values) {
-  const numeric = values.map(Number).filter(Number.isFinite);
+  const numeric = values.filter(value => value !== null && value !== undefined).map(Number).filter(Number.isFinite);
   return numeric.length
     ? numeric.reduce((sum, value) => sum + value, 0) / numeric.length
     : null;
@@ -264,8 +226,10 @@ export function countSince(rows, timestampKey, since) {
 }
 
 export function candidateScorePercent(candidate) {
-  const score = Number(candidate?.candidate_score ?? candidate?.p_aedes);
-  return Number.isFinite(score) ? score * 100 : null;
+  const raw = candidate?.candidate_score ?? candidate?.p_aedes;
+  if (raw === null || raw === undefined || raw === '') return null;
+  const score = Number(raw);
+  return Number.isFinite(score) && score >= 0 && score <= 1 ? score * 100 : null;
 }
 
 export function buildRuntimeSummary(events, now = Date.now()) {
@@ -336,15 +300,11 @@ export function buildHourlyRelaySeries(relays, now = Date.now()) {
 }
 
 export function buildConfidenceDistribution(candidates) {
-  const buckets = [
-    { range: '0–59%', min: 0, max: 60 },
-    { range: '60–79%', min: 60, max: 80 },
-    { range: '80–89%', min: 80, max: 90 },
-    { range: '90–100%', min: 90, max: 101 },
-  ];
+  const buckets = MATCH_STRENGTH_BANDS;
 
   return buckets.map(bucket => ({
     range: bucket.range,
+    label: bucket.label,
     count: candidates.filter(candidate => {
       const score = candidateScorePercent(candidate);
       return score !== null && score >= bucket.min && score < bucket.max;
@@ -424,4 +384,17 @@ export function deriveRelayEpisodes(events) {
         : null,
     };
   }).filter(isDisplayableRelayEpisode);
+}
+
+// Existing distribution boundaries. These describe score bands, not the 0.35 firmware gate.
+export const MATCH_STRENGTH_BANDS = Object.freeze([
+  { range: '0-59%', label: 'Weak match', min: 0, max: 60 },
+  { range: '60-79%', label: 'Possible match', min: 60, max: 80 },
+  { range: '80-89%', label: 'Strong match', min: 80, max: 90 },
+  { range: '90-100%', label: 'Very strong match', min: 90, max: 101 },
+]);
+
+export function matchStrengthLabel(scorePercent) {
+  if (scorePercent === null || scorePercent === undefined || !Number.isFinite(scorePercent) || scorePercent < 0 || scorePercent > 100) return 'Not available';
+  return MATCH_STRENGTH_BANDS.find(band => scorePercent >= band.min && scorePercent < band.max)?.label || 'Not available';
 }

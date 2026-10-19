@@ -12,7 +12,7 @@ export default function HourlyFogChart({ data = [] }) {
           <XAxis dataKey="hour" tick={{ fontFamily: 'var(--font-data)', fontSize: 11, fill: C.textDim }} axisLine={false} tickLine={false} />
           <YAxis allowDecimals={false} tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
           <Tooltip contentStyle={{ background: C.surface, border: `1px solid ${C.border}`, color: C.text }} />
-          <Bar dataKey="relays" name="Recorded activations" fill={C.amber} radius={[4, 4, 0, 0]} />
+          <Bar dataKey="relays" name="Recorded activations" fill={C.red} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </Card>

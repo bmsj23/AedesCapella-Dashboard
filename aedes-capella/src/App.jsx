@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { canViewSection, resolveRoleSection } from './utils/viewer';
 import { C } from './constants/colors';
 import { useOperatorSession } from './hooks/useOperatorSession';
 import { ViewerProvider } from './contexts/ViewerProvider';
@@ -45,13 +46,13 @@ export default function App() {
   const liveData = useLiveDashboard(session?.accessToken);
   const closeNav = useCallback(() => setNavOpen(false), []);
   const navigateToSection = useCallback(section => {
-    if (!isDashboardSection(section)) return;
+    if (!isDashboardSection(section) || !canViewSection(role, section)) return;
     setActiveSection(section);
     persistDashboardSection(section);
     // Choosing a section is the drawer's whole purpose; leaving it open would
     // hide the thing the reader just asked for.
     setNavOpen(false);
-  }, []);
+  }, [role]);
 
   /*
    * Widening the window past the breakpoint unmounts the drawer but would
@@ -71,8 +72,9 @@ export default function App() {
     const handleHashChange = () => {
       const section = window.location.hash.replace(/^#/, '');
       if (isDashboardSection(section)) {
-        setActiveSection(section);
-        persistDashboardSection(section);
+        const allowed = resolveRoleSection(role, section);
+        setActiveSection(allowed);
+        persistDashboardSection(allowed);
       }
     };
     const handleKeyDown = event => {
@@ -88,7 +90,7 @@ export default function App() {
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [navigateToSection, session]);
+  }, [navigateToSection, session, role]);
   const deviceStatus = {
     devices: liveData.devices,
     error: liveData.errors.devices || '',
@@ -123,7 +125,8 @@ export default function App() {
   const avgCandidateScore = average(liveData.candidates.map(candidateScorePercent));
 
   // Render the active section component
-  const ActiveSection = SECTIONS[activeSection];
+  const visibleSection = resolveRoleSection(role, activeSection);
+  const ActiveSection = SECTIONS[visibleSection];
 
   const topbarMetrics = {
     candidates: candidatesToday,
@@ -147,7 +150,7 @@ export default function App() {
 
   const navigation = (
     <Sidebar
-      activeSection={activeSection}
+      activeSection={visibleSection}
       onNavigate={navigateToSection}
       deviceStatus={deviceStatus}
       /*
@@ -193,7 +196,7 @@ export default function App() {
               dashboard section" described the machinery rather than the thing
               being opened, and read as a different, unrelated screen. */}
           <Suspense
-            fallback={<div style={{ color: C.textDim }}>Loading {sectionLabel(activeSection)}…</div>}
+            fallback={<div style={{ color: C.textDim }}>Loading {sectionLabel(visibleSection)}…</div>}
           >
             <ActiveSection
               deviceStatus={deviceStatus}

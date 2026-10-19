@@ -35,3 +35,26 @@ export function formatDeviceName(label) {
   const match = String(label).match(/(\d+)\s*$/);
   return match ? `Device ${Number(match[1])}` : label;
 }
+
+const FIELD_SECTIONS = Object.freeze(['feed', 'map', 'nodes']);
+const OVERVIEW_SECTIONS = Object.freeze(['feed', 'map', 'fog', 'nodes', 'trends']);
+
+export function sectionsForRole(role) {
+  return isTechnicalRole(role) || role === 'health_officer' ? OVERVIEW_SECTIONS : FIELD_SECTIONS;
+}
+
+export function canViewSection(role, section) {
+  return sectionsForRole(role).includes(section);
+}
+
+export function roleDisplayName(role) {
+  if (role === 'admin') return 'Administrator';
+  if (role === 'technical_personnel') return 'Technical Personnel';
+  if (role === 'health_officer') return 'Barangay Midwife';
+  return 'Barangay Health Worker';
+}
+
+// Applied to hashes, saved sections, shortcuts, and rendered content.
+export function resolveRoleSection(role, section) {
+  return canViewSection(role, section) ? section : 'feed';
+}

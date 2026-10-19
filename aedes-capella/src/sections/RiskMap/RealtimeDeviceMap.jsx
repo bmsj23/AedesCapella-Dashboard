@@ -23,7 +23,7 @@ const MapLibreDeviceMap = lazy(() => import('./MapLibreDeviceMap'));
 
 const STATE_COLORS = {
   online: '#16a34a',
-  stale: '#f59e0b',
+  stale: '#e07b13',
   offline: '#64748b',
   never_seen: '#64748b',
   logging_fault: '#dc2626',
@@ -131,6 +131,7 @@ function LeafletDeviceMap({ mapped, zones, candidates, relays, onTileFailure, on
                 <Tag color={status.color}>{status.label}</Tag>
                 <span>{device.candidates_last_24h ?? 0} {DETECTION_TERM.inlinePlural} · {device.relay_activations_last_24h ?? 0} sprayer activations / 24h</span>
                 <span>{describeDeviceRisk(zoneByDevice.get(device.device_id)?.detections ?? 0)}</span>
+                <span>{zoneByDevice.get(device.device_id)?.level.action || 'Keep checking for standing water'}.</span>
                 <span>Latest activity: {formatDashboardTimestamp(device.latest_activity_at)}</span>
                 <RecentRows label={`Recent ${DETECTION_TERM.inlinePlural}`} rows={recentCandidates} timestampKey="display_time" />
                 <RecentRows label="Recent Sprayings" rows={recentRelays} timestampKey="display_time" />
@@ -185,17 +186,17 @@ export default function RealtimeDeviceMap({
 
   if (loading) return <EmptyState title="Loading Configured Coordinates" message="Reading the live device map view." variant="startup" />;
   if (error) return <EmptyState title="Map Data Unavailable" message={error} action="The 30-second reconciliation will retry." variant="warning" />;
-  if (!mapped.length) return <EmptyState title="No Mapped Devices" message="No device currently has a valid latitude and longitude. See Location not mapped below." />;
+  if (!mapped.length) return <EmptyState title="No Mapped Devices" message="No device currently has a valid latitude and longitude. See Location not mapped below." action="Ask the administrator to record each installation location." />;
 
   return (
     <Card style={{ padding: '12px', marginBottom: '20px' }}>
+      <RiskZoneLegend zones={zones} />
       <div className="map-heading">
         <div>
           <strong>Device Map</strong>
           <Mono size="11px" color={C.textDim}> Installation Location </Mono>
         </div>
       </div>
-      <RiskZoneLegend zones={zones} />
       {(tilesFailed || vectorFailure) && (
         <div className="tile-warning" role="status">
           {vectorFailure

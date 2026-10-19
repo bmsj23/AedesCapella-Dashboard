@@ -1,3 +1,4 @@
+import { candidateScorePercent, matchStrengthLabel } from './dashboardData.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -101,10 +102,10 @@ test('candidate score distribution preserves empty buckets and cautious labels',
   assert.deepEqual(buildConfidenceDistribution([
     { candidate_score: 0.95 }, { candidate_score: 0.82 }, { candidate_score: 0.61 },
   ]), [
-    { range: '0–59%', count: 0 },
-    { range: '60–79%', count: 1 },
-    { range: '80–89%', count: 1 },
-    { range: '90–100%', count: 1 },
+    { range: '0-59%', label: 'Weak match', count: 0 },
+    { range: '60-79%', label: 'Possible match', count: 1 },
+    { range: '80-89%', label: 'Strong match', count: 1 },
+    { range: '90-100%', label: 'Very strong match', count: 1 },
   ]);
   assert.equal(getEventPresentation('LIVE_ACCEPT').label, DETECTION_TERM.singular);
   assert.equal(getEventPresentation('UNKNOWN').color, 'gray');
@@ -223,4 +224,12 @@ test('cooldown observations are not counted or labelled as detections', () => {
   });
   assert.equal(getEventPresentation('LIVE_ACCEPT', 'candidate').label, DETECTION_TERM.singular);
   assert.equal(getEventPresentation('LIVE_ACCEPT').label, DETECTION_TERM.singular);
+});
+
+test('score labels preserve existing bands and absent readings stay absent', () => {
+  assert.equal(candidateScorePercent({ candidate_score: null, p_aedes: null }), null);
+  assert.equal(matchStrengthLabel(null), 'Not available');
+  for (const [score, label] of [[35, 'Weak match'], [59.9, 'Weak match'], [60, 'Possible match'], [80, 'Strong match'], [90, 'Very strong match'], [100, 'Very strong match']]) {
+    assert.equal(matchStrengthLabel(score), label);
+  }
 });

@@ -54,7 +54,7 @@ function showRiskZones(map, zones) {
 
 const STATE_COLORS = {
   online: '#16a34a',
-  stale: '#f59e0b',
+  stale: '#e07b13',
   offline: '#64748b',
   never_seen: '#64748b',
   logging_fault: '#dc2626',

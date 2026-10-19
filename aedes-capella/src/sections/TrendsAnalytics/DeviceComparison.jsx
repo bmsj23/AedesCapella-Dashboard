@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useIsTechnical } from '../../contexts/viewerRole';
 import {
   Bar,
   BarChart,
@@ -25,7 +26,7 @@ import {
 import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
 
-const BAR_COLORS = [C.amber, C.blue];
+const BAR_COLORS = [C.green, C.green];
 
 function placementSummary(device) {
   if (!device) return 'Placement not recorded';
@@ -53,6 +54,7 @@ function ComparisonStat({ label, value }) {
 }
 
 export default function DeviceComparison({ devices = [], registry = [], candidates = [], relays = [] }) {
+  const technical = useIsTechnical();
   const activeRegistryIds = new Set(
     registry
       .filter(device => device.device_status !== 'decommissioned')
@@ -99,13 +101,13 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
           <h3>Where the devices are pointed</h3>
           <p>Compare two devices over the same period. Both run the same model, so a difference here says something about where they are placed, not about which one is more accurate.</p>
         </div>
-        <GitCompareArrows size={24} color={C.amber} aria-hidden="true" />
+        <GitCompareArrows size={24} color={C.textDim} aria-hidden="true" />
       </div>
 
       {selectable.length < 2 ? (
         <EmptyState
           title="Two Active Devices Required"
-          message="Register and provision the second unit before a side-by-side comparison can be calculated."
+          message="Ask the administrator to add and connect a second device, then compare them here."
           compact
         />
       ) : (
@@ -165,8 +167,8 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
               })}
               <div className="comparison-agreement">
                 <span>How often both devices flagged the same {comparison.agreementWindowSeconds} seconds</span>
-                <strong>{comparison.agreementPercent === null ? 'Not available' : `${comparison.agreementPercent.toFixed(1)}%`}</strong>
-                <small>{comparison.matchedCandidates} matched pair{comparison.matchedCandidates === 1 ? '' : 's'}</small>
+                <strong>{comparison.agreementPercent === null ? 'Not available' : technical ? `${comparison.agreementPercent.toFixed(1)}% paired detections` : `${comparison.matchedCandidates} matching pairs`}</strong>
+                <small>Share of detections paired between devices. Not a sound match score. {comparison.matchedCandidates} matched pair{comparison.matchedCandidates === 1 ? '' : 's'}</small>
               </div>
             </div>
 

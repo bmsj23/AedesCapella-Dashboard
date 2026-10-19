@@ -19,7 +19,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '10px 14px' }}>
       <div style={{ fontFamily: 'var(--font-data)', fontSize: '12px', color: C.textDim }}>{label}</div>
-      <div style={{ fontFamily: 'var(--font-data)', fontSize: '14px', color: C.amber, marginTop: '4px' }}>
+      <div style={{ fontFamily: 'var(--font-data)', fontSize: '14px', color: C.green, marginTop: '4px' }}>
         {payload[0].value} {payload[0].value === 1 ? DETECTION_TERM.inlineSingular : DETECTION_TERM.inlinePlural}
       </div>
     </div>
@@ -45,9 +45,9 @@ export default function DetectionTrendChart({ candidates = [] }) {
               style={{
                 padding:       '4px 12px',
                 borderRadius:  '6px',
-                border:        `1px solid ${view === key ? C.amber : C.border}`,
-                background:    view === key ? `${C.amber}22` : 'transparent',
-                color:         view === key ? C.amber : C.textDim,
+                border:        `1px solid ${view === key ? C.green : C.border}`,
+                background:    view === key ? C.greenDim : 'transparent',
+                color:         view === key ? C.green : C.textDim,
                 fontFamily:    'var(--font-data)',
                 fontSize:      '12px',
                 cursor:        'pointer',
@@ -61,13 +61,13 @@ export default function DetectionTrendChart({ candidates = [] }) {
         </div>
       </div>
 
-      {candidates.length === 0 && <EmptyState title={`No ${DETECTION_TERM.inlinePlural} in this period`} message="Time slots with none recorded are shown as zero." compact />}
+      {candidates.length === 0 && <EmptyState title={`No ${DETECTION_TERM.inlinePlural} in this period`} message="Time slots with none recorded are shown as zero." action="Open Device Status and check the power bank and Wi-Fi if devices are offline." compact />}
       <div aria-label={`${DETECTION_TERM.plural} over time, including time slots with none`}>
         <ResponsiveContainer width="100%" height={220}>
           {/* A negative left margin used to pull the value axis off the plot,
               clipping its labels against the plate edge. */}
           <LineChart data={activeData} margin={{ top: 5, right: 16, bottom: 0, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={`${C.border}cc`} vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={C.border} vertical={false} />
             {/* Every bucket carries a label, so at a day's worth of slots they
                 overprinted each other. Drop as many as collide and keep the
                 first and last, which are the ones that fix the period. */}
@@ -89,7 +89,7 @@ export default function DetectionTrendChart({ candidates = [] }) {
               tickLine={false}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Line type="monotone" dataKey="v" stroke={C.amber} strokeWidth={2} dot={{ fill: C.amber, r: 3 }} activeDot={{ r: 5, fill: C.amber }} />
+            <Line type="monotone" dataKey="v" stroke={C.green} strokeWidth={2} dot={{ fill: C.green, r: 3 }} activeDot={{ r: 5, fill: C.green }} />
           </LineChart>
         </ResponsiveContainer>
       </div>

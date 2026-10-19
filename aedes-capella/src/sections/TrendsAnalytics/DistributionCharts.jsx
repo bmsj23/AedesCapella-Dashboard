@@ -1,6 +1,7 @@
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import { useIsTechnical } from '../../contexts/viewerRole';
 import { C } from '../../constants/colors';
 import { DETECTION_TERM } from '../../constants/terminology';
 import Card from '../../components/ui/Card';
@@ -16,13 +17,12 @@ const tooltipStyle = {
   color:        C.text,
 };
 
-const NODE_COLORS = [C.red, C.amber, C.blue, C.gray];
-const CONF_COLORS = [C.gray, C.blue, C.amber, C.red];
 
 /** Activity distributions with simple labels. */
 export default function DistributionCharts({ events = [], candidates = [], deviceLabels = {} }) {
+  const technical = useIsTechnical();
   const nodeActivity = buildNodeActivity(events, deviceLabels);
-  const confidence = buildConfidenceDistribution(candidates);
+  const confidence = buildConfidenceDistribution(candidates).map(band => ({ ...band, range: technical ? `${band.label} (${band.range})` : band.label }));
 
   return (
     <div className="analytics-grid">
@@ -31,17 +31,15 @@ export default function DistributionCharts({ events = [], candidates = [], devic
           DEVICE ACTIVITY BY DEVICE
         </div>
         {!nodeActivity.length ? (
-          <EmptyState title="No Device Activity Yet" message="This chart will fill when devices send updates." compact />
+          <EmptyState title="No Device Activity Yet" message="This chart will fill when devices send updates." action="Open Device Status and check the power bank and Wi-Fi if devices are offline." compact />
         ) : (
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={nodeActivity} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={`${C.border}cc`} vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={C.border} vertical={false} />
               <XAxis dataKey="node" tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                {nodeActivity.map((entry, index) => <Cell key={entry.node} fill={NODE_COLORS[index % NODE_COLORS.length]} />)}
-              </Bar>
+              <Bar dataKey="count" fill={C.green} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -49,10 +47,11 @@ export default function DistributionCharts({ events = [], candidates = [], devic
 
       <Card style={{ background: C.surface2 }}>
         <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '16px', fontWeight: 700, color: C.textDim, marginBottom: '16px', letterSpacing: '0.08em' }}>
-          MATCH STRENGTH
+          MATCH STRENGTH (NOT PROOF OF SPECIES)
         </div>
+        <p>How closely sounds matched, not proof of species.</p>
         {!candidates.length ? (
-          <EmptyState title="Nothing To Show Yet" message={`This chart fills in once the devices record ${DETECTION_TERM.inlinePlural}.`} compact />
+          <EmptyState title="Nothing To Show Yet" message={`This chart fills in once the devices record ${DETECTION_TERM.inlinePlural}.`} action="Open Device Status and check the power bank and Wi-Fi if devices are offline." compact />
         ) : (
           <ResponsiveContainer width="100%" height={180}>
             <BarChart data={confidence} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
@@ -60,9 +59,7 @@ export default function DistributionCharts({ events = [], candidates = [], devic
               <XAxis dataKey="range" tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                {confidence.map((entry, index) => <Cell key={entry.range} fill={CONF_COLORS[index]} />)}
-              </Bar>
+              <Bar dataKey="count" fill={C.gray} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

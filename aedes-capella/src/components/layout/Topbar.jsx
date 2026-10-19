@@ -1,3 +1,5 @@
+import { useViewerRole } from '../../contexts/viewerRole';
+import { roleDisplayName } from '../../utils/viewer';
 import { usePHTime } from '../../hooks/usePHTime';
 import { DETECTION_TERM } from '../../constants/terminology';
 import Tag from '../ui/Tag';
@@ -25,6 +27,7 @@ const CONNECTION = {
 };
 
 export default function Topbar({ metrics, connectionState }) {
+  const role = useViewerRole();
   const { clock, date } = usePHTime();
   const connection = CONNECTION[connectionState] || CONNECTION.polling_fallback;
   const values = {
@@ -35,6 +38,7 @@ export default function Topbar({ metrics, connectionState }) {
 
   return (
     <header className="dashboard-topbar" aria-label="Live dashboard summary">
+      <div className="signed-in-role">Signed in as {roleDisplayName(role)}</div>
       {METRICS.map(({ key, label }) => (
         <div key={key} className="topbar-metric">
           <div className="topbar-label">{label}</div>

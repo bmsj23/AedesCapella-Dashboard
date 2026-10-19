@@ -1,3 +1,5 @@
+import { matchText } from '../../utils/activityGuidance';
+import TechnicalTerm from '../../components/ui/TechnicalTerm';
 import { C } from '../../constants/colors';
 import { DETECTION_TERM } from '../../constants/terminology';
 import Card from '../../components/ui/Card';
@@ -59,8 +61,8 @@ export default function MetricCards({ events = [], candidates = [] }) {
      * can act on it.
      */
     ...(technical ? [{
-      label: 'Average match strength',
-      value: meanScore === null ? '—' : `${meanScore.toFixed(1)}%`,
+      label: 'Average match strength (Aedes score)',
+      value: matchText(meanScore, true),
       sub: candidates.length ? 'how closely sounds matched, not proof of species' : 'nothing to score yet',
       color: C.text,
       status: meanScore === null ? 'No reports' : 'Available',
@@ -91,7 +93,7 @@ export default function MetricCards({ events = [], candidates = [] }) {
             marginBottom:  '10px',
             letterSpacing: '0.05em',
           }}>
-            {label}
+            <span title={label.includes('Aedes score') ? 'How closely sounds matched Aedes. Not proof of species. See Helpful Words in Latest Activity.' : undefined}>{label}</span>
           </div>
           <div style={{
             fontFamily:   'var(--font-data)',
