@@ -90,8 +90,6 @@ export default function LiveFeed({ dashboardData, deviceStatus }) {
 
       <FeedTable
         events={events}
-        devices={deviceStatus?.devices || []}
-        mapDevices={dashboardData?.mapDevices || []}
         deviceLabels={deviceLabels}
         loading={dashboardData?.loading}
         error={dashboardData?.errors?.activity}

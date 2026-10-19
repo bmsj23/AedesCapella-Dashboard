@@ -13,9 +13,9 @@ import {
 } from '../../utils/dashboardData';
 
 /* The score, boot and sequence columns are engineering evidence. Health
-   workers get the six plain columns; maintainers get all nine. */
-const HEADERS_PLAIN = ['WHEN', 'DEVICE', 'WHAT HAPPENED', 'HOW LONG', 'MATCH STRENGTH', 'NOTES'];
-const COLUMNS_PLAIN = ['16%', '12%', '16%', '10%', '18%', '28%'];
+   workers get the five plain columns. Maintainers also get the score and source. */
+const HEADERS_PLAIN = ['WHEN', 'DEVICE', 'WHAT HAPPENED', 'HOW LONG', 'NOTES'];
+const COLUMNS_PLAIN = ['18%', '14%', '18%', '12%', '38%'];
 
 const HEADERS_TECHNICAL = ['WHEN', 'DEVICE', 'WHAT HAPPENED', 'HOW LONG', 'MATCH SCORE', 'SOURCE', 'NOTES'];
 const COLUMNS_TECHNICAL = ['14%', '12%', '14%', '10%', '14%', '14%', '22%'];
@@ -55,7 +55,7 @@ export default function FogTable({ relays = [], loading = false, error = '' }) {
                 which one happened; the colour says nobody has to act. */}
             <td data-label="What happened"><Tag color={relay.recorded_relay_activation ? 'red' : relay.relay_status === 'rejected' ? 'amber' : 'gray'}>{formatRelayStatus(relay.relay_status)}</Tag></td>
             <td data-label="How long"><Mono size="12px">{relay.duration_seconds === null ? 'Not known' : `${Number(relay.duration_seconds).toFixed(1)} sec`}</Mono></td>
-            <td data-label="Match strength" title="Aedes score measures how closely sound matched. It is not proof of species."><Mono size="12px">{matchText(score, technical)}</Mono></td>
+            {technical && <td data-label="Match score" title="Aedes score measures how closely sound matched. It is not proof of species."><Mono size="12px">{matchText(score, true)}</Mono></td>}
             {technical && <td data-label="Source"><Mono size="11px" color={C.textDim}>boot {relay.source_boot} · seq {relay.source_sequence}</Mono></td>}
             <td data-label="Notes"><Mono size="11px" color={C.textDim}>{sprayReason(relay)}</Mono></td>
           </tr>

@@ -26,7 +26,9 @@ import {
 import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
 
-const BAR_COLORS = [C.green, C.green];
+// Counts, not status, so they take the neutral data colour rather than a
+// status colour. Green would read as "all normal".
+const BAR_COLORS = [C.blue, C.blue];
 
 function placementSummary(device) {
   if (!device) return 'Placement not recorded';

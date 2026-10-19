@@ -35,7 +35,7 @@ export default function DistributionCharts({ events = [], deviceLabels = {} }) {
               <XAxis dataKey="node" tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" fill={C.green} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" fill={C.blue} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

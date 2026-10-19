@@ -19,7 +19,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '10px 14px' }}>
       <div style={{ fontFamily: 'var(--font-data)', fontSize: '12px', color: C.textDim }}>{label}</div>
-      <div style={{ fontFamily: 'var(--font-data)', fontSize: '14px', color: C.green, marginTop: '4px' }}>
+      <div style={{ fontFamily: 'var(--font-data)', fontSize: '14px', color: C.blue, marginTop: '4px' }}>
         {payload[0].value} {payload[0].value === 1 ? DETECTION_TERM.inlineSingular : DETECTION_TERM.inlinePlural}
       </div>
     </div>
@@ -45,9 +45,9 @@ export default function DetectionTrendChart({ candidates = [] }) {
               style={{
                 padding:       '4px 12px',
                 borderRadius:  '6px',
-                border:        `1px solid ${view === key ? C.green : C.border}`,
-                background:    view === key ? C.greenDim : 'transparent',
-                color:         view === key ? C.green : C.textDim,
+                border:        `1px solid ${view === key ? C.blue : C.border}`,
+                background:    view === key ? `${C.blue}1a` : 'transparent',
+                color:         view === key ? C.blue : C.textDim,
                 fontFamily:    'var(--font-data)',
                 fontSize:      '12px',
                 cursor:        'pointer',
@@ -89,7 +89,7 @@ export default function DetectionTrendChart({ candidates = [] }) {
               tickLine={false}
             />
             <Tooltip content={<CustomTooltip />} />
-            <Line type="monotone" dataKey="v" stroke={C.green} strokeWidth={2} dot={{ fill: C.green, r: 3 }} activeDot={{ r: 5, fill: C.green }} />
+            <Line type="monotone" dataKey="v" stroke={C.blue} strokeWidth={2} dot={{ fill: C.blue, r: 3 }} activeDot={{ r: 5, fill: C.blue }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
