@@ -96,8 +96,8 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
       <div className="device-comparison-head">
         <div>
           <Mono size="10px" color={C.textDim}>COMPARING TWO DEVICES</Mono>
-          <h3>Where the devices are pointed</h3>
-          <p>Compare two devices over the same period. Both run the same model, so a difference here says something about where they are placed, not about which one is more accurate.</p>
+          <h3>Compare two devices</h3>
+          <p>See how much each device picked up over the same period. Both devices use the same model, so any difference comes from where they are placed.</p>
         </div>
         <GitCompareArrows size={24} color={C.textDim} aria-hidden="true" />
       </div>

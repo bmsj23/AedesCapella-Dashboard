@@ -32,7 +32,6 @@ export default function PaletteGuide() {
             style={{
               background: C.surface,
               border: `1px solid ${C.border}`,
-              borderLeft: `4px solid ${color}`,
               borderRadius: '8px',
               padding: '14px',
             }}
