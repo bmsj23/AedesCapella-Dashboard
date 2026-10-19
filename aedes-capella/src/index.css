@@ -2101,7 +2101,6 @@ a:focus-visible,
 }
 
 .device-comparison-head p {
-  max-width: 760px;
   margin: 8px 0 0;
   color: var(--color-text-dim);
   font-size: 13px;
@@ -2214,26 +2213,7 @@ a:focus-visible,
 
 .comparison-stat strong { color: var(--color-text); }
 
-.comparison-agreement {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 16px;
-  padding: 14px 16px;
-  background: var(--pd-accent-dim);
-  color: var(--pd-accent-ink);
-  font: 700 11px/1.45 var(--font-data);
-}
-
-.comparison-agreement strong {
-  grid-row: span 2;
-  align-self: center;
-  font-size: 20px;
-}
-
-.comparison-agreement small {
-  color: var(--color-text-dim);
-  font-weight: 500;
-}
+.comparison-device:last-child { border-bottom: 0; }
 
 .comparison-chart { padding: 16px 12px 4px; }
 

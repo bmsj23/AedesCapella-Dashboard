@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useIsTechnical } from '../../contexts/viewerRole';
 import {
   Bar,
   BarChart,
@@ -52,7 +51,6 @@ function ComparisonStat({ label, value }) {
 }
 
 export default function DeviceComparison({ devices = [], registry = [], candidates = [], relays = [] }) {
-  const technical = useIsTechnical();
   const activeRegistryIds = new Set(
     registry
       .filter(device => device.device_status !== 'decommissioned')
@@ -88,14 +86,13 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
   const registryById = new Map(registry.map(device => [device.device_id, device]));
   const chartData = comparison?.devices.map(row => ({
     name: formatDeviceName(deviceById.get(row.deviceId)?.device_label),
-    rate: Number(row.candidatesPerHour.toFixed(3)),
+    count: row.candidates,
   })) || [];
 
   return (
     <Card className="device-comparison" style={{ marginBottom: '20px', background: C.surface2 }}>
       <div className="device-comparison-head">
         <div>
-          <Mono size="10px" color={C.textDim}>COMPARING TWO DEVICES</Mono>
           <h3>Compare two devices</h3>
           <p>See how much each device picked up over the same period. Both devices use the same model, so any difference comes from where they are placed.</p>
         </div>
@@ -158,27 +155,21 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
                       </Tag>
                     </div>
                     <ComparisonStat label={DETECTION_TERM.plural} value={row.candidates} />
-                    <ComparisonStat label="Per hour" value={row.candidatesPerHour.toFixed(3)} />
                     <ComparisonStat label="Times the sprayer switched on" value={row.relayActivations} />
                   </div>
                 );
               })}
-              <div className="comparison-agreement">
-                <span>How often both devices flagged the same {comparison.agreementWindowSeconds} seconds</span>
-                <strong>{comparison.agreementPercent === null ? 'Not available' : technical ? `${comparison.agreementPercent.toFixed(1)}% paired detections` : `${comparison.matchedCandidates} matching pairs`}</strong>
-                <small>Share of detections paired between devices. Not a sound match score. {comparison.matchedCandidates} matched pair{comparison.matchedCandidates === 1 ? '' : 's'}</small>
-              </div>
             </div>
 
-            <div className="comparison-chart" aria-label={`${DETECTION_TERM.plural} per hour, by device`}>
-              <Mono size="10px" color={C.textDim}>{DETECTION_TERM_UPPER.plural} PER HOUR</Mono>
+            <div className="comparison-chart" aria-label={`${DETECTION_TERM.plural} by device`}>
+              <Mono size="10px" color={C.textDim}>{DETECTION_TERM_UPPER.plural}</Mono>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={chartData} margin={{ top: 18, right: 8, bottom: 0, left: -8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={`${C.border}cc`} vertical={false} />
                   <XAxis dataKey="name" tick={{ fontFamily: 'var(--font-data)', fontSize: 11, fill: C.textDim }} axisLine={false} tickLine={false} />
-                  <YAxis allowDecimals tick={{ fontFamily: 'var(--font-data)', fontSize: 11, fill: C.textDim }} axisLine={false} tickLine={false} />
-                  <Tooltip formatter={value => [value, `${DETECTION_TERM.plural} per hour`]} />
-                  <Bar dataKey="rate" radius={[4, 4, 0, 0]}>
+                  <YAxis allowDecimals={false} tick={{ fontFamily: 'var(--font-data)', fontSize: 11, fill: C.textDim }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={value => [value, DETECTION_TERM.plural]} />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {chartData.map((entry, index) => <Cell key={entry.name} fill={deviceColor(entry.name, index)} />)}
                   </Bar>
                 </BarChart>
@@ -188,7 +179,7 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
 
           {candidates.length >= 500 ? (
             <div className="comparison-data-note">
-              The dashboard reached its 500-row limit for this period, so these rates may be incomplete. Export the full records before reading anything into them.
+              The dashboard reached its 500-row limit for this period, so these counts may be incomplete. Export the full records before reading anything into them.
             </div>
           ) : null}
         </>
