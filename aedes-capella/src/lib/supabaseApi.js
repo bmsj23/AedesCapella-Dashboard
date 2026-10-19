@@ -4,6 +4,7 @@ import {
   supabaseUrl,
 } from './supabaseClient';
 import { isDisplayableRelayEpisode } from '../utils/dashboardData';
+import { collectActivityPages } from '../utils/activityPaging.js';
 
 export { isSupabaseConfigured } from './supabaseClient';
 
@@ -143,8 +144,7 @@ export async function fetchDeviceStatus(accessToken, signal) {
  */
 export const ACTIVITY_FETCH_LIMIT = 100;
 
-export async function fetchRuntimeActivity(accessToken, signal) {
-  const columns = [
+const ACTIVITY_COLUMNS = [
     'runtime_event_id', 'device_id', 'device_label', 'location_id',
     'location_name', 'barangay_name', 'occurred_at', 'received_at',
     'display_time', 'time_quality',
@@ -154,11 +154,35 @@ export async function fetchRuntimeActivity(accessToken, signal) {
     'ingest_path',
   ].join(',');
 
-  const operatorKinds = 'BOOT,LIVE_ACCEPT,RELAY_ON,RELAY_REJECT';
-  return request(`/rest/v1/dashboard_runtime_activity?select=${columns}&event_kind=in.(${operatorKinds})&order=display_time.desc&limit=${ACTIVITY_FETCH_LIMIT}`, {
+const OPERATOR_KINDS = 'BOOT,LIVE_ACCEPT,RELAY_ON,RELAY_REJECT';
+
+export async function fetchRuntimeActivity(accessToken, signal) {
+  return request(`/rest/v1/dashboard_runtime_activity?select=${ACTIVITY_COLUMNS}&event_kind=in.(${OPERATOR_KINDS})&order=display_time.desc&limit=${ACTIVITY_FETCH_LIMIT}`, {
     accessToken,
     signal,
   });
+}
+
+export async function fetchRuntimeActivityRange(accessToken, startIso, endIso, signal) {
+  if (!Number.isFinite(Date.parse(startIso)) || !Number.isFinite(Date.parse(endIso))
+      || Date.parse(startIso) >= Date.parse(endIso)) {
+    throw new Error('Choose a valid activity period.');
+  }
+  // Unresolved clocks land in the window containing display_time, which is
+  // receipt time for these rows. Their happened-at time remains unavailable.
+  // The ID breaks time ties so offset pages have a deterministic order.
+  const query = new URLSearchParams({
+    select: ACTIVITY_COLUMNS,
+    event_kind: `in.(${OPERATOR_KINDS})`,
+    order: 'display_time.desc,runtime_event_id.desc',
+  });
+  query.append('display_time', `gte.${startIso}`);
+  query.append('display_time', `lt.${endIso}`);
+  return collectActivityPages((limit, offset) => {
+    query.set('limit', limit);
+    query.set('offset', offset);
+    return request(`/rest/v1/dashboard_runtime_activity?${query}`, { accessToken, signal });
+  }, signal);
 }
 
 /**

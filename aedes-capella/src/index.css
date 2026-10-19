@@ -732,6 +732,34 @@ a:focus-visible,
 
 .card-view-toggle button:hover { color: var(--color-text); }
 
+.activity-date-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: var(--color-text-dim);
+  font-size: 13px;
+}
+
+.activity-date-control label { display: flex; align-items: center; gap: 10px; }
+.activity-date-control input {
+  min-width: 0;
+  max-width: 100%;
+  padding: 8px 10px;
+  color: var(--color-text);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--pd-radius-xs);
+  font: inherit;
+}
+
+.activity-date-picker button:focus-visible,
+.activity-date-control input:focus-visible {
+  outline: 2px solid var(--pd-accent);
+  outline-offset: 3px;
+}
+
 /* Solid accent, matching the selected sidebar item. White on --pd-accent is
    the one place the vivid orange carries text, and it clears contrast because
    the text is bold and the fill is solid rather than a tint. */

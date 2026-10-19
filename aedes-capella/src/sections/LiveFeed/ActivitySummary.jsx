@@ -34,7 +34,7 @@ function describeWindow(databaseSummary) {
   return start === manilaStartOfDay() ? 'Today' : 'Last 24 hours';
 }
 
-export default function ActivitySummary({ events, summary: databaseSummary }) {
+export default function ActivitySummary({ events, summary: databaseSummary, periodLabel, incomplete = false }) {
   const bufferedSummary = buildRuntimeSummary(events);
   /*
    * The windowed counts, not the lifetime ones.
@@ -50,7 +50,7 @@ export default function ActivitySummary({ events, summary: databaseSummary }) {
     relayCount: Number(databaseSummary.relay_activations_in_window || 0),
     latestAt: databaseSummary.latest_activity_at,
   } : bufferedSummary;
-  const windowLabel = describeWindow(databaseSummary);
+  const windowLabel = periodLabel || describeWindow(databaseSummary);
 
   return (
     <Card glow style={{ marginBottom: '20px', background: 'var(--pd-accent-dim)' }}>
@@ -63,6 +63,7 @@ export default function ActivitySummary({ events, summary: databaseSummary }) {
       }}>
         <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '15px', fontWeight: 700, letterSpacing: '-0.01em', color: C.text }}>
           {windowLabel}
+          {incomplete && ' (loaded records only)'}
         </div>
       </div>
 

@@ -24,6 +24,7 @@ function deviceLabel(deviceId, deviceLabels) {
 /** Recent device activity table with plain-language labels. */
 export default function FeedTable({
   events = [], deviceLabels = {}, loading = false, error = '', emptyToday = false,
+  periodLabel, emptyTitle, capped = false,
 }) {
 
   if (loading) {
@@ -55,8 +56,8 @@ export default function FeedTable({
      */
     return (
       <EmptyState
-        title={emptyToday ? 'Nothing Recorded Today Yet' : 'No Recent Activity'}
-        message={emptyToday
+        title={emptyTitle || (emptyToday ? 'Nothing Recorded Today Yet' : 'No Recent Activity')}
+        message={periodLabel ? 'No device updates were recorded in this period. This does not prove that everything is okay.' : emptyToday
           ? 'The devices have not recorded anything since midnight. This does not prove that everything is okay.'
           : 'No device updates are showing right now. This does not prove that everything is okay.'}
         action="Open Device Status and check whether the devices are reporting."
@@ -67,7 +68,9 @@ export default function FeedTable({
   return (
     <TablePlate
       title="What The Devices Recorded"
-      note={`Showing the ${events.length} most recent`}
+      note={periodLabel
+        ? `Showing ${capped ? 'the newest' : 'all'} ${events.length} records for ${periodLabel}`
+        : `Showing the ${events.length} most recent`}
       label="Activity"
       headers={ACTIVITY_TABLE_HEADERS}
       columns={COLUMNS}
