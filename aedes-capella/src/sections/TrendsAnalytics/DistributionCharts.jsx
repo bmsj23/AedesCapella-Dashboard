@@ -1,7 +1,7 @@
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { C } from '../../constants/colors';
+import { C, deviceColor } from '../../constants/colors';
 import Card from '../../components/ui/Card';
 import EmptyState from '../../components/ui/EmptyState';
 import { buildNodeActivity } from '../../utils/dashboardData';
@@ -35,7 +35,9 @@ export default function DistributionCharts({ events = [], deviceLabels = {} }) {
               <XAxis dataKey="node" tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontFamily: 'var(--font-data)', fontSize: 12, fill: C.textDim }} axisLine={false} tickLine={false} />
               <Tooltip contentStyle={tooltipStyle} />
-              <Bar dataKey="count" fill={C.blue} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                {nodeActivity.map((entry, index) => <Cell key={entry.node} fill={deviceColor(entry.node, index)} />)}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         )}

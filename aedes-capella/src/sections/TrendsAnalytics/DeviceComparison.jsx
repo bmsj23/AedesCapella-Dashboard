@@ -15,7 +15,7 @@ import Card from '../../components/ui/Card';
 import EmptyState from '../../components/ui/EmptyState';
 import Mono from '../../components/ui/Mono';
 import Tag from '../../components/ui/Tag';
-import { C } from '../../constants/colors';
+import { C, deviceColor } from '../../constants/colors';
 import { DETECTION_TERM, DETECTION_TERM_UPPER } from '../../constants/terminology';
 import {
   buildDeviceComparison,
@@ -25,10 +25,6 @@ import {
 // One shared reading now answers for all of them.
 import { getStatusPresentation } from '../../utils/deviceStatus';
 import { formatDeviceName } from '../../utils/viewer';
-
-// Counts, not status, so they take the neutral data colour rather than a
-// status colour. Green would read as "all normal".
-const BAR_COLORS = [C.blue, C.blue];
 
 function placementSummary(device) {
   if (!device) return 'Placement not recorded';
@@ -183,7 +179,7 @@ export default function DeviceComparison({ devices = [], registry = [], candidat
                   <YAxis allowDecimals tick={{ fontFamily: 'var(--font-data)', fontSize: 11, fill: C.textDim }} axisLine={false} tickLine={false} />
                   <Tooltip formatter={value => [value, `${DETECTION_TERM.plural} per hour`]} />
                   <Bar dataKey="rate" radius={[4, 4, 0, 0]}>
-                    {chartData.map((entry, index) => <Cell key={entry.name} fill={BAR_COLORS[index]} />)}
+                    {chartData.map((entry, index) => <Cell key={entry.name} fill={deviceColor(entry.name, index)} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
