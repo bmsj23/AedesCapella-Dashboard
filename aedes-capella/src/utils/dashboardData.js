@@ -48,7 +48,7 @@ const EVENT_PRESENTATION = {
   RELAY_INTENT: { label: 'Spray requested', color: 'red', icon: SprayCan },
   RELAY_ON: { label: 'Sprayer turned on', color: 'red', icon: SprayCan },
   RELAY_OFF: { label: 'Sprayer turned off', color: 'red', icon: SprayCan },
-  RELAY_REJECT: { label: 'Sprayer on cooldown', color: 'amber', icon: Timer },
+  RELAY_REJECT: { label: 'Spray request blocked', color: 'amber', icon: Timer },
   COOLDOWN_COMPLETE: { label: 'Ready again', color: 'gray', icon: Timer },
 };
 
@@ -129,7 +129,12 @@ export function isOperatorActivityEvent(event) {
 }
 
 export function filterOperatorActivity(events = []) {
-  return events.filter(isOperatorActivityEvent);
+  // The S3's observation is the useful cooldown message. Keep the C3's
+  // redundant cooldown rejection in the stored evidence, but hide it from
+  // Latest Activity. Other rejection reasons still need to reach the reader.
+  return events.filter(event => isOperatorActivityEvent(event)
+    && !(event.event_kind === 'RELAY_REJECT'
+      && (event.reason === 'cooldown' || event.reason === 'cooldown_active')));
 }
 
 export function formatDashboardTimestamp(value) {

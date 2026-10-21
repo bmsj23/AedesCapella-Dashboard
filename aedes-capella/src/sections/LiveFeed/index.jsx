@@ -25,7 +25,8 @@ export default function LiveFeed({ dashboardData, deviceStatus, accessToken }) {
   );
   const window = scope === 'today' ? null : activityWindow(scope, date, cutoffMs);
   const range = useActivityRange(accessToken, window?.startIso, window?.endIso);
-  const recent = filterOperatorActivity(dashboardData?.activity || []);
+  const bufferedActivity = dashboardData?.activity || [];
+  const recent = filterOperatorActivity(bufferedActivity);
   const dayStart = manilaStartOfDay();
   const today = recent.filter(event => Date.parse(event.display_time) >= dayStart);
   // Defence in depth for settings changes and views running before the cutoff migration.
@@ -45,8 +46,9 @@ export default function LiveFeed({ dashboardData, deviceStatus, accessToken }) {
    * the number over it.
    */
   const mayBeTruncated = scope === 'today'
-    && recent.length >= ACTIVITY_FETCH_LIMIT
-    && today.length === recent.length;
+    // Hidden cooldown rejections still consume slots in the fetched buffer.
+    && bufferedActivity.length >= ACTIVITY_FETCH_LIMIT
+    && bufferedActivity.every(event => Date.parse(event.display_time) >= dayStart);
   const deviceLabels = (deviceStatus?.devices || []).reduce((lookup, device) => ({
     ...lookup,
     [device.device_id]: formatDeviceName(device.device_label),

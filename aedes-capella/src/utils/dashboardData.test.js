@@ -7,6 +7,7 @@ import {
   buildConfidenceDistribution,
   buildRuntimeSummary,
   deriveRelayEpisodes,
+  filterOperatorActivity,
   getActivityTimePresentation,
   getEventPresentation,
   isCooldownObservation,
@@ -224,6 +225,32 @@ test('cooldown observations are not counted or labelled as detections', () => {
   });
   assert.equal(getEventPresentation('LIVE_ACCEPT', 'candidate').label, DETECTION_TERM.singular);
   assert.equal(getEventPresentation('LIVE_ACCEPT').label, DETECTION_TERM.singular);
+});
+
+test('Latest Activity hides cooldown rejections but keeps observations and other failures for both units', () => {
+  assert.equal(getEventPresentation('RELAY_REJECT').label, 'Spray request blocked');
+  for (const device_id of ['unit-1', 'unit-2']) {
+    const rows = [
+      { device_id, event_kind: 'RELAY_REJECT', reason: 'cooldown' },
+      { device_id, event_kind: 'RELAY_REJECT', reason: 'cooldown_active' },
+      { device_id, event_kind: 'LIVE_ACCEPT', reason: 'cooldown_observatio' },
+      { device_id, event_kind: 'LIVE_ACCEPT', reason: 'cooldown_observation' },
+      { device_id, event_kind: 'LIVE_ACCEPT', reason: 'candidate', temporal_candidate: true },
+      { device_id, event_kind: 'RELAY_ON', reason: 'timer_armed', relay_energized: true },
+      { device_id, event_kind: 'RELAY_REJECT', reason: 'logging_unhealthy' },
+      { device_id, event_kind: 'RELAY_REJECT', reason: 'persistence_failure' },
+      { device_id, event_kind: 'RELAY_REJECT', reason: 'already_active' },
+      { device_id, event_kind: 'RELAY_REJECT', reason: 'field_monitor_only' },
+      { device_id, event_kind: 'RELAY_REJECT' },
+    ];
+    assert.deepEqual(filterOperatorActivity(rows), rows.slice(2));
+    assert.equal(rows.length, 11, 'retained evidence must not be mutated');
+    assert.equal(buildRuntimeSummary(rows).candidateCount, 1);
+    assert.equal(buildRuntimeSummary(rows).relayCount, 1);
+    for (const row of rows.slice(2, 4)) {
+      assert.equal(getEventPresentation(row.event_kind, row.reason).label, 'Heard again while waiting');
+    }
+  }
 });
 
 test('score labels preserve existing bands and absent readings stay absent', () => {
